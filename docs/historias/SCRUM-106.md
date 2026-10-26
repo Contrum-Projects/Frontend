@@ -44,6 +44,7 @@ con un parámetro simulado.
 ## Notas de trabajo
 
 - **PR:** https://github.com/Contrum-Projects/Frontend/pull/3 (En revisión desde el 26-10-2026).
+- **PR de ajustes de diseño:** https://github.com/Contrum-Projects/Frontend/pull/5 (tarjeta de producto y cinta de marcas).
 - **Decisiones con el usuario (26-10):** las filas usan `?orden=` simulado; el banner de
   promociones muestra el pack vigente que vence antes (los packs son las promociones del backend) y
   no aparece si no hay packs; los enlaces a páginas que aún no existen se ponen igual
@@ -64,3 +65,17 @@ con un parámetro simulado.
 - **Pendiente para «Hecha»:** probar con el backend real sin la ruta simulada (cuando exista `orden`).
   Una categoría o marca inexistente muestra la página 404, pero con estado HTTP 200: `notFound()`
   ocurre dentro de `<Suspense>`, después de enviar la cabecera (limitación del streaming).
+- **Ajustes de diseño (después del PR):**
+  - **Tarjeta de producto, más cerca de Figma (5:80):** foto de 264 × 240 sobre fondo menta
+    (`marca-acento-suave`, con `mix-blend-multiply` para fundir el blanco de la foto) y botón
+    redondo del carrito junto al precio. El botón está deshabilitado hasta SCRUM-116. El radio de
+    la foto es `rounded-md` (8 px): Figma usa 12 px, que no es un token.
+  - **Marcas del inicio:** cinta infinita con todas las marcas de la API (decisión del equipo; Figma
+    muestra 6 fijas). Se mueve sola y se detiene con el mouse encima, al enfocar una marca o con el
+    botón de pausa (WCAG 2.2.2). Con «reducir movimiento» queda quieta y se desplaza a mano. Con
+    pocas marcas, la vuelta las repite hasta 12, pero solo la primera aparición se lee y se enfoca.
+- **Pedido al backend (línea de formatos de la tarjeta):** agregar a cada producto de
+  `GET /tienda/productos` los formatos vendibles, para mostrar «2 formatos · desde 300 ml».
+  Propuesta: `formatos: { cantidad: number; desde: { contenido: number; unidad: string } | null }`,
+  con `desde` igual al formato de menor `contenido` (`null` si ninguno tiene `contenido` y
+  `unidadMedida`). El frontend la muestra cuando llegue; mientras tanto, la tarjeta va sin esa línea.
