@@ -125,15 +125,11 @@ export default function Muestrario() {
       <section className="flex max-w-sm flex-col gap-4">
         <h2 className="titulo-h2">Campo</h2>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="correo">
-            Correo electrónico
-          </Label>
+          <Label htmlFor="correo">Correo electrónico</Label>
           <Input id="correo" type="email" placeholder="nombre@correo.cl" />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="rut">
-            RUT
-          </Label>
+          <Label htmlFor="rut">RUT</Label>
           <Input id="rut" defaultValue="12.345.678-0" aria-invalid />
           <p className="texto-pequeno text-destructive">El RUT no es válido.</p>
         </div>
