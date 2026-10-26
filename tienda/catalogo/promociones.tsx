@@ -11,8 +11,9 @@ import { leerPacks } from './consultas';
 
 /**
  * Promociones del inicio: el banner destaca el pack vigente que vence antes (los packs son las
- * promociones del backend, E3-H6); sin packs, no hay banner. Al lado, en escritorio, las
- * tarjetas de packs y de precio profesional.
+ * promociones del backend, E3-H6). Al lado, en escritorio, las tarjetas de packs y de precio
+ * profesional. Sin packs no hay banner: en escritorio las tarjetas ocupan la fila y en celular la
+ * de packs toma el lugar del banner, con su misma altura, para que la página no salte al cargar.
  */
 export async function Promociones() {
   const packs = await leerPacks(10).catch(() => null);
@@ -24,15 +25,17 @@ export async function Promociones() {
       className="mx-auto flex max-w-[1440px] gap-6 px-4 pt-4 md:px-16 md:pt-6"
     >
       {destacado && <BannerPack pack={destacado} />}
-      {/* Sin banner, las dos tarjetas ocupan la fila completa */}
       <div
         className={cn(
-          'hidden gap-6 md:flex',
-          destacado ? 'w-[420px] shrink-0 flex-col' : 'min-h-48 flex-1',
+          'gap-6 md:flex',
+          destacado
+            ? 'hidden w-[420px] shrink-0 flex-col'
+            : 'flex h-[210px] flex-1 md:h-auto md:min-h-48',
         )}
       >
         <TarjetaPacks imagen={packs?.items[0]?.imagen} />
-        <TarjetaProfesional />
+        {/* En celular, el aviso de precio profesional va más abajo (AvisoProfesionalCelular) */}
+        <TarjetaProfesional className="hidden md:flex" />
       </div>
     </section>
   );
@@ -47,7 +50,7 @@ const packDestacado = (packs: PackTienda[]) =>
   )[0];
 
 const TarjetaPacks = ({ imagen }: { imagen?: string }) => (
-  <div className="relative flex flex-1 overflow-hidden rounded-xl bg-fondo-hueso-oscuro p-8">
+  <div className="relative flex flex-1 overflow-hidden rounded-xl bg-fondo-hueso-oscuro p-6 md:p-8">
     <div className="relative z-10 flex max-w-56 flex-col items-start gap-2">
       <h2 className="titulo-h2 text-texto-principal">Packs</h2>
       <p className="texto-pequeno text-texto-secundario">
@@ -56,12 +59,12 @@ const TarjetaPacks = ({ imagen }: { imagen?: string }) => (
       <EnlaceFlecha href={RUTAS.packs}>Ver packs</EnlaceFlecha>
     </div>
     {imagen && (
-      <div className="absolute top-3 -right-2 size-[180px]">
+      <div className="absolute top-3 -right-2 size-32 md:size-[180px]">
         <Image
           src={imagen}
           alt=""
           fill
-          sizes="180px"
+          sizes="(min-width: 768px) 180px, 128px"
           className="rounded-lg object-cover"
         />
       </div>
@@ -69,8 +72,13 @@ const TarjetaPacks = ({ imagen }: { imagen?: string }) => (
   </div>
 );
 
-const TarjetaProfesional = () => (
-  <div className="flex flex-1 flex-col items-start gap-2 rounded-xl bg-marca-acento-suave p-8">
+const TarjetaProfesional = ({ className }: { className?: string }) => (
+  <div
+    className={cn(
+      'flex flex-1 flex-col items-start gap-2 rounded-xl bg-marca-acento-suave p-8',
+      className,
+    )}
+  >
     <BadgeCheck
       className="size-6 text-marca-profundo"
       strokeWidth={1.75}

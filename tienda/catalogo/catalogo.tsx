@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ErrorDeApi } from '@/compartido/api/errores';
 import type {
@@ -6,9 +5,9 @@ import type {
   ListadoTienda,
   MarcaTienda,
 } from '@/compartido/api/respuestas';
-import { Button } from '@/compartido/ui/button';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { urlCatalogo } from '@/tienda/diseno/enlaces';
+import { BotonCargarMas } from './botonCargarMas';
 import {
   buscarCategoria,
   leerCategorias,
@@ -94,19 +93,14 @@ export async function Catalogo({
             </p>
             {listado.items.length < listado.total &&
               paginas < MAXIMO_PAGINAS && (
-                <Button variant="contorno" size="grande" asChild>
-                  <Link
-                    href={urlCatalogo({
-                      categoria: categoriaId,
-                      marca: marcaId,
-                      orden,
-                      pagina: paginas + 1,
-                    })}
-                    scroll={false}
-                  >
-                    Cargar más productos
-                  </Link>
-                </Button>
+                <BotonCargarMas
+                  href={urlCatalogo({
+                    categoria: categoriaId,
+                    marca: marcaId,
+                    orden,
+                    pagina: paginas + 1,
+                  })}
+                />
               )}
           </div>
         </>
