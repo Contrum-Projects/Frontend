@@ -1,7 +1,9 @@
+import { ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ProductoTienda } from '@/compartido/api/respuestas';
 import { formatearPesos } from '@/compartido/formato/moneda';
+import { Button } from '@/compartido/ui/button';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { urlProducto } from '@/tienda/diseno/enlaces';
 
@@ -22,8 +24,9 @@ interface TarjetaProductoProps {
 
 /**
  * Tarjeta de producto minorista (Figma › Componentes › Tarjeta de producto 5:80): foto
- * principal del formato que elige el backend, marca, nombre y precio con IVA. El botón del
- * carrito llega con SCRUM-116 y la variante profesional con SCRUM-109.
+ * principal del formato que elige el backend sobre fondo menta, marca, nombre, precio con IVA
+ * y botón del carrito. La línea de formatos («2 formatos · desde 300 ml») espera que la API la
+ * entregue, y la variante profesional llega con SCRUM-109.
  */
 export const TarjetaProducto = ({
   producto,
@@ -31,7 +34,8 @@ export const TarjetaProducto = ({
   prioridad = false,
 }: TarjetaProductoProps) => (
   <article className="group relative flex h-full flex-col rounded-lg border bg-fondo-superficie p-2 pb-4">
-    <div className="relative aspect-square overflow-hidden rounded-md bg-fondo-hueso">
+    {/* 264 × 240 en Figma. multiply funde el blanco de la foto con el fondo menta */}
+    <div className="relative aspect-[11/10] overflow-hidden rounded-md bg-marca-acento-suave">
       {/* El nombre ya está en el enlace de la tarjeta: la foto no lo repite */}
       <Image
         src={producto.imagen}
@@ -39,7 +43,7 @@ export const TarjetaProducto = ({
         fill
         sizes={tamanos}
         priority={prioridad}
-        className="object-cover transition-transform duration-300 group-hover:scale-[1.02] motion-reduce:transition-none"
+        className="object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"
       />
     </div>
     <div className="flex flex-1 flex-col gap-1 px-2 pt-3">
@@ -57,9 +61,21 @@ export const TarjetaProducto = ({
         </Link>
       </h3>
     </div>
-    <p className="px-2 pt-3 texto-precio text-marca-profundo">
-      {formatearPesos(producto.precio)}
-    </p>
+    <div className="flex items-end justify-between gap-2 px-2 pt-3">
+      <p className="texto-precio text-marca-profundo">
+        {formatearPesos(producto.precio)}
+      </p>
+      {/* TODO(SCRUM-116): agregar al carrito. Deshabilitado, el clic pasa al enlace de la tarjeta */}
+      <Button
+        type="button"
+        size="icono"
+        className="size-11"
+        disabled
+        aria-label={`Agregar ${producto.nombre} al carrito`}
+      >
+        <ShoppingCart aria-hidden />
+      </Button>
+    </div>
   </article>
 );
 
@@ -69,11 +85,14 @@ export const TarjetaProductoEsqueleto = () => (
     aria-hidden
     className="flex h-full flex-col rounded-lg border bg-fondo-superficie p-2 pb-4"
   >
-    <Skeleton className="aspect-square rounded-md" />
+    <Skeleton className="aspect-[11/10] rounded-md" />
     <div className="flex flex-col gap-1 px-2 pt-3">
       <Skeleton className="h-4 w-16" />
       <Skeleton className="h-6 w-3/4" />
     </div>
-    <Skeleton className="mx-2 mt-3 h-6 w-20" />
+    <div className="flex items-end justify-between px-2 pt-3">
+      <Skeleton className="h-6 w-20" />
+      <Skeleton className="size-11 rounded-full" />
+    </div>
   </div>
 );
