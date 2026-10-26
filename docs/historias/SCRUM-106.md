@@ -67,7 +67,7 @@ con un parámetro simulado.
   ocurre dentro de `<Suspense>`, después de enviar la cabecera (limitación del streaming).
 - **Ajustes de diseño (después del PR):**
   - **Tarjeta de producto, más cerca de Figma (5:80):** foto de 264 × 240 sobre fondo menta
-    (`marca-acento-suave`, con `mix-blend-multiply` para fundir el blanco de la foto) y botón
+    (`marca-acento-suave`, que se ve mientras carga; `object-cover`) y botón
     redondo del carrito junto al precio. El botón está deshabilitado hasta SCRUM-116. El radio de
     la foto es `rounded-md` (8 px): Figma usa 12 px, que no es un token.
   - **Marcas del inicio:** cinta infinita con todas las marcas de la API (decisión del equipo; Figma
@@ -79,3 +79,7 @@ con un parámetro simulado.
   Propuesta: `formatos: { cantidad: number; desde: { contenido: number; unidad: string } | null }`,
   con `desde` igual al formato de menor `contenido` (`null` si ninguno tiene `contenido` y
   `unidadMedida`). El frontend la muestra cuando llegue; mientras tanto, la tarjeta va sin esa línea.
+- **Fotos provisorias (27-10-2026):** en la base local, cada formato tiene el placeholder de
+  Figma («Imagen de producto» 5:79) como foto, en PNG de 1056 × 960 (11:10, la proporción de la
+  tarjeta). Forma según la categoría (botella, pote, tubo) y tono según la marca. La tarjeta dejó
+  `mix-blend-multiply`, que teñía de verde los tonos arena y rosa.
