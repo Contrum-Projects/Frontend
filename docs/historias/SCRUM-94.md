@@ -32,8 +32,8 @@ formato de respuesta acordaste con quien hace la historia backend.
 
 ## Notas de trabajo
 
-- **Alcance:** solo la tarjeta «Iniciar sesión» en `/ingresar`. La página ya tiene las dos
-  columnas de escritorio; «Crear cuenta» (segunda columna) y las pestañas «Ingresar / Crear
+- **Alcance:** solo la tarjeta «Iniciar sesión» en `/ingresar`, centrada mientras está sola. Las dos
+  columnas de escritorio, «Crear cuenta» (segunda columna) y las pestañas «Ingresar / Crear
   cuenta» del celular las agrega SCRUM-93.
 - **Después de ingresar** (`tienda/cuenta/destinoIngreso.ts`): vendedor, bodeguero y
   administrador van a `/panel` (o a la página del panel de `?volver=`); cliente y profesional
