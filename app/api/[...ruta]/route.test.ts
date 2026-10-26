@@ -1,6 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GET, POST } from './route';
 
+vi.mock('@/compartido/api/simulado/rutas', () => ({
+  rutasSimuladas: [
+    {
+      metodo: 'GET',
+      ruta: '/tienda/packs/:codigo',
+      historia: 'SCRUM-108',
+      responder: ({ params }: { params: Record<string, string> }) =>
+        Response.json({ codigo: params.codigo }),
+    },
+  ],
+}));
+
 const contexto = (ruta: string[]) => ({ params: Promise.resolve({ ruta }) });
 
 describe('proxy /api → backend', () => {
@@ -74,5 +86,25 @@ describe('proxy /api → backend', () => {
 
     expect(respuesta.status).toBe(502);
     expect(await respuesta.json()).toMatchObject({ statusCode: 502 });
+  });
+
+  it('con API_SIMULADA=1 responde las rutas simuladas sin llamar al backend, y el resto sigue al backend', async () => {
+    vi.stubEnv('API_SIMULADA', '1');
+    const fetch = vi.fn().mockResolvedValue(new Response('{"ok":true}'));
+    vi.stubGlobal('fetch', fetch);
+
+    const simulada = await GET(
+      new Request('http://tienda.test/api/tienda/packs/PK-1'),
+      contexto(['tienda', 'packs', 'PK-1']),
+    );
+    expect(await simulada.json()).toEqual({ codigo: 'PK-1' });
+    expect(simulada.headers.get('x-api-simulada')).toBe('SCRUM-108');
+    expect(fetch).not.toHaveBeenCalled();
+
+    await GET(
+      new Request('http://tienda.test/api/tienda/marcas'),
+      contexto(['tienda', 'marcas']),
+    );
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 });

@@ -3,7 +3,7 @@ name: revisar
 description: Revisa una rama o un pull request del frontend contra main - calidad, reglas del proyecto, fidelidad a Figma, accesibilidad, seguridad y criterios de aceptación. Úsala para revisar el PR de un compañero o tu propia rama antes del PR.
 argument-hint: '[número de PR o nombre de rama; vacío = rama actual]'
 disable-model-invocation: true
-allowed-tools: Bash(git *) Bash(gh pr view *) Bash(gh pr diff *) Bash(gh pr checks *) Bash(pnpm verificar) Bash(pnpm test *) mcp__atlassian__getJiraIssue mcp__figma__get_screenshot mcp__figma__get_design_context
+allowed-tools: Bash(git *) Bash(gh pr view *) Bash(gh pr diff *) Bash(gh pr checks *) Bash(pnpm verificar) Bash(pnpm test *) Read mcp__figma__get_screenshot mcp__figma__get_design_context
 ---
 
 # Revisión de $ARGUMENTS
@@ -13,8 +13,8 @@ allowed-tools: Bash(git *) Bash(gh pr view *) Bash(gh pr diff *) Bash(gh pr chec
      `gh pr checks $ARGUMENTS`.
    - Nombre de rama: `git fetch origin <rama>` y `git diff origin/main...origin/<rama>`.
    - Vacío: la rama actual contra `origin/main`.
-2. **Historia.** Saca la clave `SCRUM-<n>` del nombre de la rama o del título y lee la historia en
-   Jira para tener los criterios de aceptación y la pantalla de Figma.
+2. **Historia.** Saca la clave `SCRUM-<n>` del nombre de la rama o del título y lee
+   `docs/historias/SCRUM-<n>.md` para tener los criterios de aceptación y la pantalla de Figma.
 3. **Revisión en paralelo.** Lanza a la vez:
    - subagente **revisor-codigo** sobre el diff;
    - subagente **revisor-diseno** con la pantalla de Figma y los archivos de la interfaz;

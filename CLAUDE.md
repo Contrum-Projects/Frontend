@@ -1,11 +1,11 @@
 # Cabello Perfecto — Frontend
 
 Tienda online y panel de administración de Cabello Perfecto (productos capilares): catálogo con
-precio minorista y precio profesional, carrito y compra con Mercado Pago, despacho con Blue
-Express, cuenta del cliente y verificación de peluqueros; y el panel del personal para catálogo,
+precio minorista y precio profesional, carrito y compra con Mercado Pago, despacho con
+Chilexpress, cuenta del cliente y verificación de peluqueros; y el panel del personal para catálogo,
 pedidos, inventario, verificaciones, campañas y reportes. Una sola app Next.js que consume la API
 REST del backend (repo Contrum-Projects/Backend). Proyecto de título del equipo Contrum-Projects
-(3 integrantes), con Scrumban y sprints en Jira.
+(3 integrantes), con Scrumban. El backlog del frontend vive en `docs/historias/` (copia de Jira).
 
 **Idioma:** responde, comenta y nombra en español. Identificadores sin tildes ni ñ
 (`campana`, `pequeno`); textos para personas, con tildes y en el tono de Figma (tú, frases cortas).
@@ -14,11 +14,14 @@ REST del backend (repo Contrum-Projects/Backend). Proyecto de título del equipo
 
 ## Antes de implementar
 
-1. La historia está en Jira, proyecto **SCRUM** (etiqueta `frontend`). Léela entera: trae los
-   criterios de aceptación, su **historia backend** y la **pantalla de Figma**.
+1. La historia está en `docs/historias/SCRUM-<n>.md` (copia local de Jira; el orden y el estado,
+   en `docs/historias/README.md`). Léela entera: trae los criterios de aceptación, su **historia
+   backend**, la **pantalla de Figma** con sus nodos, la ruta y el estado de la API.
 2. Lee la historia backend y su endpoint en el Swagger (`compartido/api/esquema.d.ts` o
-   http://localhost:3000/api/docs). Si falta el endpoint o no hace lo que la pantalla necesita,
-   **avísalo**: no inventes la respuesta ni la lógica en el frontend.
+   http://localhost:3000/api/docs). Si falta el endpoint, avanza con la **API simulada**
+   (`docs/api-simulada.md`) con la forma acordada con el backend y anótala en la historia; si el
+   endpoint existe pero no hace lo que la pantalla necesita, **avísalo**. Nunca pongas la lógica
+   del backend en el frontend.
 3. Abre la pantalla en Figma con el MCP de Figma (nodos en `docs/pantallas.md`) y respeta
    `docs/diseno.md`. Mira ambas versiones: escritorio (1440) y celular (390).
 4. Las reglas de negocio están en el backend: `docs/reglas-de-negocio.md` de Contrum-Projects/Backend
@@ -66,11 +69,13 @@ panel/<area>/            # componentes y hooks del panel (pedidos, inventario…
 compartido/
   ui/                    # componentes base (shadcn adaptado a Figma)
   api/                   # cliente.ts (navegador), servidor.ts (Server Components), errores.ts,
-                         # esquema.d.ts (generado), respuestas.ts (tipos aún no documentados)
+                         # esquema.d.ts (generado), respuestas.ts (tipos aún no documentados),
+                         # simulado/ (rutas de la API simulada, solo con API_SIMULADA=1)
   sesion/                # sesión (token en memoria), roles y permisos
   formato/               # pesos, fechas y RUT
   config/                # variables de entorno validadas con zod
-docs/                    # diseno.md, pantallas.md, arquitectura.md
+docs/                    # diseno.md, pantallas.md, arquitectura.md, api-simulada.md
+  historias/             # README.md (tablero: orden y estado) y un SCRUM-<n>.md por historia
 ```
 
 Las rutas propuestas para cada historia están en `docs/pantallas.md`. Las páginas de `app/` quedan
@@ -122,15 +127,19 @@ delgadas: importan componentes de `tienda/` o `panel/`.
 
 ## Flujo de trabajo (Scrumban)
 
-- Jira: sitio Contrum Projects, proyecto **SCRUM**, cloudId `bc9de2c3-63ac-4379-8782-8b69ef593475`.
-  Historias de frontend con etiqueta `frontend`. Columnas: Por hacer → En curso → En revisión →
-  Finalizado. Puntos en `customfield_10016`, sprint en `customfield_10020`. Una historia a la vez.
+- Tablero: `docs/historias/README.md`, con las 53 historias en el orden en que se toman (ninguna
+  antes de otra que necesita). Estados: Por hacer → En curso → En revisión → Hecha. Una historia
+  a la vez. `/historia` la pasa a En curso, `/pr` a En revisión; Hecha cuando el PR se integró y
+  la pantalla se probó con el backend real (sin rutas simuladas).
+- Jira (proyecto **SCRUM**, cloudId `bc9de2c3-63ac-4379-8782-8b69ef593475`) no se usa al trabajar.
+  Solo `/sincronizar-jira`, cuando el usuario lo pide, lleva allá los estados del tablero.
 - Una rama corta por historia desde `main`: `SCRUM-<n>-<descripcion-corta>` (ej.
   `SCRUM-93-registro`). Vuelve a `main` con un pull request revisado por otro integrante.
-- Commits en español con Conventional Commits y la clave de Jira:
+- Commits en español con Conventional Commits y la clave de la historia:
   `feat(cuentas): pantalla de registro con confirmación de correo (SCRUM-93)`.
 - Nunca hagas push a `main`, `push --force`, ni merge de PR: eso lo hace el equipo.
-- Comandos: `/historia SCRUM-<n>`, `/pr`, `/revisar`, `/api-tipos`.
+- Comandos: `/siguiente`, `/historia SCRUM-<n>`, `/pr`, `/revisar`, `/api-tipos`,
+  `/sincronizar-jira`.
 - Los commits y PRs son del integrante que los firma: no agregues `Co-Authored-By`,
   `Claude-Session`, «Generated with Claude Code» ni ninguna otra mención a Claude en mensajes de
   commit ni en descripciones de PR.

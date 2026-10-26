@@ -10,6 +10,7 @@
  * para que los límites de RNF-09 cuenten por persona y no por servidor. Ajusta
  * PROXIES_CONFIABLES en el backend según docs/arquitectura.md.
  */
+import { responderSimulado } from '@/compartido/api/simulado';
 import { entornoServidor } from '@/compartido/config/entorno-servidor';
 
 /** Cabeceras propias de cada conexión: no se reenvían. */
@@ -55,6 +56,13 @@ async function reenviar(
       { status: 400 },
     );
   }
+
+  // Solo en desarrollo con API_SIMULADA=1: endpoints que el backend aún no tiene.
+  const simulada = await responderSimulado(
+    peticion,
+    new URL(peticion.url).pathname.replace(/^\/api/, ''),
+  );
+  if (simulada) return simulada;
 
   const origen = new URL(peticion.url);
   const destino = new URL(

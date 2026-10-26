@@ -14,15 +14,21 @@ import 'server-only';
 import createClient from 'openapi-fetch';
 import { entornoServidor } from '@/compartido/config/entorno-servidor';
 import type { paths } from './esquema';
+import { responderSimulado } from './simulado';
 
 let cliente: ReturnType<typeof createClient<paths>> | undefined;
 
 export function apiServidor() {
   cliente ??= createClient<paths>({
     baseUrl: entornoServidor().API_URL,
-    // Si el backend no responde en 10 s, mejor mostrar el error que dejar la página colgada
-    fetch: (peticion) =>
-      fetch(peticion, { signal: AbortSignal.timeout(10_000) }),
+    fetch: async (peticion) => {
+      // Solo en desarrollo con API_SIMULADA=1: endpoints que el backend aún no tiene.
+      const camino = new URL(peticion.url).pathname.replace(/^\/api/, '');
+      const simulada = await responderSimulado(peticion, camino);
+      if (simulada) return simulada;
+      // Si el backend no responde en 10 s, mejor mostrar el error que dejar la página colgada
+      return fetch(peticion, { signal: AbortSignal.timeout(10_000) });
+    },
   });
   return cliente;
 }
