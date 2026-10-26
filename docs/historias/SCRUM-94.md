@@ -32,6 +32,8 @@ formato de respuesta acordaste con quien hace la historia backend.
 
 ## Notas de trabajo
 
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/4
+
 - **Ingreso y registro son páginas separadas** (decisión del equipo): Figma los muestra juntos,
   pero `/ingresar` tiene solo la tarjeta «Iniciar sesión», centrada, y el registro va en
   `/registro` (SCRUM-93). Bajo el botón, «¿No tienes cuenta? Crear cuenta» enlaza al registro
