@@ -279,4 +279,12 @@ describe('SCRUM-94 · Pantalla de inicio de sesión', () => {
       screen.getByRole('link', { name: '¿Olvidaste tu contraseña?' }),
     ).toHaveAttribute('href', '/recuperar-contrasena');
   });
+
+  it('enlaza a la página de registro', () => {
+    mostrarIngreso();
+    expect(screen.getByRole('link', { name: 'Crear cuenta' })).toHaveAttribute(
+      'href',
+      '/registro',
+    );
+  });
 });

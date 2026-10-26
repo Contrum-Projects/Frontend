@@ -128,6 +128,16 @@ export function FormularioIngreso() {
         {isSubmitting && <Spinner aria-hidden />}
         Ingresar
       </Button>
+
+      <p className="texto-pequeno text-texto-secundario">
+        ¿No tienes cuenta?{' '}
+        <Link
+          href={RUTAS.registro}
+          className="texto-etiqueta text-marca-profundo hover:underline"
+        >
+          Crear cuenta
+        </Link>
+      </p>
     </form>
   );
 }

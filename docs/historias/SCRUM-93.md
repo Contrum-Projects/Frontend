@@ -18,10 +18,10 @@ Como un Visitante, necesito un formulario de registro y las pantallas de confirm
 
 ## Pantalla y ruta
 
-| Pantalla               | Escritorio | Celular                    | Ruta                                               |
-| ---------------------- | ---------- | -------------------------- | -------------------------------------------------- |
-| 06 Ingreso y registro  | 2018:1261  | 2018:2508                  | `/ingresar` (pestañas «Ingresar» y «Crear cuenta») |
-| Confirmación de correo | —          | revisa tu correo 2034:4841 | `/confirmar-correo?token=`                         |
+| Pantalla               | Escritorio | Celular                    | Ruta                                       |
+| ---------------------- | ---------- | -------------------------- | ------------------------------------------ |
+| 06 Ingreso y registro  | 2018:1261  | 2018:2508                  | `/registro` (página aparte de `/ingresar`) |
+| Confirmación de correo | —          | revisa tu correo 2034:4841 | `/confirmar-correo?token=`                 |
 
 Nodos del archivo de Figma `cl9eSD5YBS9qF4tQXJki68` (ver `docs/pantallas.md`).
 
@@ -35,3 +35,9 @@ formato de respuesta acordaste con quien hace la historia backend.
 ## Notas de trabajo
 
 <!-- Decisiones, preguntas abiertas y lo que quedó pendiente. Lo completa /historia. -->
+
+- **Decidido en SCRUM-94:** el registro es una página aparte, `/registro`, aunque Figma muestre
+  «Crear cuenta» junto a «Iniciar sesión». `/ingresar` ya enlaza aquí con «¿No tienes cuenta?
+  Crear cuenta»; el registro debe enlazar de vuelta («¿Ya tienes cuenta? Ingresar»). Quita el
+  `as Route` de `RUTAS.registro` en `tienda/diseno/enlaces.ts`. El criterio 4 (pestañas en el
+  celular) queda en ver con el equipo: sin pestañas, se cubre con esos enlaces.

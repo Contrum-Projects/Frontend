@@ -2,10 +2,9 @@ import { Suspense } from 'react';
 import { Ingreso, IngresoEsqueleto } from './ingreso';
 
 /**
- * Pantalla 06 Ingreso y registro (Figma 2018:1261 / 2018:2508). Mientras está sola, la tarjeta
- * «Iniciar sesión» va centrada con su ancho de Figma. SCRUM-93 la pasa a dos columnas en
- * escritorio (max-w-5xl md:grid-cols-2) con «Crear cuenta» a la derecha, y agrega las pestañas
- * del celular.
+ * Tarjeta «Iniciar sesión» de la pantalla 06 Ingreso y registro (Figma 2018:1261), centrada
+ * con su ancho de Figma. Figma muestra «Crear cuenta» al lado, pero el registro es otra página
+ * (`/registro`, SCRUM-93); se enlazan entre sí bajo el botón.
  */
 export function PantallaIngreso() {
   return (

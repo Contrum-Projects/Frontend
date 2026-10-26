@@ -17,9 +17,9 @@ Como un Usuario registrado, necesito una pantalla para iniciar sesión, con la f
 
 ## Pantalla y ruta
 
-| Pantalla              | Escritorio | Celular   | Ruta                                               |
-| --------------------- | ---------- | --------- | -------------------------------------------------- |
-| 06 Ingreso y registro | 2018:1261  | 2018:2508 | `/ingresar` (pestañas «Ingresar» y «Crear cuenta») |
+| Pantalla              | Escritorio | Celular   | Ruta                                                |
+| --------------------- | ---------- | --------- | --------------------------------------------------- |
+| 06 Ingreso y registro | 2018:1261  | 2018:2508 | `/ingresar` (el registro va aparte, en `/registro`) |
 
 Nodos del archivo de Figma `cl9eSD5YBS9qF4tQXJki68` (ver `docs/pantallas.md`).
 
@@ -32,9 +32,10 @@ formato de respuesta acordaste con quien hace la historia backend.
 
 ## Notas de trabajo
 
-- **Alcance:** solo la tarjeta «Iniciar sesión» en `/ingresar`, centrada mientras está sola. Las dos
-  columnas de escritorio, «Crear cuenta» (segunda columna) y las pestañas «Ingresar / Crear
-  cuenta» del celular las agrega SCRUM-93.
+- **Ingreso y registro son páginas separadas** (decisión del equipo): Figma los muestra juntos,
+  pero `/ingresar` tiene solo la tarjeta «Iniciar sesión», centrada, y el registro va en
+  `/registro` (SCRUM-93). Bajo el botón, «¿No tienes cuenta? Crear cuenta» enlaza al registro
+  (404 hasta SCRUM-93).
 - **Después de ingresar** (`tienda/cuenta/destinoIngreso.ts`): vendedor, bodeguero y
   administrador van a `/panel` (o a la página del panel de `?volver=`); cliente y profesional
   vuelven a `?volver=` o al inicio. `?volver=` solo acepta rutas internas (no `//` ni `/\`).
