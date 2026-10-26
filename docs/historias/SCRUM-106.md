@@ -43,6 +43,7 @@ con un parámetro simulado.
 
 ## Notas de trabajo
 
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/3 (En revisión desde el 26-10-2026).
 - **Decisiones con el usuario (26-10):** las filas usan `?orden=` simulado; el banner de
   promociones muestra el pack vigente que vence antes (los packs son las promociones del backend) y
   no aparece si no hay packs; los enlaces a páginas que aún no existen se ponen igual
