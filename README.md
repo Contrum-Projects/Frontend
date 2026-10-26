@@ -42,21 +42,28 @@ pnpm dev                 # http://localhost:3001
 - [docs/arquitectura.md](docs/arquitectura.md): proxy `/api`, sesión, datos, despliegue.
 - [docs/diseno.md](docs/diseno.md): tokens y componentes de Figma, criterios de contenido.
 - [docs/pantallas.md](docs/pantallas.md): historias, nodos de Figma y rutas.
+- [docs/historias](docs/historias/README.md): tablero del frontend y una ficha por historia.
+- [docs/api-simulada.md](docs/api-simulada.md): cómo avanzar sin el endpoint del backend.
 
 ## Claude Code
 
 Con el repo abierto en Claude Code:
 
-- `/historia SCRUM-93` lee la historia, su historia backend y su pantalla de Figma, crea la rama
-  e implementa con pruebas.
+- `/siguiente` muestra el avance del tablero y la próxima historia que se puede tomar.
+- `/historia SCRUM-93` lee la historia desde `docs/historias/`, revisa su API y su pantalla de
+  Figma, crea la rama e implementa con pruebas.
 - `/pr` abre el pull request y `/revisar` revisa una rama o PR (código, diseño, seguridad y
   criterios).
 - `/api-tipos` actualiza los tipos cuando cambia el backend.
 
-Los conectores de Jira (Atlassian) y Figma están en `.mcp.json`; la primera vez cada integrante
-inicia sesión con `/mcp`.
+El backlog del frontend está en [docs/historias](docs/historias/README.md) (copia local de Jira con
+el orden y el estado de cada historia), así que no hace falta Jira para trabajar. Para pantallas
+cuyo endpoint aún no existe, usa la [API simulada](docs/api-simulada.md) (`API_SIMULADA=1`).
+
+Los conectores de Figma y Jira (Atlassian) están en `.mcp.json`; la primera vez cada integrante
+inicia sesión con `/mcp`. Jira solo se usa con `/sincronizar-jira`.
 
 ## Flujo
 
 Una rama por historia desde `main` (`SCRUM-<n>-<descripcion>`), commits en español con la clave de
-Jira y pull request revisado por otro integrante. Nadie hace push a `main`.
+la historia y pull request revisado por otro integrante. Nadie hace push a `main`.

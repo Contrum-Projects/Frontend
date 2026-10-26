@@ -1,6 +1,6 @@
 ## Historia
 
-SCRUM-XX — <!-- título de la historia en Jira -->
+SCRUM-XX — <!-- título de docs/historias/SCRUM-XX.md -->
 
 Historia backend: SCRUM-XX · Pantalla de Figma: <!-- nombre y nodos de docs/pantallas.md -->
 
@@ -23,7 +23,8 @@ Historia backend: SCRUM-XX · Pantalla de Figma: <!-- nombre y nodos de docs/pan
 
 ## API
 
-<!-- Endpoints que usa. Tipos agregados a compartido/api/respuestas.ts y qué debería documentar el backend. -->
+<!-- Endpoints que usa. Tipos agregados a compartido/api/respuestas.ts y qué debería documentar el backend.
+     Endpoints simulados (docs/api-simulada.md), si quedó alguno. -->
 
 ## Lista de revisión
 

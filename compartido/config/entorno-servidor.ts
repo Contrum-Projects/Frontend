@@ -34,3 +34,13 @@ export function entornoServidor(): EntornoServidor {
   entorno = { API_URL: resultado.data.API_URL.replace(/\/$/, '') };
   return entorno;
 }
+
+/**
+ * API_SIMULADA=1 activa las rutas de compartido/api/simulado (docs/api-simulada.md). Nunca en
+ * producción. Se lee en cada llamada (sin caché) para poder cambiarla en las pruebas.
+ */
+export function apiSimuladaActiva(): boolean {
+  return (
+    process.env.API_SIMULADA === '1' && process.env.NODE_ENV !== 'production'
+  );
+}
