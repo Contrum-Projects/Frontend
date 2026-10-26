@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 29.
+ * Versión de la API: 0.1.0. Rutas: 40.
  */
 
 export interface paths {
@@ -205,6 +205,46 @@ export interface paths {
         patch: operations["DireccionesController_marcarPrincipal"];
         trace?: never;
     };
+    "/api/cuentas/recuperar-contrasena": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Solicitar el enlace para recuperar la contraseña (E1-H4)
+         * @description Si el correo es de una cuenta activa, envía un enlace de un uso que vence. La respuesta es la misma aunque el correo no tenga cuenta.
+         */
+        post: operations["RecuperacionContrasenaController_solicitar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cuentas/restablecer-contrasena": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Definir una contraseña nueva con el enlace de recuperación (E1-H4)
+         * @description Deja el enlace sin efecto y cierra todas las sesiones abiertas de la cuenta.
+         */
+        post: operations["RecuperacionContrasenaController_restablecer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/personal": {
         parameters: {
             query?: never;
@@ -301,6 +341,86 @@ export interface paths {
          * @description Guarda el proveedor con su RUT, razón social y datos de contacto, y queda disponible para las entradas de inventario.
          */
         post: operations["ProveedoresController_crear"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inventario/entradas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Registrar una entrada de inventario (E11-H2)
+         * @description Recibe el proveedor, la fecha de recepción, la factura o guía de despacho del proveedor, la ubicación de destino y, por cada formato (una sola vez), la cantidad y el costo unitario neto. Suma lo recibido al stock de la ubicación y deja un movimiento de entrada por formato ligado a la entrada, todo en una transacción.
+         */
+        post: operations["EntradasController_registrar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inventario/salidas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Registrar una salida que no es venta (E11-H3)
+         * @description Registra una merma por vencimiento, una merma por daño o un consumo en la peluquería de un formato en una ubicación. Descuenta la cantidad del stock de esa ubicación y deja un movimiento con el tipo de salida, en una transacción. El stock nunca queda bajo cero.
+         */
+        post: operations["SalidasController_registrar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inventario/ajustes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Registrar un ajuste de stock (E11-H4)
+         * @description Corrige la diferencia entre el conteo físico y el stock registrado de un formato en una ubicación. La cantidad lleva signo: positiva suma y negativa descuenta. Deja un movimiento ajuste_positivo o ajuste_negativo con el motivo, en una transacción. El stock nunca queda bajo cero.
+         */
+        post: operations["AjustesController_registrar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inventario/transferencias": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Transferir stock entre ubicaciones (E11-H4)
+         * @description Mueve unidades de un formato de una ubicación de origen a otra de destino (activa, de bodega activa), de la misma bodega o de otra. Resta en el origen, suma en el destino y deja un movimiento transferencia con ambas ubicaciones, en una transacción.
+         */
+        post: operations["TransferenciasController_registrar"];
         delete?: never;
         options?: never;
         head?: never;
@@ -532,6 +652,51 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/catalogo/packs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar los packs (E3-H6)
+         * @description Packs ordenados por nombre y paginados, con sus componentes y si hoy están vigentes.
+         */
+        get: operations["PacksController_listar"];
+        put?: never;
+        /**
+         * Crear un pack con sus formatos componentes (E3-H6)
+         * @description Guarda el pack activo con su SKU, nombre, descripción, canal de venta, vigencia opcional (días incluidos, hora de Chile) y sus formatos componentes con sus cantidades. Nace sin precios (los fija el administrador en `PUT /catalogo/articulos/:id/precios`) y sin stock propio: su disponibilidad sale de sus componentes. Solo admite formatos de producto como componentes.
+         */
+        post: operations["PacksController_crear"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/catalogo/packs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ver un pack (E3-H6) */
+        get: operations["PacksController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Editar un pack (E3-H6)
+         * @description Solo se modifica lo que llega; `null` quita una fecha de vigencia y `componentes` reemplaza la lista completa con las mismas reglas que al crear.
+         */
+        patch: operations["PacksController_actualizar"];
+        trace?: never;
+    };
     "/api/catalogo/articulos/{id}/precios": {
         parameters: {
             query?: never;
@@ -564,10 +729,70 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Explorar, buscar y filtrar productos (E2-H1 y E2-H2)
-         * @description Productos activos y a la venta, ordenados por nombre y paginados, con imagen, nombre y precio minorista con IVA. Con `categoriaId` incluye los de sus subcategorías. Con `buscar`, cada palabra debe estar en el nombre, la marca o la categoría (propia o superior), sin distinguir mayúsculas. Búsqueda y filtros se combinan; sin coincidencias devuelve una lista vacía.
+         * Explorar, buscar y filtrar productos (E2-H1, E2-H2 y E2-H4)
+         * @description Productos activos y a la venta, ordenados por nombre y paginados, con imagen, nombre y precio minorista con IVA. Con `categoriaId` incluye los de sus subcategorías. Con `buscar`, cada palabra debe estar en el nombre, la marca o la categoría (propia o superior), sin distinguir mayúsculas. Búsqueda y filtros se combinan; sin coincidencias devuelve una lista vacía. La sesión es opcional: con el token de una cuenta profesional se incluyen los productos exclusivos y cada producto trae además `precioMayorista` con IVA y `exclusivo` (`precio` es `null` en los exclusivos). Visitantes, clientes y personal ven solo los de venta general, sin precio mayorista.
          */
         get: operations["TiendaController_listarProductos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tienda/productos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Detalle de un producto (E2-H3)
+         * @description Producto con su descripción, marca, categoría y sus formatos a la venta (el predeterminado primero). Cada formato trae sus imágenes (la principal primero), el precio minorista con IVA y `disponibilidad`: `disponible` si hay stock en bodegas activas que abastecen la venta online, `agotado` si no; no se informan cantidades. La sesión es opcional: con el token de una cuenta profesional también se ven los productos exclusivos y cada formato trae `precioMayorista` con IVA (`precio` es `null` si el producto es exclusivo). Lo que la tienda no muestra a quien consulta responde 404.
+         */
+        get: operations["TiendaController_obtenerProducto"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tienda/packs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Detalle de un pack (E2-H3)
+         * @description Pack vigente hoy (hora de Chile) con sus imágenes, precio minorista con IVA, componentes y `disponibilidad`: la de su componente más escaso, contando las unidades de cada formato que lleva el pack. La sesión es opcional: con el token de una cuenta profesional también se ven los packs exclusivos y se recibe `precioMayorista` con IVA y `exclusivo`. Lo que la tienda no muestra a quien consulta responde 404.
+         */
+        get: operations["TiendaController_obtenerPack"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tienda/packs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Packs de la tienda (E3-H6)
+         * @description Packs activos, vigentes hoy (hora de Chile) y a la venta, ordenados por nombre y paginados, con imagen, precio minorista con IVA, último día de la promoción y sus componentes. Un pack fuera de su vigencia no se devuelve. La sesión es opcional: con el token de una cuenta profesional se incluyen los packs exclusivos y cada pack trae además `precioMayorista` con IVA y `exclusivo` (`precio` es `null` en los exclusivos).
+         */
+        get: operations["TiendaController_listarPacks"];
         put?: never;
         post?: never;
         delete?: never;
@@ -701,6 +926,18 @@ export interface components {
              */
             comuna?: string;
         };
+        SolicitarRecuperacionDto: {
+            /** @example camila@correo.cl */
+            email: string;
+        };
+        RestablecerContrasenaDto: {
+            /** @description Token recibido en el enlace de recuperación. */
+            token: string;
+            /** @description Mínimo 8 caracteres, con al menos una letra y un número. */
+            contrasena: string;
+            /** @description Debe ser igual a la contraseña. */
+            confirmacionContrasena: string;
+        };
         CrearPersonalDto: {
             /** @example Javiera */
             nombre: string;
@@ -736,6 +973,117 @@ export interface components {
             telefono?: Record<string, never>;
             /** @example ventas@distribuidora.cl */
             email?: Record<string, never>;
+        };
+        DetalleEntradaDto: {
+            /**
+             * @description Id del formato recibido.
+             * @example 11
+             */
+            formatoId: number;
+            /** @example 24 */
+            cantidad: number;
+            /**
+             * @description Costo unitario neto (sin IVA), con hasta dos decimales. Puede ser 0 (muestras sin costo).
+             * @example 3500
+             */
+            costoUnitarioNeto: number;
+        };
+        CrearEntradaDto: {
+            /**
+             * @description Id del proveedor (activo).
+             * @example 3
+             */
+            proveedorId: number;
+            /**
+             * Format: date
+             * @description Fecha de recepción; no puede ser posterior a hoy.
+             * @example 2026-10-24
+             */
+            fechaRecepcion: string;
+            /**
+             * @description Documento con que el proveedor entregó la mercadería.
+             * @example factura
+             * @enum {string}
+             */
+            tipoDocumento: "factura" | "guia_despacho";
+            /**
+             * @description Se guarda sin espacios y en mayúsculas: «f-123 45» y «F-12345» son el mismo documento.
+             * @example F-12345
+             */
+            numeroDocumento: string;
+            /**
+             * @description Id de la ubicación donde queda todo lo recibido.
+             * @example 1
+             */
+            ubicacionId: number;
+            /** @example Llegó una caja abierta */
+            observacion?: Record<string, never> | null;
+            /** @description Formatos recibidos; cada uno una sola vez. */
+            detalles: components["schemas"]["DetalleEntradaDto"][];
+        };
+        CrearSalidaDto: {
+            /**
+             * @description Id del formato que sale.
+             * @example 11
+             */
+            formatoId: number;
+            /**
+             * @description Id de la ubicación de la que sale el stock.
+             * @example 1
+             */
+            ubicacionId: number;
+            /**
+             * @example merma_dano
+             * @enum {string}
+             */
+            tipo: "merma_vencimiento" | "merma_dano" | "consumo_peluqueria";
+            /** @example 2 */
+            cantidad: number;
+            /** @example Envase roto al reponer */
+            observacion?: Record<string, never> | null;
+        };
+        CrearAjusteDto: {
+            /**
+             * @description Id del formato que se ajusta.
+             * @example 11
+             */
+            formatoId: number;
+            /**
+             * @description Id de la ubicación cuyo stock se ajusta.
+             * @example 1
+             */
+            ubicacionId: number;
+            /**
+             * @description Diferencia con el stock registrado: positiva suma, negativa descuenta. Nunca 0.
+             * @example -2
+             */
+            cantidad: number;
+            /**
+             * @description Motivo del ajuste; queda en la observación del movimiento.
+             * @example Conteo físico del 25 de octubre: faltan 2 unidades
+             */
+            observacion: string;
+        };
+        CrearTransferenciaDto: {
+            /**
+             * @description Id del formato que se mueve.
+             * @example 11
+             */
+            formatoId: number;
+            /**
+             * @description Id de la ubicación de la que sale el stock.
+             * @example 1
+             */
+            ubicacionOrigenId: number;
+            /**
+             * @description Id de la ubicación que recibe el stock (activa, de bodega activa).
+             * @example 2
+             */
+            ubicacionDestinoId: number;
+            /** @example 5 */
+            cantidad: number;
+            /** @example Reposición de la góndola */
+            observacion?: Record<string, never> | null;
         };
         CrearMarcaDto: {
             /** @example L'Oréal Professionnel */
@@ -897,6 +1245,69 @@ export interface components {
              * @example 42
              */
             principalId: number;
+        };
+        ComponentePackDto: {
+            /**
+             * @description Id del formato de producto. Otro pack no se admite.
+             * @example 11
+             */
+            formatoId: number;
+            /** @example 2 */
+            cantidad: number;
+        };
+        CrearPackDto: {
+            /** @example PACK-REP-DUO */
+            sku: string;
+            /** @example Dúo reparador */
+            nombre: string;
+            /** @example Shampoo y acondicionador reparador a precio de promoción. */
+            descripcion: string;
+            /**
+             * @description Canal de venta del pack. Un pack general no puede llevar formatos de productos exclusivos para profesionales.
+             * @example general
+             * @enum {string}
+             */
+            canalVenta: "general" | "profesional";
+            /**
+             * Format: date
+             * @description Primer día en que el pack se muestra en la tienda (hora de Chile).
+             * @example 2026-11-01
+             */
+            fechaInicioVigencia?: Record<string, never> | null;
+            /**
+             * Format: date
+             * @description Último día en que el pack se muestra en la tienda (hora de Chile). No puede ser anterior al inicio.
+             * @example 2026-11-30
+             */
+            fechaFinVigencia?: Record<string, never> | null;
+            /** @description Formatos del pack con sus cantidades; cada formato una sola vez y al menos 2 unidades en total. */
+            componentes: components["schemas"]["ComponentePackDto"][];
+        };
+        ActualizarPackDto: {
+            /** @example PACK-REP-DUO */
+            sku?: string;
+            /** @example Dúo reparador */
+            nombre?: string;
+            descripcion?: string;
+            /**
+             * @example general
+             * @enum {string}
+             */
+            canalVenta?: "general" | "profesional";
+            /**
+             * Format: date
+             * @description `null` quita el inicio de la vigencia.
+             * @example 2026-11-01
+             */
+            fechaInicioVigencia?: Record<string, never> | null;
+            /**
+             * Format: date
+             * @description `null` quita el término de la vigencia.
+             * @example 2026-11-30
+             */
+            fechaFinVigencia?: Record<string, never> | null;
+            /** @description Reemplaza todos los componentes; cada formato una sola vez y al menos 2 unidades en total. */
+            componentes?: components["schemas"]["ComponentePackDto"][];
         };
         FijarPreciosDto: {
             /**
@@ -1447,6 +1858,78 @@ export interface operations {
             };
         };
     };
+    RecuperacionContrasenaController_solicitar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SolicitarRecuperacionDto"];
+            };
+        };
+        responses: {
+            /** @description Solicitud recibida. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Correo inválido. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 5 peticiones en 15 minutos desde la misma IP. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RecuperacionContrasenaController_restablecer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RestablecerContrasenaDto"];
+            };
+        };
+        responses: {
+            /** @description Contraseña actualizada. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Contraseña inválida o distinta, o enlace inválido, usado o vencido. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 5 peticiones en 15 minutos desde la misma IP. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     PersonalController_listar: {
         parameters: {
             query?: never;
@@ -1739,6 +2222,185 @@ export interface operations {
             };
             /** @description Ya existe un proveedor con ese RUT. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EntradasController_registrar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrearEntradaDto"];
+            };
+        };
+        responses: {
+            /** @description Entrada registrada. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Faltan datos o son inválidos, un formato está repetido, la fecha es futura, o el proveedor, la ubicación o algún formato no existe o está desactivado. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de registrar inventario. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ya hay una entrada con ese documento del proveedor. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SalidasController_registrar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrearSalidaDto"];
+            };
+        };
+        responses: {
+            /** @description Salida registrada. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Faltan datos o son inválidos, el formato o la ubicación no existe, o la cantidad supera el stock de la ubicación. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de registrar inventario. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AjustesController_registrar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrearAjusteDto"];
+            };
+        };
+        responses: {
+            /** @description Ajuste registrado. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Faltan datos o son inválidos (cantidad 0 o sin motivo), el formato o la ubicación no existe, o el ajuste negativo supera el stock de la ubicación. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de registrar inventario. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TransferenciasController_registrar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrearTransferenciaDto"];
+            };
+        };
+        responses: {
+            /** @description Transferencia registrada. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Faltan datos o son inválidos, el origen y el destino son la misma ubicación, el formato o una ubicación no existe, el destino está desactivado, o la cantidad supera el stock del origen. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de registrar inventario. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2583,6 +3245,198 @@ export interface operations {
             };
         };
     };
+    PacksController_listar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Página de packs con el total. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Paginación inválida. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar el catálogo. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PacksController_crear: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrearPackDto"];
+            };
+        };
+        responses: {
+            /** @description Pack creado. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Datos inválidos, vigencia al revés, otro pack como componente, un formato inexistente o desactivado, o un formato exclusivo en un pack general. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar el catálogo. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El SKU ya pertenece a otro artículo. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PacksController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description El pack con sus componentes. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar el catálogo. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pack no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PacksController_actualizar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActualizarPackDto"];
+            };
+        };
+        responses: {
+            /** @description Pack actualizado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Datos inválidos, cuerpo vacío, vigencia al revés o componentes no permitidos. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar el catálogo. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pack no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El SKU ya pertenece a otro artículo. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     PreciosController_listar: {
         parameters: {
             query?: never;
@@ -2708,8 +3562,118 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Llegó un token de acceso inválido, vencido o de una sesión cerrada. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description La categoría no existe, o la marca no existe o no está activa. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TiendaController_obtenerProducto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Detalle del producto. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Llegó un token de acceso inválido, vencido o de una sesión cerrada. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El producto no existe, no está a la venta o es exclusivo para profesionales. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TiendaController_obtenerPack: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Detalle del pack. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Llegó un token de acceso inválido, vencido o de una sesión cerrada. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pack no existe, no está vigente, no está a la venta o es exclusivo para profesionales. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TiendaController_listarPacks: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Página de packs con el total. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Paginación inválida. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Llegó un token de acceso inválido, vencido o de una sesión cerrada. */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };

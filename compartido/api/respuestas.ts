@@ -27,3 +27,60 @@ export interface CuerpoError {
   message: string | string[];
   error?: string;
 }
+
+/** backend: src/modulos/catalogo/tienda.service.ts › ProductoTienda (lo que ve quien no es profesional) */
+export interface ProductoTienda {
+  id: number;
+  nombre: string;
+  marca: { id: number; nombre: string } | null;
+  categoria: { id: number; nombre: string };
+  /** Precio minorista con IVA incluido, en pesos enteros. */
+  precio: number;
+  /** URL pública de la imagen principal del formato mostrado. */
+  imagen: string;
+}
+
+/** backend: src/modulos/catalogo/tienda.service.ts › ListadoTienda */
+export interface ListadoTienda {
+  items: ProductoTienda[];
+  total: number;
+  pagina: number;
+  limite: number;
+}
+
+/** backend: src/modulos/catalogo/categorias.service.ts › NodoCategoria */
+export interface CategoriaTienda {
+  id: number;
+  nombre: string;
+  descripcion: string | null;
+  padreId: number | null;
+  subcategorias: CategoriaTienda[];
+}
+
+/** backend: src/modulos/catalogo/tienda.service.ts › MarcaTienda */
+export interface MarcaTienda {
+  id: number;
+  nombre: string;
+}
+
+/** backend: src/modulos/catalogo/tienda-packs.service.ts › PackTienda */
+export interface PackTienda {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  /** Precio minorista con IVA incluido, en pesos enteros. */
+  precio: number;
+  /** URL pública de la imagen principal del pack. */
+  imagen: string;
+  /** Último día de la promoción (AAAA-MM-DD), o `null` si no tiene término. */
+  vigenteHasta: string | null;
+  componentes: { producto: string; formato: string; cantidad: number }[];
+}
+
+/** backend: src/modulos/catalogo/tienda-packs.service.ts › ListadoPacksTienda */
+export interface ListadoPacksTienda {
+  items: PackTienda[];
+  total: number;
+  pagina: number;
+  limite: number;
+}

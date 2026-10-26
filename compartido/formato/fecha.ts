@@ -27,3 +27,13 @@ export const formatearFecha = (valor: Date | string) =>
 /** «24 oct 2026, 22:43» */
 export const formatearFechaHora = (valor: Date | string) =>
   fechaYHora.format(aFecha(valor));
+
+const diaYMes = new Intl.DateTimeFormat('es-CL', {
+  day: 'numeric',
+  month: 'long',
+  timeZone: 'UTC',
+});
+
+/** Día sin hora de la API (AAAA-MM-DD) → «31 de octubre». No depende de la zona del equipo. */
+export const formatearDiaMes = (dia: string) =>
+  diaYMes.format(new Date(`${dia}T00:00:00Z`));

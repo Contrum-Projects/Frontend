@@ -16,7 +16,7 @@ Total: 53 historias, 185 puntos.
 
 | #   | Historia                                                                                 | Pts | Estado    | API     | Backend  | Necesita antes       |
 | --- | ---------------------------------------------------------------------------------------- | --- | --------- | ------- | -------- | -------------------- |
-| 1   | [SCRUM-106](SCRUM-106.md) · E2-H1 · Inicio y catálogo por categorías y marcas            | 8   | Por hacer | Sí      | SCRUM-32 | —                    |
+| 1   | [SCRUM-106](SCRUM-106.md) · E2-H1 · Inicio y catálogo por categorías y marcas            | 8   | En curso  | Sí      | SCRUM-32 | —                    |
 | 2   | [SCRUM-94](SCRUM-94.md) · E1-H2 · Pantalla de inicio de sesión                           | 3   | Por hacer | Sí      | SCRUM-20 | SCRUM-106            |
 | 3   | [SCRUM-93](SCRUM-93.md) · E1-H1 · Pantallas de registro y confirmación del correo        | 5   | Por hacer | Sí      | SCRUM-19 | SCRUM-94             |
 | 4   | [SCRUM-96](SCRUM-96.md) · E1-H4 · Pantallas de recuperación de contraseña                | 3   | Por hacer | No      | SCRUM-22 | SCRUM-94             |

@@ -77,6 +77,31 @@ describe('API simulada', () => {
     ).toBeNull();
   });
 
+  it('deja pasar al backend cuando la ruta responde null', async () => {
+    vi.stubEnv('API_SIMULADA', '1');
+    const soloConOrden: RutaSimulada = {
+      metodo: 'GET',
+      ruta: '/tienda/productos',
+      historia: 'SCRUM-106',
+      responder: ({ url }) =>
+        url.searchParams.has('orden') ? json({ simulado: true }) : null,
+    };
+
+    expect(
+      await responderSimulado(
+        peticion('/tienda/productos?categoriaId=3'),
+        '/tienda/productos',
+        [soloConOrden],
+      ),
+    ).toBeNull();
+    const conOrden = await responderSimulado(
+      peticion('/tienda/productos?orden=novedades'),
+      '/tienda/productos',
+      [soloConOrden],
+    );
+    expect(await conOrden?.json()).toEqual({ simulado: true });
+  });
+
   it('no hace nada sin API_SIMULADA=1 ni en producción', async () => {
     const camino = '/tienda/productos/x';
     expect(await responderSimulado(peticion(camino), camino, rutas)).toBeNull();
