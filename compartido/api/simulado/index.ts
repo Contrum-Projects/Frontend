@@ -31,7 +31,13 @@ export interface RutaSimulada {
   ruta: string;
   /** Historia de frontend que la usa, para saber cuándo borrarla. Ej.: `SCRUM-108`. */
   historia: `SCRUM-${number}`;
-  responder: (contexto: ContextoSimulado) => Response | Promise<Response>;
+  /**
+   * Devuelve `null` para dejar pasar la petición al backend: así se simula solo un parámetro
+   * nuevo de un endpoint que ya existe (p. ej. `?orden=` en `/tienda/productos`).
+   */
+  responder: (
+    contexto: ContextoSimulado,
+  ) => Response | null | Promise<Response | null>;
 }
 
 /** Respuesta JSON, igual que las del backend. */
@@ -83,6 +89,7 @@ export async function responderSimulado(
       params,
       url: new URL(peticion.url),
     });
+    if (!respuesta) continue;
     const salida = new Response(respuesta.body, respuesta);
     salida.headers.set('x-api-simulada', ruta.historia);
     return salida;

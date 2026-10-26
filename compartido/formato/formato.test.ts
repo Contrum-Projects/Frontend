@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { formatearDiaMes } from './fecha';
 import { formatearPesos } from './moneda';
 import { formatearRut, normalizarRut } from './rut';
 
@@ -28,5 +29,12 @@ describe('RUT', () => {
   it('formatea con puntos para mostrar', () => {
     expect(formatearRut('7654321-6')).toBe('7.654.321-6');
     expect(formatearRut('no es rut')).toBe('no es rut');
+  });
+});
+
+describe('formatearDiaMes()', () => {
+  it('muestra el día de la API con el mes en palabras, sin correrse por la zona horaria', () => {
+    expect(formatearDiaMes('2026-10-31')).toBe('31 de octubre');
+    expect(formatearDiaMes('2026-01-01')).toBe('1 de enero');
   });
 });
