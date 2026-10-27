@@ -48,6 +48,8 @@ Sin rutas simuladas.
 
 ## Notas de trabajo
 
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/11 (depende de
+  [Contrum-Projects/Backend#26](https://github.com/Contrum-Projects/Backend/pull/26)).
 - **Título de la dirección:** calle y número («Av. Providencia 1234 · Principal»). Figma
   muestra «Casa» / «Trabajo», pero el backend no guarda un nombre para la dirección (acordado
   con el usuario).
