@@ -33,13 +33,23 @@ const esCuerpoError = (cuerpo: unknown): cuerpo is CuerpoError =>
   'message' in cuerpo &&
   (typeof cuerpo.message === 'string' || Array.isArray(cuerpo.message));
 
+/**
+ * Mensajes en inglés que Nest pone por defecto: el `ThrottlerGuard` sin mensaje propio responde
+ * «ThrottlerException: Too Many Requests» (registro, confirmación del correo). Se reemplazan por
+ * el mensaje del estado.
+ */
+const esMensajeDeNest = (mensaje: string) =>
+  mensaje.startsWith('ThrottlerException');
+
 /** Convierte cualquier respuesta fallida (o un fallo de red) en `ErrorDeApi`. */
 export function errorDeApi(cuerpo: unknown, respuesta?: Response): ErrorDeApi {
   const estado = respuesta?.status ?? 0;
   const espera = Number(respuesta?.headers.get('retry-after'));
   const mensajes =
     esCuerpoError(cuerpo) && estado < 500
-      ? [cuerpo.message].flat().filter(Boolean)
+      ? [cuerpo.message]
+          .flat()
+          .filter((mensaje) => mensaje && !esMensajeDeNest(mensaje))
       : [];
   return new ErrorDeApi(
     estado,

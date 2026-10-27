@@ -40,6 +40,22 @@ describe('exigir()', () => {
     }
   });
 
+  it('en un 429 sin mensaje propio no muestra el texto en inglés de Nest', () => {
+    try {
+      exigir({
+        error: {
+          statusCode: 429,
+          message: 'ThrottlerException: Too Many Requests',
+        },
+        response: respuesta(429),
+      });
+    } catch (error) {
+      expect((error as ErrorDeApi).message).toBe(
+        'Hiciste demasiados intentos. Espera un momento y vuelve a intentarlo.',
+      );
+    }
+  });
+
   it('no muestra el detalle de un error 500', () => {
     expect(() =>
       exigir({

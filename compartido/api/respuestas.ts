@@ -21,6 +21,11 @@ export interface SesionIniciada {
   };
 }
 
+/** backend: src/modulos/cuentas/cuentas.service.ts › Mensaje (registro y confirmación del correo) */
+export interface MensajeApi {
+  mensaje: string;
+}
+
 /** Cuerpo de error de NestJS. `message` es una lista cuando falla la validación de un DTO. */
 export interface CuerpoError {
   statusCode: number;
