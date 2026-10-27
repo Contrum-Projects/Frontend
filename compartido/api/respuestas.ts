@@ -92,3 +92,33 @@ export interface ListadoPacksTienda {
   pagina: number;
   limite: number;
 }
+
+/** backend: src/modulos/cuentas/mi-cuenta.service.ts › DatosPersonales */
+export interface DatosPersonales {
+  codigoPublico: string;
+  nombre: string;
+  apellido: string;
+  email: string;
+  /** Formato único: 12345678-5. */
+  rut: string | null;
+  telefono: string | null;
+  /** AAAA-MM-DD. */
+  fechaNacimiento: string | null;
+  genero: string | null;
+}
+
+/** Región o comuna de la lista oficial, por su código CUT. */
+export interface UbicacionOficial {
+  codigoCut: string;
+  nombre: string;
+}
+
+/** backend: src/modulos/cuentas/direcciones.service.ts › DireccionCuenta */
+export interface DireccionCuenta {
+  id: number;
+  calle: string;
+  numero: string;
+  referencia: string | null;
+  esPrincipal: boolean;
+  comuna: UbicacionOficial & { region: UbicacionOficial };
+}
