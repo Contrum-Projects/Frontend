@@ -34,7 +34,7 @@ export const TarjetaProducto = ({
   prioridad = false,
 }: TarjetaProductoProps) => (
   <article className="group relative flex h-full flex-col rounded-lg border bg-fondo-superficie p-2 pb-4">
-    {/* 264 × 240 en Figma. multiply funde el blanco de la foto con el fondo menta */}
+    {/* 264 × 240 en Figma (11:10). Las fotos van en esa proporción; el menta se ve mientras cargan */}
     <div className="relative aspect-[11/10] overflow-hidden rounded-md bg-marca-acento-suave">
       {/* El nombre ya está en el enlace de la tarjeta: la foto no lo repite */}
       <Image
@@ -43,7 +43,7 @@ export const TarjetaProducto = ({
         fill
         sizes={tamanos}
         priority={prioridad}
-        className="object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"
+        className="object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"
       />
     </div>
     <div className="flex flex-1 flex-col gap-1 px-2 pt-3">
