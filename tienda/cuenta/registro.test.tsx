@@ -67,19 +67,25 @@ const completarObligatorios = async (
     confirmacion = contrasena,
   }: { contrasena?: string; confirmacion?: string } = {},
 ) => {
-  await usuario.type(screen.getByLabelText('Nombre'), 'Camila');
-  await usuario.type(screen.getByLabelText('Apellido'), 'Rojas');
-  await usuario.type(
-    screen.getByLabelText('Correo electrónico'),
-    'camila@correo.cl',
-  );
-  await usuario.type(screen.getByLabelText('Contraseña'), contrasena);
-  await usuario.type(
-    screen.getByLabelText('Repite tu contraseña'),
-    confirmacion,
-  );
+  await usuario.type(porEtiqueta('Nombre'), 'Camila');
+  await usuario.type(porEtiqueta('Apellido'), 'Rojas');
+  await usuario.type(porEtiqueta('Correo electrónico'), 'camila@correo.cl');
+  await usuario.type(porEtiqueta('Contraseña'), contrasena);
+  await usuario.type(porEtiqueta('Repite tu contraseña'), confirmacion);
   return usuario;
 };
+
+/**
+ * Campo por su etiqueta visible: la de un obligatorio termina en «*» (que el lector de
+ * pantalla no lee).
+ */
+const porEtiqueta = (etiqueta: string) =>
+  screen.getByLabelText(etiqueta, {
+    normalizer: (texto) => texto.trim().replace(/\*$/, ''),
+  });
+
+/** Campo opcional por su etiqueta (sin asterisco). */
+const opcional = (etiqueta: string) => porEtiqueta(etiqueta);
 
 const crearCuenta = (usuario: ReturnType<typeof userEvent.setup>) =>
   usuario.click(screen.getByRole('button', { name: 'Crear cuenta' }));
@@ -101,7 +107,9 @@ describe('SCRUM-93 · Registro', () => {
       'Contraseña',
       'Repite tu contraseña',
     ]) {
-      expect(screen.getByLabelText(campo)).toBeVisible();
+      // Obligatorio: «*» solo visual y aria-required para el lector de pantalla
+      expect(porEtiqueta(campo)).toBeVisible();
+      expect(porEtiqueta(campo)).toHaveAttribute('aria-required', 'true');
     }
     // Pestañas del celular, con «Crear cuenta» activa
     expect(
@@ -109,18 +117,20 @@ describe('SCRUM-93 · Registro', () => {
         screen.getByRole('navigation', { name: 'Ingresar o crear cuenta' }),
       ).getByRole('link', { name: 'Crear cuenta' }),
     ).toHaveAttribute('aria-current', 'page');
-    const opcionales = screen.getByRole('button', {
-      name: /Datos opcionales/,
-    });
-    expect(opcionales).toHaveAttribute('aria-expanded', 'false');
-    await userEvent.setup().click(opcionales);
-    expect(opcionales).toHaveAttribute('aria-expanded', 'true');
+    // Los opcionales van en el formulario, sin desplegable, con la etiqueta sola
     for (const campo of ['Teléfono', 'RUT', 'Fecha de nacimiento', 'Género']) {
-      expect(screen.getByLabelText(campo)).toBeVisible();
+      expect(opcional(campo)).toBeVisible();
+      expect(opcional(campo)).not.toHaveAttribute('aria-required');
     }
     expect(
-      within(screen.getByLabelText('Género')).getAllByRole('option'),
-    ).toHaveLength(5);
+      screen.queryByRole('button', { name: /Datos opcionales/ }),
+    ).not.toBeInTheDocument();
+    const usuario = userEvent.setup();
+    await usuario.click(opcional('Género'));
+    expect(
+      screen.getAllByRole('option').map((opcion) => opcion.textContent),
+    ).toEqual(['Femenino', 'Masculino', 'Otro', 'Prefiero no decir']);
+    await usuario.keyboard('{Escape}');
     expect(
       screen.getByRole('checkbox', {
         name: 'Quiero recibir ofertas por correo',
@@ -133,11 +143,22 @@ describe('SCRUM-93 · Registro', () => {
     mostrarRegistro();
 
     const usuario = await completarObligatorios();
-    await usuario.click(
-      screen.getByRole('button', { name: /Datos opcionales/ }),
+    await usuario.type(opcional('RUT'), '12.345.678-5');
+    await usuario.click(opcional('Fecha de nacimiento'));
+    await usuario.selectOptions(
+      screen.getByRole('combobox', { name: /año/i }),
+      '1990',
     );
-    await usuario.type(screen.getByLabelText('RUT'), '12.345.678-5');
-    await usuario.selectOptions(screen.getByLabelText('Género'), 'Femenino');
+    await usuario.selectOptions(
+      screen.getByRole('combobox', { name: /mes/i }),
+      '4',
+    );
+    await usuario.click(
+      screen.getByRole('button', { name: /21 de mayo de 1990/ }),
+    );
+    expect(opcional('Fecha de nacimiento')).toHaveTextContent('21/05/1990');
+    await usuario.click(opcional('Género'));
+    await usuario.click(screen.getByRole('option', { name: 'Femenino' }));
     await crearCuenta(usuario);
 
     await screen.findByRole('heading', { name: 'Revisa tu correo' });
@@ -150,6 +171,7 @@ describe('SCRUM-93 · Registro', () => {
       contrasena: 'secreta123',
       confirmacionContrasena: 'secreta123',
       rut: '12345678-5',
+      fechaNacimiento: '1990-05-21',
       genero: 'Femenino',
     });
   });
@@ -166,15 +188,15 @@ describe('SCRUM-93 · Registro', () => {
     const usuario = await completarObligatorios();
     await crearCuenta(usuario);
 
-    const correo = screen.getByLabelText('Correo electrónico');
+    const correo = porEtiqueta('Correo electrónico');
     await waitFor(() => expect(correo).toHaveAttribute('aria-invalid', 'true'));
     expect(correo).toHaveAccessibleDescription('El correo ya está registrado.');
     expect(correo).toHaveFocus();
     expect(correo).toHaveValue('camila@correo.cl');
-    expect(screen.getByLabelText('Nombre')).toHaveValue('Camila');
+    expect(porEtiqueta('Nombre')).toHaveValue('Camila');
   });
 
-  it('E1-H1 FE · RUT ya registrado: abre los datos opcionales y marca el RUT', async () => {
+  it('E1-H1 FE · RUT ya registrado: marca el RUT junto a su campo', async () => {
     simularRegistro(() =>
       responder(
         {
@@ -187,22 +209,16 @@ describe('SCRUM-93 · Registro', () => {
     mostrarRegistro();
 
     const usuario = await completarObligatorios();
-    await usuario.click(
-      screen.getByRole('button', { name: /Datos opcionales/ }),
-    );
-    await usuario.type(screen.getByLabelText('RUT'), '12.345.678-5');
-    await usuario.click(
-      screen.getByRole('button', { name: /Datos opcionales/ }),
-    );
+    await usuario.type(opcional('RUT'), '12.345.678-5');
     await crearCuenta(usuario);
 
-    const rut = await screen.findByLabelText('RUT');
-    await waitFor(() => expect(rut).toBeVisible());
+    const rut = opcional('RUT');
+    await waitFor(() => expect(rut).toHaveAttribute('aria-invalid', 'true'));
     expect(rut).toHaveAccessibleDescription(
       'El correo y el RUT ya están registrados.',
     );
     expect(rut).toHaveValue('12.345.678-5');
-    expect(screen.getByLabelText('Correo electrónico')).toHaveAttribute(
+    expect(porEtiqueta('Correo electrónico')).toHaveAttribute(
       'aria-invalid',
       'true',
     );
@@ -218,9 +234,9 @@ describe('SCRUM-93 · Registro', () => {
     });
     await crearCuenta(usuario);
 
-    expect(
-      screen.getByLabelText('Repite tu contraseña'),
-    ).toHaveAccessibleDescription('Las contraseñas no coinciden.');
+    expect(porEtiqueta('Repite tu contraseña')).toHaveAccessibleDescription(
+      'Las contraseñas no coinciden.',
+    );
     expect(fetch).not.toHaveBeenCalled();
   });
 
@@ -237,9 +253,9 @@ describe('SCRUM-93 · Registro', () => {
     await crearCuenta(usuario);
 
     await waitFor(() =>
-      expect(
-        screen.getByLabelText('Repite tu contraseña'),
-      ).toHaveAccessibleDescription('Las contraseñas no coinciden.'),
+      expect(porEtiqueta('Repite tu contraseña')).toHaveAccessibleDescription(
+        'Las contraseñas no coinciden.',
+      ),
     );
   });
 
@@ -267,12 +283,39 @@ describe('SCRUM-93 · Registro', () => {
     await usuario.click(
       screen.getByRole('button', { name: '¿No es tu correo? Cambiarlo' }),
     );
-    expect(screen.getByLabelText('Correo electrónico')).toHaveValue(
-      'camila@correo.cl',
-    );
+    expect(porEtiqueta('Correo electrónico')).toHaveValue('camila@correo.cl');
     // Las contraseñas no quedan cargadas en el formulario oculto
-    expect(screen.getByLabelText('Contraseña')).toHaveValue('');
-    expect(screen.getByLabelText('Repite tu contraseña')).toHaveValue('');
+    expect(porEtiqueta('Contraseña')).toHaveValue('');
+    expect(porEtiqueta('Repite tu contraseña')).toHaveValue('');
+  });
+
+  it('la fecha de nacimiento se puede quitar y entonces no se envía', async () => {
+    const fetch = simularRegistro(() => responder(CREADA, 201));
+    mostrarRegistro();
+
+    const usuario = await completarObligatorios();
+    const fecha = opcional('Fecha de nacimiento');
+    await usuario.click(fecha);
+    await usuario.selectOptions(
+      screen.getByRole('combobox', { name: /año/i }),
+      '1990',
+    );
+    await usuario.selectOptions(
+      screen.getByRole('combobox', { name: /mes/i }),
+      '0',
+    );
+    await usuario.click(
+      screen.getByRole('button', { name: /21 de enero de 1990/ }),
+    );
+    await usuario.click(fecha);
+    await usuario.click(screen.getByRole('button', { name: 'Quitar fecha' }));
+    expect(fecha).toHaveTextContent('dd/mm/aaaa');
+    await crearCuenta(usuario);
+
+    await screen.findByRole('heading', { name: 'Revisa tu correo' });
+    expect(await fetch.mock.calls[0]![0].json()).not.toHaveProperty(
+      'fechaNacimiento',
+    );
   });
 
   it('valida los campos antes de llamar al servidor', async () => {
@@ -280,7 +323,7 @@ describe('SCRUM-93 · Registro', () => {
     mostrarRegistro();
 
     const usuario = userEvent.setup();
-    await usuario.type(screen.getByLabelText('Contraseña'), 'solotexto');
+    await usuario.type(porEtiqueta('Contraseña'), 'solotexto');
     await crearCuenta(usuario);
 
     expect(await screen.findByText('Escribe tu nombre.')).toBeInTheDocument();
@@ -296,15 +339,10 @@ describe('SCRUM-93 · Registro', () => {
     mostrarRegistro();
 
     const usuario = await completarObligatorios();
-    await usuario.click(
-      screen.getByRole('button', { name: /Datos opcionales/ }),
-    );
-    await usuario.type(screen.getByLabelText('RUT'), '12.345.678-9');
+    await usuario.type(opcional('RUT'), '12.345.678-9');
     await crearCuenta(usuario);
 
-    expect(screen.getByLabelText('RUT')).toHaveAccessibleDescription(
-      'El RUT no es válido.',
-    );
+    expect(opcional('RUT')).toHaveAccessibleDescription('El RUT no es válido.');
     expect(fetch).not.toHaveBeenCalled();
   });
 
@@ -344,7 +382,7 @@ describe('SCRUM-93 · Registro', () => {
       ),
     ).toBeInTheDocument();
     expect(screen.queryByText(/Prisma/)).not.toBeInTheDocument();
-    expect(screen.getByLabelText('Apellido')).toHaveValue('Rojas');
+    expect(porEtiqueta('Apellido')).toHaveValue('Rojas');
   });
 
   it('con la sesión ya iniciada no muestra el formulario y redirige', async () => {

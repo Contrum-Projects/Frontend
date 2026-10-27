@@ -42,7 +42,7 @@ formato de respuesta acordaste con quien hace la historia backend.
 
 <!-- Decisiones, preguntas abiertas y lo que quedó pendiente. Lo completa /historia. -->
 
-- **PR:** https://github.com/Contrum-Projects/Frontend/pull/7
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/7 · ajustes: https://github.com/Contrum-Projects/Frontend/pull/8
 
 - **Decidido en SCRUM-94:** el registro es una página aparte, `/registro`, aunque Figma muestre
   «Crear cuenta» junto a «Iniciar sesión». `/ingresar` ya enlaza aquí con «¿No tienes cuenta?
@@ -70,6 +70,21 @@ formato de respuesta acordaste con quien hace la historia backend.
     `noindex` para que el token no salga de la página.
   - **«Datos opcionales»:** parte cerrado; se abre solo si el backend marca uno de esos campos.
   - Con sesión iniciada, `/registro` lleva a donde corresponde según el rol.
+- **Ajustes después de integrar el PR #7 (27-10-2026, pedido del usuario):**
+  - Los opcionales (teléfono, RUT, fecha de nacimiento, género) van en el formulario, sin
+    desplegable ni título, con la etiqueta sola. Los obligatorios llevan «*» (solo visual, el
+    control tiene `aria-required`) y el formulario empieza con «Los campos con * son
+    obligatorios.». Reemplaza la decisión de «Datos opcionales» cerrado.
+  - Los campos de una misma fila comparten filas de la grilla (subgrid en `campoFormulario.tsx`):
+    los controles quedan alineados aunque una etiqueta ocupe dos líneas o un campo tenga error.
+  - Fecha de nacimiento con el date picker de shadcn (`Popover` + `Calendar`, en
+    `tienda/cuenta/selectorFecha.tsx`): mes y año en listas, de 1920 a hoy, sin fechas futuras,
+    con «Quitar fecha». Se muestra como dd/mm/aaaa y se envía como AAAA-MM-DD.
+  - Género con el `Select` de shadcn (`compartido/ui/select.tsx`, adaptado al Campo de Figma).
+    `NativeSelect` queda sin uso.
+  - Dependencia nueva: `react-day-picker` (la base del `Calendar` de shadcn). La CLI agregó además
+    `date-fns` y un paquete `cn` que no se usan: se quitaron.
+
 - **Errores junto a su campo:** el backend no dice a qué campo pertenece cada mensaje; se
   reconocen por cómo empiezan (`tienda/cuenta/erroresRegistro.ts`). Lo que no se reconoce va como
   aviso general.

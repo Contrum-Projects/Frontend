@@ -76,8 +76,8 @@ const CampoEsqueleto = () => (
 );
 
 /**
- * Mismo alto que el formulario: título, nombre y apellido, correo, contraseñas, datos
- * opcionales, casilla, botón, leyenda y enlace a Ingresar.
+ * Mismo alto que el formulario: título, nombre y apellido, correo, contraseñas, opcionales y su
+ * leyenda, casilla, botón, leyenda y enlace a Ingresar.
  */
 const RegistroEsqueleto = () => (
   <div aria-hidden className="flex flex-col gap-4">
@@ -89,10 +89,13 @@ const RegistroEsqueleto = () => (
     <CampoEsqueleto />
     <CampoEsqueleto />
     <CampoEsqueleto />
-    <div className="flex flex-col gap-1 border-y py-3">
-      <Skeleton className="h-6 w-40" />
-      <Skeleton className="h-4 w-64 max-w-full" />
+    <div className="grid gap-4 sm:grid-cols-2 sm:gap-3">
+      <CampoEsqueleto />
+      <CampoEsqueleto />
+      <CampoEsqueleto />
+      <CampoEsqueleto />
     </div>
+    <Skeleton className="h-4 w-80 max-w-full" />
     <div className="flex min-h-10 items-center">
       <Skeleton className="h-5 w-60" />
     </div>
