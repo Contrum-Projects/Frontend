@@ -7,6 +7,7 @@
  * archivo de origen, y bórralo cuando el endpoint lo declare y corras `pnpm api:tipos`.
  */
 import type { Rol } from '@/compartido/sesion/roles';
+import type { components } from './esquema';
 
 /** backend: src/modulos/cuentas/sesion.service.ts › SesionIniciada */
 export interface SesionIniciada {
@@ -107,11 +108,8 @@ export interface DatosPersonales {
   genero: string | null;
 }
 
-/** Región o comuna de la lista oficial, por su código CUT. */
-export interface UbicacionOficial {
-  codigoCut: string;
-  nombre: string;
-}
+/** Región o comuna de la lista oficial, por su código CUT (GET /api/territorio/…). */
+export type UbicacionOficial = components['schemas']['UbicacionOficialDto'];
 
 /** backend: src/modulos/cuentas/direcciones.service.ts › DireccionCuenta */
 export interface DireccionCuenta {

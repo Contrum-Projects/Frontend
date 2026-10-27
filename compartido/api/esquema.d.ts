@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 40.
+ * Versión de la API: 0.1.0. Rutas: 43.
  */
 
 export interface paths {
@@ -427,6 +427,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/inventario/stock/formatos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar el stock de un formato por ubicación (E11-H5)
+         * @description Devuelve las unidades del formato en cada ubicación que tiene stock (también las desactivadas, marcadas como inactivas), el total y el proveedor y costo unitario neto de su entrada de recepción más reciente. Si el formato nunca se ha recibido, el total es 0 y la última entrada es nula.
+         */
+        get: operations["StockController_consultar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/catalogo/marcas": {
         parameters: {
             query?: never;
@@ -833,6 +853,46 @@ export interface paths {
          * @description Marcas activas, ordenadas por nombre.
          */
         get: operations["TiendaController_listarMarcas"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/territorio/regiones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar las regiones
+         * @description Las 16 regiones de Chile de norte a sur, con su código CUT (decreto N° 1.115 de 2018).
+         */
+        get: operations["TerritorioController_listarRegiones"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/territorio/regiones/{codigoCut}/comunas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar las comunas de una región
+         * @description Las comunas de la región, por nombre, con su código CUT. Las direcciones, el despacho y la facturación indican la comuna por ese código.
+         */
+        get: operations["TerritorioController_listarComunas"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1322,6 +1382,15 @@ export interface components {
             precioMayoristaNeto?: number;
             /** @example Alza del proveedor */
             motivo: string;
+        };
+        UbicacionOficialDto: {
+            /**
+             * @description Código Único Territorial: 2 dígitos la región, 5 la comuna.
+             * @example 13123
+             */
+            codigoCut: string;
+            /** @example Providencia */
+            nombre: string;
         };
     };
     responses: never;
@@ -2401,6 +2470,47 @@ export interface operations {
             };
             /** @description El rol no tiene el permiso de registrar inventario. */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StockController_consultar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Stock del formato. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de consultar inventario. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El formato no existe. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3710,6 +3820,54 @@ export interface operations {
         responses: {
             /** @description Lista de marcas. */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TerritorioController_listarRegiones: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UbicacionOficialDto"][];
+                };
+            };
+        };
+    };
+    TerritorioController_listarComunas: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Código CUT de la región. */
+                codigoCut: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UbicacionOficialDto"][];
+                };
+            };
+            /** @description La región no existe. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

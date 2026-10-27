@@ -90,10 +90,10 @@ export const simularBackend = (
 
 /** Ubicaciones de prueba, para sumar a las rutas de cada prueba. */
 export const RUTAS_UBICACIONES: Record<string, () => Response> = {
-  'GET /api/ubicaciones/regiones': () => responder(REGIONES),
+  'GET /api/territorio/regiones': () => responder(REGIONES),
   ...Object.fromEntries(
     Object.entries(COMUNAS).map(([region, comunas]) => [
-      `GET /api/ubicaciones/regiones/${region}/comunas`,
+      `GET /api/territorio/regiones/${region}/comunas`,
       () => responder(comunas),
     ]),
   ),

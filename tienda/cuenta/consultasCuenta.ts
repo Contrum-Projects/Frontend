@@ -6,7 +6,6 @@ import { ErrorDeApi, errorDeApi, exigir } from '@/compartido/api/errores';
 import type {
   DatosPersonales,
   DireccionCuenta,
-  UbicacionOficial,
 } from '@/compartido/api/respuestas';
 
 /**
@@ -50,24 +49,16 @@ export const useDirecciones = () =>
       ),
   });
 
-/**
- * TODO(SCRUM-97): regiones y comunas aún no están en el Swagger (las responde la API simulada,
- * compartido/api/simulado/ubicaciones.ts). Quitar el cast cuando el backend las publique.
- */
-const leerUbicaciones = async (ruta: string) => {
-  const get = api.GET as unknown as (
-    ruta: string,
-  ) => Promise<{ data?: unknown; error?: unknown; response: Response }>;
-  return conErrorDeApi(async () => exigir<UbicacionOficial[]>(await get(ruta)));
-};
-
 /** La lista oficial no cambia: se pide una vez por visita. */
 const UNA_VEZ = { staleTime: Infinity, gcTime: Infinity } as const;
 
 export const useRegiones = () =>
   useQuery({
     queryKey: CLAVES_CUENTA.regiones,
-    queryFn: () => leerUbicaciones('/api/ubicaciones/regiones'),
+    queryFn: () =>
+      conErrorDeApi(async () =>
+        exigir(await api.GET('/api/territorio/regiones')),
+      ),
     ...UNA_VEZ,
   });
 
@@ -75,8 +66,12 @@ export const useComunas = (region: string) =>
   useQuery({
     queryKey: CLAVES_CUENTA.comunas(region),
     queryFn: () =>
-      leerUbicaciones(
-        `/api/ubicaciones/regiones/${encodeURIComponent(region)}/comunas`,
+      conErrorDeApi(async () =>
+        exigir(
+          await api.GET('/api/territorio/regiones/{codigoCut}/comunas', {
+            params: { path: { codigoCut: region } },
+          }),
+        ),
       ),
     enabled: region !== '',
     ...UNA_VEZ,

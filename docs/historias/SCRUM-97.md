@@ -26,7 +26,7 @@ Nodos del archivo de Figma `cl9eSD5YBS9qF4tQXJki68` (ver `docs/pantallas.md`).
 
 ## API
 
-Estado al 27-10-2026 (`compartido/api/esquema.d.ts` de `main`): **Parcial**.
+Estado al 27-10-2026: **Sí** (`pnpm api:tipos` contra el backend con el PR #26).
 
 Reales (ninguno declara su respuesta en el Swagger; tipos copiados del backend a
 `compartido/api/respuestas.ts`: `DatosPersonales` y `DireccionCuenta`):
@@ -37,18 +37,14 @@ Reales (ninguno declara su respuesta en el Swagger; tipos copiados del backend a
 - `GET/POST /api/cuentas/yo/direcciones`, `PATCH/DELETE /api/cuentas/yo/direcciones/{id}` y
   `PATCH /api/cuentas/yo/direcciones/{id}/principal`. La comuna va por su código CUT.
 
-**Simulado (forma propuesta, sin acordar todavía con el backend):** el backend no tiene una
-ruta para listar regiones y comunas (y su base aún no carga las comunas, solo las 16 regiones).
-Responde la API simulada (`compartido/api/simulado/ubicaciones.ts`):
+- `GET /api/territorio/regiones` y `GET /api/territorio/regiones/{codigoCut}/comunas` (lista
+  oficial, `UbicacionOficialDto` en el Swagger): regiones de norte a sur y comunas por nombre.
+  Agregadas en el PR [Contrum-Projects/Backend#26](https://github.com/Contrum-Projects/Backend/pull/26),
+  que también carga las 346 comunas del decreto N° 1.115 de 2018 en la semilla. **Hasta que se
+  integre**, el backend de `main` no las tiene: hay que levantar el backend con esa rama y correr
+  `pnpm db:seed`.
 
-- `GET /api/ubicaciones/regiones` → `[{ codigoCut: '13', nombre: 'Metropolitana de Santiago' }, …]`
-  (de norte a sur, como `prisma/seed.ts`).
-- `GET /api/ubicaciones/regiones/{codigoCut}/comunas` → `[{ codigoCut: '13123', nombre: 'Providencia' }, …]`
-  (por nombre); 404 `La región no existe.` si la región no existe.
-
-Las comunas simuladas son una muestra real de la lista oficial (Valparaíso, Metropolitana y
-Biobío); las demás regiones responden una lista vacía. Mientras el backend no cargue las
-comunas, guardar una dirección contra el backend real responde 400 «La comuna no existe.».
+Sin rutas simuladas.
 
 ## Notas de trabajo
 
@@ -89,11 +85,9 @@ comunas, guardar una dirección contra el backend real responde 400 «La comuna 
 - Si en otra pestaña se cambia de cuenta, esta pestaña puede renovarse con la cookie de la otra
   cuenta sin vaciar la caché (hallazgo bajo de la auditoría; ya existía antes). Convendría vaciar
   la caché cuando cambia el `codigoPublico` de la sesión.
-- Con la API simulada, 13 regiones no tienen comunas y el selector queda solo con
-  «Seleccionar». Con la lista real del backend no debería pasar.
 
 **Para el backend:**
 
-- Publicar regiones y comunas (forma propuesta arriba) y cargar las 346 comunas.
+- Revisar e integrar el PR #26 (regiones y comunas) y correr `pnpm db:seed` en cada base.
 - Declarar en el Swagger las respuestas de `/api/cuentas/yo` y de las direcciones.
 - Figma muestra un nombre para cada dirección («Casa», «Trabajo») que el modelo no tiene.
