@@ -1,5 +1,6 @@
 'use client';
 
+import type { Ref } from 'react';
 import {
   Controller,
   useWatch,
@@ -8,13 +9,17 @@ import {
   type UseFormRegister,
   type UseFormSetValue,
 } from 'react-hook-form';
+import type { UbicacionOficial } from '@/compartido/api/respuestas';
 import { Checkbox } from '@/compartido/ui/checkbox';
 import { Input } from '@/compartido/ui/input';
 import {
-  NativeSelect,
-  NativeSelectOption,
-} from '@/compartido/ui/native-select';
-import { CampoFormulario } from './campoFormulario';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/compartido/ui/select';
+import { CampoFormulario, type PropsControl } from './campoFormulario';
 import { useComunas, useRegiones } from './consultasCuenta';
 import type { FormularioDireccion } from './esquemaDireccion';
 
@@ -54,26 +59,17 @@ export const CamposDireccion = ({
               name="region"
               control={control}
               render={({ field }) => (
-                <NativeSelect
-                  {...props}
-                  {...field}
-                  onChange={(evento) => {
-                    field.onChange(evento);
+                <SelectorUbicacion
+                  control={props}
+                  ref={field.ref}
+                  valor={field.value}
+                  alSalir={field.onBlur}
+                  alCambiar={(valor) => {
+                    field.onChange(valor);
                     setValue('comuna', '');
                   }}
-                  disabled={!regiones.data}
-                  contenedorClassName="w-full"
-                >
-                  <NativeSelectOption value="">Seleccionar</NativeSelectOption>
-                  {regiones.data?.map((opcion) => (
-                    <NativeSelectOption
-                      key={opcion.codigoCut}
-                      value={opcion.codigoCut}
-                    >
-                      {opcion.nombre}
-                    </NativeSelectOption>
-                  ))}
-                </NativeSelect>
+                  opciones={regiones.data}
+                />
               )}
             />
           )}
@@ -89,22 +85,14 @@ export const CamposDireccion = ({
               name="comuna"
               control={control}
               render={({ field }) => (
-                <NativeSelect
-                  {...props}
-                  {...field}
-                  disabled={!comunas.data}
-                  contenedorClassName="w-full"
-                >
-                  <NativeSelectOption value="">Seleccionar</NativeSelectOption>
-                  {comunas.data?.map((opcion) => (
-                    <NativeSelectOption
-                      key={opcion.codigoCut}
-                      value={opcion.codigoCut}
-                    >
-                      {opcion.nombre}
-                    </NativeSelectOption>
-                  ))}
-                </NativeSelect>
+                <SelectorUbicacion
+                  control={props}
+                  ref={field.ref}
+                  valor={field.value}
+                  alSalir={field.onBlur}
+                  alCambiar={field.onChange}
+                  opciones={comunas.data}
+                />
               )}
             />
           )}
@@ -173,3 +161,36 @@ export const CamposDireccion = ({
     </div>
   );
 };
+
+/**
+ * Región o comuna con el Select de shadcn, como el de Género. Queda deshabilitado mientras no
+ * hay opciones (cargando, o la comuna antes de elegir región).
+ */
+const SelectorUbicacion = ({
+  control,
+  ref,
+  valor,
+  alCambiar,
+  alSalir,
+  opciones,
+}: {
+  control: PropsControl;
+  ref: Ref<HTMLButtonElement>;
+  valor: string;
+  alCambiar: (valor: string) => void;
+  alSalir: () => void;
+  opciones: UbicacionOficial[] | undefined;
+}) => (
+  <Select value={valor} onValueChange={alCambiar} disabled={!opciones}>
+    <SelectTrigger {...control} ref={ref} onBlur={alSalir} className="w-full">
+      <SelectValue placeholder="Seleccionar" />
+    </SelectTrigger>
+    <SelectContent position="popper">
+      {opciones?.map((opcion) => (
+        <SelectItem key={opcion.codigoCut} value={opcion.codigoCut}>
+          {opcion.nombre}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+);

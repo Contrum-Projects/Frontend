@@ -59,6 +59,22 @@ const conDirecciones = (
   };
 };
 
+/**
+ * Abre el Select de shadcn del campo y elige la opción. La lista se abre en un portal, fuera
+ * del diálogo; el selector espera a que lleguen sus opciones.
+ */
+const elegir = async (
+  usuario: ReturnType<typeof userEvent.setup>,
+  dialogo: HTMLElement,
+  campo: RegExp,
+  opcion: string,
+) => {
+  const selector = within(dialogo).getByRole('combobox', { name: campo });
+  await waitFor(() => expect(selector).toBeEnabled());
+  await usuario.click(selector);
+  await usuario.click(await screen.findByRole('option', { name: opcion }));
+};
+
 const tarjetaDirecciones = () =>
   screen.findByRole('region', { name: 'Direcciones' });
 
@@ -118,18 +134,11 @@ describe('SCRUM-97 · Direcciones', () => {
       within(tarjeta).getByRole('button', { name: 'Agregar dirección' }),
     );
     const dialogo = screen.getByRole('dialog', { name: 'Agregar dirección' });
-    const comuna = within(dialogo).getByLabelText(/Comuna/);
-    expect(comuna).toBeDisabled();
-    await usuario.selectOptions(
-      await within(dialogo).findByLabelText(/Región/),
-      await within(dialogo).findByRole('option', {
-        name: 'Metropolitana de Santiago',
-      }),
-    );
-    await usuario.selectOptions(
-      comuna,
-      await within(dialogo).findByRole('option', { name: 'Providencia' }),
-    );
+    expect(
+      within(dialogo).getByRole('combobox', { name: /Comuna/ }),
+    ).toBeDisabled();
+    await elegir(usuario, dialogo, /Región/, 'Metropolitana de Santiago');
+    await elegir(usuario, dialogo, /Comuna/, 'Providencia');
     await usuario.type(
       within(dialogo).getByLabelText(/Calle/),
       'Calle Muestra',
@@ -170,30 +179,20 @@ describe('SCRUM-97 · Direcciones', () => {
       within(tarjeta).getByRole('button', { name: 'Agregar dirección' }),
     );
     const dialogo = screen.getByRole('dialog');
-    const region = await within(dialogo).findByLabelText(/Región/);
-    const comuna = within(dialogo).getByLabelText(/Comuna/);
-    await usuario.selectOptions(
-      region,
-      await within(dialogo).findByRole('option', {
-        name: 'Metropolitana de Santiago',
-      }),
-    );
-    await usuario.selectOptions(
-      comuna,
-      await within(dialogo).findByRole('option', { name: 'Ñuñoa' }),
-    );
+    await elegir(usuario, dialogo, /Región/, 'Metropolitana de Santiago');
+    await elegir(usuario, dialogo, /Comuna/, 'Ñuñoa');
 
-    await usuario.selectOptions(
-      region,
-      within(dialogo).getByRole('option', { name: 'Valparaíso' }),
-    );
+    await elegir(usuario, dialogo, /Región/, 'Valparaíso');
 
-    expect(comuna).toHaveValue('');
+    const comuna = within(dialogo).getByRole('combobox', { name: /Comuna/ });
+    expect(comuna).toHaveTextContent('Seleccionar');
+    await waitFor(() => expect(comuna).toBeEnabled());
+    await usuario.click(comuna);
     expect(
-      await within(dialogo).findByRole('option', { name: 'Viña del Mar' }),
+      await screen.findByRole('option', { name: 'Viña del Mar' }),
     ).toBeInTheDocument();
     expect(
-      within(dialogo).queryByRole('option', { name: 'Ñuñoa' }),
+      screen.queryByRole('option', { name: 'Ñuñoa' }),
     ).not.toBeInTheDocument();
   });
 
@@ -236,9 +235,13 @@ describe('SCRUM-97 · Direcciones', () => {
     );
     const dialogo = screen.getByRole('dialog', { name: 'Editar dirección' });
     await waitFor(() =>
-      expect(within(dialogo).getByLabelText(/Comuna/)).toHaveValue('13123'),
+      expect(
+        within(dialogo).getByRole('combobox', { name: /Comuna/ }),
+      ).toHaveTextContent('Providencia'),
     );
-    expect(within(dialogo).getByLabelText(/Región/)).toHaveValue('13');
+    expect(
+      within(dialogo).getByRole('combobox', { name: /Región/ }),
+    ).toHaveTextContent('Metropolitana de Santiago');
     expect(
       within(dialogo).queryByLabelText('Dejarla como principal'),
     ).not.toBeInTheDocument();
@@ -344,16 +347,8 @@ describe('SCRUM-97 · Direcciones', () => {
       within(tarjeta).getByRole('button', { name: 'Agregar dirección' }),
     );
     const dialogo = screen.getByRole('dialog');
-    await usuario.selectOptions(
-      await within(dialogo).findByLabelText(/Región/),
-      await within(dialogo).findByRole('option', {
-        name: 'Metropolitana de Santiago',
-      }),
-    );
-    await usuario.selectOptions(
-      within(dialogo).getByLabelText(/Comuna/),
-      await within(dialogo).findByRole('option', { name: 'Ñuñoa' }),
-    );
+    await elegir(usuario, dialogo, /Región/, 'Metropolitana de Santiago');
+    await elegir(usuario, dialogo, /Comuna/, 'Ñuñoa');
     await usuario.type(within(dialogo).getByLabelText(/Calle/), 'Av. Ejemplo');
     await usuario.type(within(dialogo).getByLabelText(/Número/), '1');
     await usuario.click(
