@@ -1,20 +1,27 @@
 'use client';
 
 import { MailIcon } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 
 /**
- * «Revisa tu correo» (Figma 2034:4841), tras crear la cuenta o al abrir /confirmar-correo
- * sin enlace. «Reenviar correo» no se muestra: el backend aún no tiene esa ruta.
+ * «Revisa tu correo» (Figma 2034:4841): tras crear la cuenta, al abrir /confirmar-correo sin
+ * enlace y tras pedir el enlace para recuperar la contraseña. En el registro «Reenviar correo»
+ * no se muestra: el backend aún no tiene esa ruta.
  */
 export const RevisaTuCorreo = ({
   email,
+  mensaje,
   alCambiar,
+  children,
 }: {
   /** El correo recién escrito; sin él se habla de «tu correo». */
   email?: string;
+  /** Reemplaza el texto de la confirmación de la cuenta (lo entrega el backend). */
+  mensaje?: string;
   /** Vuelve al formulario con lo escrito («¿No es tu correo? Cambiarlo»). */
   alCambiar?: () => void;
+  /** Acciones entre el texto y «Cambiarlo» («Reenviar correo»). */
+  children?: ReactNode;
 }) => {
   const titulo = useRef<HTMLHeadingElement>(null);
 
@@ -32,17 +39,9 @@ export const RevisaTuCorreo = ({
         Revisa tu correo
       </h1>
       <p className="texto-pequeno text-texto-secundario">
-        {email ? (
-          <>
-            Te enviamos un enlace a{' '}
-            <span className="break-all text-texto-principal">{email}</span> para
-            confirmar tu cuenta.
-          </>
-        ) : (
-          'Te enviamos un enlace a tu correo para confirmar tu cuenta.'
-        )}{' '}
-        Necesitas confirmarlo para comprar.
+        {mensaje ?? <TextoConfirmacion email={email} />}
       </p>
+      {children}
       {alCambiar && (
         <button
           type="button"
@@ -55,3 +54,18 @@ export const RevisaTuCorreo = ({
     </div>
   );
 };
+
+const TextoConfirmacion = ({ email }: { email?: string }) => (
+  <>
+    {email ? (
+      <>
+        Te enviamos un enlace a{' '}
+        <span className="break-all text-texto-principal">{email}</span> para
+        confirmar tu cuenta.
+      </>
+    ) : (
+      'Te enviamos un enlace a tu correo para confirmar tu cuenta.'
+    )}{' '}
+    Necesitas confirmarlo para comprar.
+  </>
+);

@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { CircleAlertIcon, CircleCheckIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api } from '@/compartido/api/cliente';
 import { ErrorDeApi, errorDeApi, exigir } from '@/compartido/api/errores';
 import type { MensajeApi } from '@/compartido/api/respuestas';
@@ -12,6 +12,7 @@ import { useSesion } from '@/compartido/sesion/sesion';
 import { Button } from '@/compartido/ui/button';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { RUTAS } from '@/tienda/diseno/enlaces';
+import { ResultadoCuenta } from './resultadoCuenta';
 import { RevisaTuCorreo } from './revisaTuCorreo';
 
 /**
@@ -56,7 +57,7 @@ const ConfirmarToken = ({ token }: { token: string }) => {
   if (confirmacion.isSuccess) {
     const conSesion = estado === 'activa';
     return (
-      <Resultado
+      <ResultadoCuenta
         icono={<CircleCheckIcon aria-hidden className="size-6 stroke-[1.75]" />}
         titulo="Correo confirmado"
         mensaje={confirmacion.data.mensaje}
@@ -66,7 +67,7 @@ const ConfirmarToken = ({ token }: { token: string }) => {
             {conSesion ? 'Ver el catálogo' : 'Ingresar'}
           </Link>
         </Button>
-      </Resultado>
+      </ResultadoCuenta>
     );
   }
 
@@ -75,7 +76,7 @@ const ConfirmarToken = ({ token }: { token: string }) => {
     // 400: enlace inválido, usado o vencido. Lo demás (429, 5xx, sin conexión) se reintenta.
     if (fallo.estado === 400) {
       return (
-        <Resultado
+        <ResultadoCuenta
           icono={
             <CircleAlertIcon aria-hidden className="size-6 stroke-[1.75]" />
           }
@@ -85,11 +86,11 @@ const ConfirmarToken = ({ token }: { token: string }) => {
           <Button asChild variant="contorno" size="grande" className="w-full">
             <Link href={RUTAS.inicio}>Volver a la tienda</Link>
           </Button>
-        </Resultado>
+        </ResultadoCuenta>
       );
     }
     return (
-      <Resultado
+      <ResultadoCuenta
         icono={<CircleAlertIcon aria-hidden className="size-6 stroke-[1.75]" />}
         titulo="No pudimos confirmar tu correo"
         mensaje={fallo.message}
@@ -101,43 +102,11 @@ const ConfirmarToken = ({ token }: { token: string }) => {
         >
           Intentar de nuevo
         </Button>
-      </Resultado>
+      </ResultadoCuenta>
     );
   }
 
   return <ConfirmacionEsqueleto />;
-};
-
-const Resultado = ({
-  icono,
-  titulo,
-  mensaje,
-  children,
-}: {
-  icono: ReactNode;
-  titulo: string;
-  mensaje: string;
-  children: ReactNode;
-}) => {
-  const encabezado = useRef<HTMLHeadingElement>(null);
-
-  // El resultado reemplaza al esqueleto: el foco va al título para que se anuncie
-  useEffect(() => {
-    encabezado.current?.focus();
-  }, [titulo]);
-
-  return (
-    <div className="flex flex-col items-start gap-4">
-      <div className="flex size-14 items-center justify-center rounded-full bg-marca-acento-suave text-marca-profundo">
-        {icono}
-      </div>
-      <h1 ref={encabezado} tabIndex={-1} className="titulo-h2 outline-none">
-        {titulo}
-      </h1>
-      <p className="texto-pequeno text-texto-secundario">{mensaje}</p>
-      {children}
-    </div>
-  );
 };
 
 /** Ícono, título, mensaje y botón mientras se confirma. */

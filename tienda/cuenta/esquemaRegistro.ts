@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import type { components } from '@/compartido/api/esquema';
 import { normalizarRut } from '@/compartido/formato/rut';
+import {
+  confirmacionContrasena,
+  contrasenaNueva,
+  contrasenasIguales,
+} from './esquemaContrasena';
 
 /** Opciones de género (decisión del equipo, 26-10-2026). Se envía el texto tal cual. */
 export const GENEROS = [
@@ -40,14 +45,8 @@ export const esquemaRegistro = z
       .min(1, 'Escribe tu correo.')
       .max(254, 'El correo no puede superar los 254 caracteres.')
       .pipe(z.email('Escribe un correo válido.')),
-    contrasena: z
-      .string()
-      .min(1, 'Escribe una contraseña.')
-      .min(8, 'La contraseña debe tener al menos 8 caracteres.')
-      .max(128, 'La contraseña no puede superar los 128 caracteres.')
-      .regex(/\p{L}/u, 'La contraseña debe tener al menos una letra.')
-      .regex(/\d/, 'La contraseña debe tener al menos un número.'),
-    confirmacionContrasena: z.string().min(1, 'Repite tu contraseña.'),
+    contrasena: contrasenaNueva,
+    confirmacionContrasena,
     telefono: opcional(20, 'El teléfono'),
     rut: z
       .string()
@@ -59,10 +58,10 @@ export const esquemaRegistro = z
     fechaNacimiento: z.string(),
     genero: z.union([z.literal(''), z.enum(GENEROS)]),
   })
-  .refine((datos) => datos.contrasena === datos.confirmacionContrasena, {
-    path: ['confirmacionContrasena'],
-    message: 'Las contraseñas no coinciden.',
-  });
+  .refine(
+    (datos) => datos.contrasena === datos.confirmacionContrasena,
+    contrasenasIguales,
+  );
 
 export type DatosRegistro = z.input<typeof esquemaRegistro>;
 export type CampoRegistro = keyof DatosRegistro;

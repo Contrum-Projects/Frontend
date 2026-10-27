@@ -17,7 +17,7 @@ Definidos en `app/globals.css` con los mismos nombres de las variables de Figma 
 | -------------------------------------- | ------------------------------------------------- | ----------------- | --------------------------------------------------------------------------- |
 | marca/profundo                         | `marca-profundo` · `primary`                      | #0B3B3A           | Botón primario, títulos de marca, footer, barra y menú del panel            |
 | marca/acento                           | `marca-acento` · `ring`                           | #14B8A6           | Botón acento sobre fondo oscuro, detalles, foco. **Nunca con texto blanco** |
-| marca/logo                             | `marca-logo`                                      | #2ED3C2           | Logo y destellos sobre fondo oscuro                                         |
+| marca/logo                             | `marca-logo`                                      | #2ED3C2           | Logo (en todos los fondos) y destellos sobre fondo oscuro                   |
 | marca/acento-suave                     | `marca-acento-suave` · `secondary`, `accent`      | #D5F2ED           | Precio profesional, opciones y filas elegidas, avisos informativos          |
 | fondo/hueso                            | `fondo-hueso` · `background`                      | #F3EFE6           | Fondo general                                                               |
 | fondo/superficie                       | `fondo-superficie` · `card`, `popover`            | #FFFCF6           | Tarjetas y campos                                                           |
@@ -58,7 +58,7 @@ Las páginas internas usan `titulo-h2 md:titulo-h1`, nunca el display.
 
 | Figma › Componentes                                           | Código                                                | Notas                                                                                                                         |
 | ------------------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Logo (Turquesa, Profundo)                                     | `compartido/marca/logo.tsx`                           | Toma el color del texto: `text-marca-profundo` o `text-marca-logo`                                                            |
+| Logo (Turquesa, Profundo)                                     | `compartido/marca/logo.tsx`                           | Siempre `text-marca-logo` (decisión del 27-10-2026)                                                                           |
 | Ícono                                                         | `lucide-react`                                        | Trazo 1,75 (el botón ya lo aplica). Buscar → `Search`, Carrito → `ShoppingCart`, Verificado → `BadgeCheck`, Camión → `Truck`… |
 | Botón (Primario, Acento, Contorno · Grande, Mediano)          | `compartido/ui/button.tsx`                            | `variant="primario" \| "acento" \| "contorno"`, `size="grande" \| "mediano"`                                                  |
 | Campo                                                         | `compartido/ui/input.tsx` + `label.tsx` / `field.tsx` | Etiqueta `texto-etiqueta`, 6 px sobre la caja                                                                                 |
@@ -114,4 +114,4 @@ Funciona en computador y en celular (RNF-25: 360 px sin desplazamiento horizonta
 - Modalidades y especialidades del perfil profesional, segmentos de campañas y la oferta del saludo
   de cumpleaños.
 - Textos de términos y condiciones y política de privacidad.
-- Ícono del sitio: hoy usa el logo completo (`app/icon.svg`); no hay versión cuadrada en Figma.
+- Ícono del sitio: monograma «CP» en turquesa sobre `marca-profundo`, cuadrado (`app/icon.svg`), hecho por el equipo en Illustrator (27-10-2026).

@@ -25,7 +25,7 @@ export function Header() {
         </div>
         <Link
           href={RUTAS.inicio}
-          className="shrink-0 rounded-md text-marca-profundo"
+          className="shrink-0 rounded-md text-marca-logo"
         >
           <Logo className="h-auto w-[92px] md:w-[118px]" />
         </Link>

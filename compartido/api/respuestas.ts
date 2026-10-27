@@ -21,7 +21,10 @@ export interface SesionIniciada {
   };
 }
 
-/** backend: src/modulos/cuentas/cuentas.service.ts › Mensaje (registro y confirmación del correo) */
+/**
+ * backend: src/modulos/cuentas/cuentas.service.ts › Mensaje (registro, confirmación del correo y
+ * recuperación de la contraseña)
+ */
 export interface MensajeApi {
   mensaje: string;
 }

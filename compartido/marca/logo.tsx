@@ -1,8 +1,8 @@
 import type { SVGProps } from 'react';
 
 /**
- * Logo «Cabello Perfecto» (Figma › Componentes › Logo). Toma el color del texto:
- * `text-marca-profundo` sobre fondos claros y `text-marca-logo` sobre fondos oscuros.
+ * Logo «Cabello Perfecto» (Figma › Componentes › Logo). Toma el color del texto: siempre
+ * `text-marca-logo` (turquesa), también sobre fondos claros (decisión del equipo, 27-10-2026).
  * Es una imagen con nombre accesible; si va dentro de un enlace al inicio, ese enlace ya lo dice.
  */
 export function Logo({
