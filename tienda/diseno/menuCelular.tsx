@@ -59,7 +59,7 @@ export function MenuCelular({ categorias, marcas }: MenuCelularProps) {
           <Link
             href={RUTAS.inicio}
             onClick={cerrar}
-            className="rounded-md text-marca-profundo"
+            className="rounded-md text-marca-logo"
           >
             <Logo className="h-auto w-[88px]" />
           </Link>
