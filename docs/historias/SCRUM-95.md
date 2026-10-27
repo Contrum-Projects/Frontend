@@ -32,6 +32,7 @@ formato de respuesta acordaste con quien hace la historia backend.
 
 ## Notas de trabajo
 
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/10
 - **Dónde se cierra la sesión:** al pie del menú del celular (Figma 2060:2224) y en el menú
   lateral de «Mi cuenta» en escritorio (2034:2324). El header de escritorio no tiene menú
   desplegable en Figma: el nombre lleva a Mis datos.
