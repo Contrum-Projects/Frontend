@@ -48,11 +48,14 @@ export function CuentaProtegida({ children }: { children: ReactNode }) {
   return children;
 }
 
+/** Menú lateral, título y las tarjetas de Mis datos con alturas parecidas a las reales. */
 const EsqueletoCuenta = () => (
   <div aria-hidden className="grid gap-4 md:grid-cols-[240px_1fr] md:gap-12">
     <Skeleton className="hidden h-96 md:block" />
     <div className="flex flex-col gap-6">
       <Skeleton className="h-12 w-48" />
+      <Skeleton className="h-[750px] w-full rounded-lg sm:h-96" />
+      <Skeleton className="h-52 w-full rounded-lg" />
       <Skeleton className="h-52 w-full rounded-lg" />
     </div>
   </div>

@@ -23,22 +23,41 @@ const opcional = (maximo: number, etiqueta: string) =>
     .max(maximo, `${etiqueta} no puede superar los ${maximo} caracteres.`);
 
 /**
+ * Datos personales que piden el registro (E1-H1) y «Mis datos» (E1-H5), con las reglas de los
+ * DTO del backend (registrar-cuenta.dto.ts y actualizar-datos.dto.ts). Vacíos, los opcionales
+ * quedan en `''`.
+ */
+export const camposPersonales = {
+  nombre: z
+    .string()
+    .trim()
+    .min(1, 'Escribe tu nombre.')
+    .max(100, 'El nombre no puede superar los 100 caracteres.'),
+  apellido: z
+    .string()
+    .trim()
+    .min(1, 'Escribe tu apellido.')
+    .max(100, 'El apellido no puede superar los 100 caracteres.'),
+  telefono: opcional(20, 'El teléfono'),
+  rut: z
+    .string()
+    .trim()
+    .refine(
+      (rut) => rut === '' || normalizarRut(rut) !== null,
+      'El RUT no es válido.',
+    ),
+  fechaNacimiento: z.string(),
+  genero: z.union([z.literal(''), z.enum(GENEROS)]),
+};
+
+/**
  * Formulario de registro (E1-H1). Repite las reglas del DTO del backend
  * (src/modulos/cuentas/dto/registrar-cuenta.dto.ts) solo para avisar antes de enviar; el
  * backend vuelve a validar todo.
  */
 export const esquemaRegistro = z
   .object({
-    nombre: z
-      .string()
-      .trim()
-      .min(1, 'Escribe tu nombre.')
-      .max(100, 'El nombre no puede superar los 100 caracteres.'),
-    apellido: z
-      .string()
-      .trim()
-      .min(1, 'Escribe tu apellido.')
-      .max(100, 'El apellido no puede superar los 100 caracteres.'),
+    ...camposPersonales,
     email: z
       .string()
       .trim()
@@ -47,16 +66,6 @@ export const esquemaRegistro = z
       .pipe(z.email('Escribe un correo válido.')),
     contrasena: contrasenaNueva,
     confirmacionContrasena,
-    telefono: opcional(20, 'El teléfono'),
-    rut: z
-      .string()
-      .trim()
-      .refine(
-        (rut) => rut === '' || normalizarRut(rut) !== null,
-        'El RUT no es válido.',
-      ),
-    fechaNacimiento: z.string(),
-    genero: z.union([z.literal(''), z.enum(GENEROS)]),
   })
   .refine(
     (datos) => datos.contrasena === datos.confirmacionContrasena,
