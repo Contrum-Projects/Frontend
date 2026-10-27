@@ -81,6 +81,10 @@ const completarObligatorios = async (
   return usuario;
 };
 
+/** Campo opcional por su etiqueta: «RUT (opcional)». */
+const opcional = (etiqueta: string) =>
+  screen.getByLabelText(`${etiqueta} (opcional)`);
+
 const crearCuenta = (usuario: ReturnType<typeof userEvent.setup>) =>
   usuario.click(screen.getByRole('button', { name: 'Crear cuenta' }));
 
@@ -109,18 +113,19 @@ describe('SCRUM-93 · Registro', () => {
         screen.getByRole('navigation', { name: 'Ingresar o crear cuenta' }),
       ).getByRole('link', { name: 'Crear cuenta' }),
     ).toHaveAttribute('aria-current', 'page');
-    const opcionales = screen.getByRole('button', {
-      name: /Datos opcionales/,
-    });
-    expect(opcionales).toHaveAttribute('aria-expanded', 'false');
-    await userEvent.setup().click(opcionales);
-    expect(opcionales).toHaveAttribute('aria-expanded', 'true');
+    // Los opcionales van en el formulario, sin desplegable, con «(opcional)» en la etiqueta
     for (const campo of ['Teléfono', 'RUT', 'Fecha de nacimiento', 'Género']) {
-      expect(screen.getByLabelText(campo)).toBeVisible();
+      expect(opcional(campo)).toBeVisible();
     }
     expect(
-      within(screen.getByLabelText('Género')).getAllByRole('option'),
-    ).toHaveLength(5);
+      screen.queryByRole('button', { name: /Datos opcionales/ }),
+    ).not.toBeInTheDocument();
+    const usuario = userEvent.setup();
+    await usuario.click(opcional('Género'));
+    expect(
+      screen.getAllByRole('option').map((opcion) => opcion.textContent),
+    ).toEqual(['Femenino', 'Masculino', 'Otro', 'Prefiero no decir']);
+    await usuario.keyboard('{Escape}');
     expect(
       screen.getByRole('checkbox', {
         name: 'Quiero recibir ofertas por correo',
@@ -133,11 +138,22 @@ describe('SCRUM-93 · Registro', () => {
     mostrarRegistro();
 
     const usuario = await completarObligatorios();
-    await usuario.click(
-      screen.getByRole('button', { name: /Datos opcionales/ }),
+    await usuario.type(opcional('RUT'), '12.345.678-5');
+    await usuario.click(opcional('Fecha de nacimiento'));
+    await usuario.selectOptions(
+      screen.getByRole('combobox', { name: /año/i }),
+      '1990',
     );
-    await usuario.type(screen.getByLabelText('RUT'), '12.345.678-5');
-    await usuario.selectOptions(screen.getByLabelText('Género'), 'Femenino');
+    await usuario.selectOptions(
+      screen.getByRole('combobox', { name: /mes/i }),
+      '4',
+    );
+    await usuario.click(
+      screen.getByRole('button', { name: /21 de mayo de 1990/ }),
+    );
+    expect(opcional('Fecha de nacimiento')).toHaveTextContent('21/05/1990');
+    await usuario.click(opcional('Género'));
+    await usuario.click(screen.getByRole('option', { name: 'Femenino' }));
     await crearCuenta(usuario);
 
     await screen.findByRole('heading', { name: 'Revisa tu correo' });
@@ -150,6 +166,7 @@ describe('SCRUM-93 · Registro', () => {
       contrasena: 'secreta123',
       confirmacionContrasena: 'secreta123',
       rut: '12345678-5',
+      fechaNacimiento: '1990-05-21',
       genero: 'Femenino',
     });
   });
@@ -174,7 +191,7 @@ describe('SCRUM-93 · Registro', () => {
     expect(screen.getByLabelText('Nombre')).toHaveValue('Camila');
   });
 
-  it('E1-H1 FE · RUT ya registrado: abre los datos opcionales y marca el RUT', async () => {
+  it('E1-H1 FE · RUT ya registrado: marca el RUT junto a su campo', async () => {
     simularRegistro(() =>
       responder(
         {
@@ -187,17 +204,11 @@ describe('SCRUM-93 · Registro', () => {
     mostrarRegistro();
 
     const usuario = await completarObligatorios();
-    await usuario.click(
-      screen.getByRole('button', { name: /Datos opcionales/ }),
-    );
-    await usuario.type(screen.getByLabelText('RUT'), '12.345.678-5');
-    await usuario.click(
-      screen.getByRole('button', { name: /Datos opcionales/ }),
-    );
+    await usuario.type(opcional('RUT'), '12.345.678-5');
     await crearCuenta(usuario);
 
-    const rut = await screen.findByLabelText('RUT');
-    await waitFor(() => expect(rut).toBeVisible());
+    const rut = opcional('RUT');
+    await waitFor(() => expect(rut).toHaveAttribute('aria-invalid', 'true'));
     expect(rut).toHaveAccessibleDescription(
       'El correo y el RUT ya están registrados.',
     );
@@ -275,6 +286,35 @@ describe('SCRUM-93 · Registro', () => {
     expect(screen.getByLabelText('Repite tu contraseña')).toHaveValue('');
   });
 
+  it('la fecha de nacimiento se puede quitar y entonces no se envía', async () => {
+    const fetch = simularRegistro(() => responder(CREADA, 201));
+    mostrarRegistro();
+
+    const usuario = await completarObligatorios();
+    const fecha = opcional('Fecha de nacimiento');
+    await usuario.click(fecha);
+    await usuario.selectOptions(
+      screen.getByRole('combobox', { name: /año/i }),
+      '1990',
+    );
+    await usuario.selectOptions(
+      screen.getByRole('combobox', { name: /mes/i }),
+      '0',
+    );
+    await usuario.click(
+      screen.getByRole('button', { name: /21 de enero de 1990/ }),
+    );
+    await usuario.click(fecha);
+    await usuario.click(screen.getByRole('button', { name: 'Quitar fecha' }));
+    expect(fecha).toHaveTextContent('dd/mm/aaaa');
+    await crearCuenta(usuario);
+
+    await screen.findByRole('heading', { name: 'Revisa tu correo' });
+    expect(await fetch.mock.calls[0]![0].json()).not.toHaveProperty(
+      'fechaNacimiento',
+    );
+  });
+
   it('valida los campos antes de llamar al servidor', async () => {
     const fetch = simularRegistro(() => responder(CREADA, 201));
     mostrarRegistro();
@@ -296,15 +336,10 @@ describe('SCRUM-93 · Registro', () => {
     mostrarRegistro();
 
     const usuario = await completarObligatorios();
-    await usuario.click(
-      screen.getByRole('button', { name: /Datos opcionales/ }),
-    );
-    await usuario.type(screen.getByLabelText('RUT'), '12.345.678-9');
+    await usuario.type(opcional('RUT'), '12.345.678-9');
     await crearCuenta(usuario);
 
-    expect(screen.getByLabelText('RUT')).toHaveAccessibleDescription(
-      'El RUT no es válido.',
-    );
+    expect(opcional('RUT')).toHaveAccessibleDescription('El RUT no es válido.');
     expect(fetch).not.toHaveBeenCalled();
   });
 

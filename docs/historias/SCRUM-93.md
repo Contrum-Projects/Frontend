@@ -70,6 +70,18 @@ formato de respuesta acordaste con quien hace la historia backend.
     `noindex` para que el token no salga de la página.
   - **«Datos opcionales»:** parte cerrado; se abre solo si el backend marca uno de esos campos.
   - Con sesión iniciada, `/registro` lleva a donde corresponde según el rol.
+- **Ajustes después de integrar el PR #7 (27-10-2026, pedido del usuario):**
+  - Los opcionales (teléfono, RUT, fecha de nacimiento, género) van en el formulario, sin
+    desplegable ni título: cada etiqueta lleva «(opcional)» en texto secundario. Reemplaza la
+    decisión de «Datos opcionales» cerrado.
+  - Fecha de nacimiento con el date picker de shadcn (`Popover` + `Calendar`, en
+    `tienda/cuenta/selectorFecha.tsx`): mes y año en listas, de 1920 a hoy, sin fechas futuras,
+    con «Quitar fecha». Se muestra como dd/mm/aaaa y se envía como AAAA-MM-DD.
+  - Género con el `Select` de shadcn (`compartido/ui/select.tsx`, adaptado al Campo de Figma).
+    `NativeSelect` queda sin uso.
+  - Dependencia nueva: `react-day-picker` (la base del `Calendar` de shadcn). La CLI agregó además
+    `date-fns` y un paquete `cn` que no se usan: se quitaron.
+
 - **Errores junto a su campo:** el backend no dice a qué campo pertenece cada mensaje; se
   reconocen por cómo empiezan (`tienda/cuenta/erroresRegistro.ts`). Lo que no se reconoce va como
   aviso general.

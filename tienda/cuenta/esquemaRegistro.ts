@@ -79,14 +79,6 @@ export const REGISTRO_VACIO: DatosRegistro = {
   genero: '',
 };
 
-/** Campos que van en «Datos opcionales» (se abre si alguno tiene un error). */
-export const CAMPOS_OPCIONALES: readonly CampoRegistro[] = [
-  'telefono',
-  'rut',
-  'fechaNacimiento',
-  'genero',
-];
-
 type CuerpoRegistro = components['schemas']['RegistrarCuentaDto'];
 
 /**

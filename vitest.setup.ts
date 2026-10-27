@@ -12,6 +12,11 @@ globalThis.ResizeObserver ??= class {
   disconnect() {}
 };
 
+// El Select de Radix captura el puntero y desplaza la opción elegida; jsdom no trae esas APIs
+Element.prototype.hasPointerCapture ??= () => false;
+Element.prototype.releasePointerCapture ??= () => {};
+Element.prototype.scrollIntoView ??= () => {};
+
 afterEach(() => {
   cleanup();
 });

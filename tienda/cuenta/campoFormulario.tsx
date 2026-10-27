@@ -16,17 +16,27 @@ export const CampoFormulario = ({
   id,
   etiqueta,
   error,
+  opcional = false,
   className,
   children,
 }: {
   id: string;
   etiqueta: string;
   error?: string;
+  /** Agrega «(opcional)» junto a la etiqueta, en texto secundario. */
+  opcional?: boolean;
   className?: string;
   children: (control: PropsControl) => ReactNode;
 }) => (
   <div className={cn('flex min-w-0 flex-col gap-1.5', className)}>
-    <Label htmlFor={id}>{etiqueta}</Label>
+    <Label htmlFor={id} className="gap-1">
+      {etiqueta}
+      {/* El espacio no se ve (flex), pero el lector de pantalla dice «RUT (opcional)» */}
+      {opcional && ' '}
+      {opcional && (
+        <span className="texto-leyenda text-texto-secundario">(opcional)</span>
+      )}
+    </Label>
     {children({
       id,
       'aria-invalid': error ? true : undefined,

@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useState } from 'react';
-import { flushSync } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import { api } from '@/compartido/api/cliente';
@@ -17,10 +16,9 @@ import { Input } from '@/compartido/ui/input';
 import { Spinner } from '@/compartido/ui/spinner';
 import { RUTAS } from '@/tienda/diseno/enlaces';
 import { CampoFormulario } from './campoFormulario';
-import { DatosOpcionales } from './datosOpcionales';
+import { CamposOpcionales } from './camposOpcionales';
 import { repartirErrores } from './erroresRegistro';
 import {
-  CAMPOS_OPCIONALES,
   cuerpoRegistro,
   esquemaRegistro,
   REGISTRO_VACIO,
@@ -45,7 +43,6 @@ export function FormularioRegistro({
 }: {
   alRegistrar: (email: string) => void;
 }) {
-  const [opcionalesAbiertos, setOpcionalesAbiertos] = useState(false);
   const [aviso, setAviso] = useState<Aviso | null>(null);
   const registro = useMutation({
     // Las variables llevan la contraseña: que no queden en la caché de mutaciones
@@ -59,6 +56,7 @@ export function FormularioRegistro({
   });
   const {
     register,
+    control,
     handleSubmit,
     setError,
     setValue,
@@ -71,10 +69,6 @@ export function FormularioRegistro({
   const mostrarErroresDeCampo = (mensajes: string[]) => {
     const { campos, generales } = repartirErrores(mensajes);
     const conError = Object.entries(campos) as [CampoRegistro, string][];
-    // Abre «Datos opcionales» antes de enfocar un campo que está ahí
-    if (conError.some(([campo]) => CAMPOS_OPCIONALES.includes(campo))) {
-      flushSync(() => setOpcionalesAbiertos(true));
-    }
     conError.forEach(([campo, mensaje], i) =>
       setError(
         campo,
@@ -192,12 +186,7 @@ export function FormularioRegistro({
         )}
       </CampoFormulario>
 
-      <DatosOpcionales
-        register={register}
-        errors={errors}
-        abierto={opcionalesAbiertos}
-        alAlternar={() => setOpcionalesAbiertos((abierto) => !abierto)}
-      />
+      <CamposOpcionales register={register} control={control} errors={errors} />
 
       {/* TODO(backend SCRUM-19): el DTO del registro aún no recibe el consentimiento; no se envía */}
       <div className="flex min-h-10 items-center gap-2">
