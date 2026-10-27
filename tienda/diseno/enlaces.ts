@@ -15,8 +15,7 @@ export const RUTAS = {
   // TODO(SCRUM-107): búsqueda
   buscar: '/buscar' as Route,
   ingresar: '/ingresar',
-  // TODO(SCRUM-93): registro
-  registro: '/registro' as Route,
+  registro: '/registro',
   // TODO(SCRUM-96): recuperación de contraseña
   recuperarContrasena: '/recuperar-contrasena' as Route,
   // TODO(SCRUM-99): panel

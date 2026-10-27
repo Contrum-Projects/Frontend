@@ -18,7 +18,7 @@ Total: 53 historias, 185 puntos.
 | --- | ---------------------------------------------------------------------------------------- | --- | ----------- | ------- | -------- | -------------------- |
 | 1   | [SCRUM-106](SCRUM-106.md) · E2-H1 · Inicio y catálogo por categorías y marcas            | 8   | En revisión | Sí      | SCRUM-32 | —                    |
 | 2   | [SCRUM-94](SCRUM-94.md) · E1-H2 · Pantalla de inicio de sesión                           | 3   | En revisión | Sí      | SCRUM-20 | SCRUM-106            |
-| 3   | [SCRUM-93](SCRUM-93.md) · E1-H1 · Pantallas de registro y confirmación del correo        | 5   | Por hacer   | Sí      | SCRUM-19 | SCRUM-94             |
+| 3   | [SCRUM-93](SCRUM-93.md) · E1-H1 · Pantallas de registro y confirmación del correo        | 5   | En curso    | Sí      | SCRUM-19 | SCRUM-94             |
 | 4   | [SCRUM-96](SCRUM-96.md) · E1-H4 · Pantallas de recuperación de contraseña                | 3   | Por hacer   | No      | SCRUM-22 | SCRUM-94             |
 | 5   | [SCRUM-95](SCRUM-95.md) · E1-H3 · Cerrar sesión en el dispositivo o en todos             | 2   | Por hacer   | Sí      | SCRUM-21 | SCRUM-94             |
 | 6   | [SCRUM-97](SCRUM-97.md) · E1-H5 · Mis datos y direcciones                                | 5   | Por hacer   | Parcial | SCRUM-23 | SCRUM-94             |

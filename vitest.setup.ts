@@ -5,6 +5,13 @@ import { afterEach, vi } from 'vitest';
 // `server-only` corta el build si un archivo de servidor llega al navegador; en las pruebas no aplica
 vi.mock('server-only', () => ({}));
 
+// jsdom no trae ResizeObserver y algunos componentes de Radix (Checkbox) lo usan al montar
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
 afterEach(() => {
   cleanup();
 });

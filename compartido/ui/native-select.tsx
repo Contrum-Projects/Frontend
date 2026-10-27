@@ -4,27 +4,36 @@ import { ChevronDownIcon } from 'lucide-react';
 
 function NativeSelect({
   className,
+  contenedorClassName,
   size = 'default',
   ...props
-}: Omit<React.ComponentProps<'select'>, 'size'> & { size?: 'sm' | 'default' }) {
+}: Omit<React.ComponentProps<'select'>, 'size'> & {
+  size?: 'sm' | 'default';
+  /** Clases del contenedor (p. ej. `w-full` para ocupar el ancho del campo). */
+  contenedorClassName?: string;
+}) {
   return (
     <div
-      className="group/native-select relative w-fit has-[select:disabled]:opacity-50"
+      className={cn(
+        'group/native-select relative w-fit has-[select:disabled]:opacity-50',
+        contenedorClassName,
+      )}
       data-slot="native-select-wrapper"
     >
       <select
         data-slot="native-select"
         data-size={size}
         className={cn(
-          'h-9 w-full min-w-0 appearance-none rounded-md border border-input bg-transparent px-3 py-2 pr-9 text-sm shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed data-[size=sm]:h-8 data-[size=sm]:py-1 dark:bg-input/30 dark:hover:bg-input/50',
-          'focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
-          'aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40',
+          // Misma caja que <Input> (Figma › Campo): 51 px, borde de 1,5 px, texto cuerpo (sin zoom en iOS)
+          'h-[51px] w-full min-w-0 cursor-pointer appearance-none rounded-md border-[1.5px] border-input bg-fondo-superficie px-4 pr-10 texto-cuerpo text-foreground transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed data-[size=sm]:h-[38px]',
+          'focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/40',
+          'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
           className,
         )}
         {...props}
       />
       <ChevronDownIcon
-        className="pointer-events-none absolute top-1/2 right-3.5 size-4 -translate-y-1/2 text-muted-foreground opacity-50 select-none"
+        className="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2 stroke-[1.75] text-texto-secundario select-none"
         aria-hidden="true"
         data-slot="native-select-icon"
       />
