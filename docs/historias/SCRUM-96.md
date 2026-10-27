@@ -56,3 +56,4 @@ Estado al 27-10-2026 (`compartido/api/esquema.d.ts` de `main`): **Sí**. Sin rut
 - Reglas de la contraseña compartidas con el registro en `esquemaContrasena.ts`; el aviso de
   resultado de `/confirmar-correo` pasó a `resultadoCuenta.tsx` para reusarlo.
 - Pendiente para el backend: declarar en el Swagger la respuesta `{ mensaje }` de ambas rutas.
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/9 (En revisión desde el 27-10-2026).
