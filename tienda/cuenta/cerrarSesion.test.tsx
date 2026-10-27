@@ -3,7 +3,6 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { act, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { api } from '@/compartido/api/cliente';
 import type { paths } from '@/compartido/api/esquema';
 import {
   guardarSesion,
@@ -13,6 +12,7 @@ import {
 } from '@/compartido/sesion/almacen';
 import { CuentaHeader } from '@/tienda/diseno/cuentaHeader';
 import { MenuCelular } from '@/tienda/diseno/menuCelular';
+import { DATOS } from './cuentaDePrueba';
 import { DisenoCuenta } from './disenoCuenta';
 import { PantallaMisDatos } from './pantallaMisDatos';
 
@@ -50,16 +50,34 @@ const iniciarSesion = () =>
     }),
   );
 
-/** Simula el backend: responde según la ruta y anota cada petición como «MÉTODO /ruta». */
-const simularBackend = (responder: (peticion: string) => Response) => {
+/** Lo que Mis datos lee al abrirse (SCRUM-97): con la sesión vigente, responde sin anotarlo. */
+const lecturaDeCuenta = (peticion: string) =>
+  peticion === 'GET /api/cuentas/yo'
+    ? Response.json(DATOS)
+    : peticion === 'GET /api/cuentas/yo/direcciones'
+      ? Response.json([])
+      : null;
+
+const describir = (entrada: Request | string, opciones?: RequestInit) =>
+  typeof entrada === 'string'
+    ? `${opciones?.method ?? 'GET'} ${entrada}`
+    : `${entrada.method} ${new URL(entrada.url).pathname}`;
+
+/**
+ * Simula el backend: responde según la ruta y anota cada petición como «MÉTODO /ruta». Las
+ * lecturas de Mis datos responden bien y no se anotan, salvo con `rechazarLecturas`.
+ */
+const simularBackend = (
+  responder: (peticion: string) => Response,
+  { rechazarLecturas = false } = {},
+) => {
   const peticiones: string[] = [];
   vi.stubGlobal(
     'fetch',
     vi.fn(async (entrada: Request | string, opciones?: RequestInit) => {
-      const peticion =
-        typeof entrada === 'string'
-          ? `${opciones?.method ?? 'GET'} ${entrada}`
-          : `${entrada.method} ${new URL(entrada.url).pathname}`;
+      const peticion = describir(entrada, opciones);
+      const lectura = rechazarLecturas ? null : lecturaDeCuenta(peticion);
+      if (lectura) return lectura;
       peticiones.push(peticion);
       return responder(peticion);
     }),
@@ -185,9 +203,10 @@ describe('SCRUM-95 · Cerrar sesión', () => {
       vi.fn(
         (entrada: Request) =>
           new Promise<Response>((resolver) => {
-            peticiones.push(
-              `${entrada.method} ${new URL(entrada.url).pathname}`,
-            );
+            const peticion = describir(entrada);
+            const lectura = lecturaDeCuenta(peticion);
+            if (lectura) return resolver(lectura);
+            peticiones.push(peticion);
             responder = resolver;
           }),
       ),
@@ -294,6 +313,7 @@ describe('SCRUM-95 · Cerrar sesión', () => {
     // Token revocado y cookie de refresco ya sin efecto: todo responde 401
     const peticiones = simularBackend(
       () => new Response(null, { status: 401 }),
+      { rechazarLecturas: true },
     );
     iniciarSesion();
     mostrarMisDatos();
@@ -301,16 +321,17 @@ describe('SCRUM-95 · Cerrar sesión', () => {
       screen.getByRole('heading', { level: 1, name: 'Mis datos' }),
     ).toBeInTheDocument();
 
-    await act(() => api.GET('/api/cuentas/yo'));
-
-    expect(peticiones).toEqual([
-      'GET /api/cuentas/yo',
-      'POST /api/cuentas/sesion/renovar',
-    ]);
-    expect(leerEstado()).toEqual({ tipo: 'anonima' });
-    expect(navegacion.replace).toHaveBeenCalledWith(
-      '/ingresar?volver=%2Fcuenta%2Fdatos',
+    // Mis datos pide los datos de la cuenta al abrirse y el servidor los rechaza
+    await waitFor(() =>
+      expect(navegacion.replace).toHaveBeenCalledWith(
+        '/ingresar?volver=%2Fcuenta%2Fdatos',
+      ),
     );
+    expect(peticiones).toContain('GET /api/cuentas/yo');
+    expect(
+      peticiones.filter((p) => p === 'POST /api/cuentas/sesion/renovar'),
+    ).toHaveLength(1);
+    expect(leerEstado()).toEqual({ tipo: 'anonima' });
     expect(
       screen.queryByRole('heading', { name: 'Mis datos' }),
     ).not.toBeInTheDocument();

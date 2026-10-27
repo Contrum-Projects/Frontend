@@ -22,8 +22,7 @@ export const RUTAS = {
   // TODO(SCRUM-116): carrito
   carrito: '/carrito' as Route,
   misDatos: '/cuenta/datos',
-  // TODO(SCRUM-97): la sección de direcciones dentro de Mis datos
-  direcciones: '/cuenta/datos#direcciones' as Route,
+  direcciones: '/cuenta/datos#direcciones',
   // TODO(SCRUM-126): datos de facturación
   facturacion: '/cuenta/facturacion' as Route,
   // TODO(SCRUM-139): ofertas por correo
