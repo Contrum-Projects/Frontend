@@ -42,7 +42,7 @@ formato de respuesta acordaste con quien hace la historia backend.
 
 <!-- Decisiones, preguntas abiertas y lo que quedó pendiente. Lo completa /historia. -->
 
-- **PR:** https://github.com/Contrum-Projects/Frontend/pull/7
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/7 · ajustes: https://github.com/Contrum-Projects/Frontend/pull/8
 
 - **Decidido en SCRUM-94:** el registro es una página aparte, `/registro`, aunque Figma muestre
   «Crear cuenta» junto a «Iniciar sesión». `/ingresar` ya enlaza aquí con «¿No tienes cuenta?
