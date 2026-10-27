@@ -72,8 +72,11 @@ formato de respuesta acordaste con quien hace la historia backend.
   - Con sesión iniciada, `/registro` lleva a donde corresponde según el rol.
 - **Ajustes después de integrar el PR #7 (27-10-2026, pedido del usuario):**
   - Los opcionales (teléfono, RUT, fecha de nacimiento, género) van en el formulario, sin
-    desplegable ni título: cada etiqueta lleva «(opcional)» en texto secundario. Reemplaza la
-    decisión de «Datos opcionales» cerrado.
+    desplegable ni título, con la etiqueta sola. Los obligatorios llevan «*» (solo visual, el
+    control tiene `aria-required`) y el formulario empieza con «Los campos con * son
+    obligatorios.». Reemplaza la decisión de «Datos opcionales» cerrado.
+  - Los campos de una misma fila comparten filas de la grilla (subgrid en `campoFormulario.tsx`):
+    los controles quedan alineados aunque una etiqueta ocupe dos líneas o un campo tenga error.
   - Fecha de nacimiento con el date picker de shadcn (`Popover` + `Calendar`, en
     `tienda/cuenta/selectorFecha.tsx`): mes y año en listas, de 1920 a hoy, sin fechas futuras,
     con «Quitar fecha». Se muestra como dd/mm/aaaa y se envía como AAAA-MM-DD.

@@ -110,10 +110,16 @@ export function FormularioRegistro({
       aria-labelledby="titulo-registro"
       className="flex flex-col gap-4"
     >
+      {/* Solo visual: el lector de pantalla oye «obligatorio» en cada campo (aria-required) */}
+      <p aria-hidden className="texto-leyenda text-texto-secundario">
+        Los campos con <span className="text-destructive">*</span> son
+        obligatorios.
+      </p>
       <div className="grid grid-cols-2 gap-3">
         <CampoFormulario
           id="registro-nombre"
           etiqueta="Nombre"
+          obligatorio
           error={errors.nombre?.message}
         >
           {(control) => (
@@ -127,6 +133,7 @@ export function FormularioRegistro({
         <CampoFormulario
           id="registro-apellido"
           etiqueta="Apellido"
+          obligatorio
           error={errors.apellido?.message}
         >
           {(control) => (
@@ -142,6 +149,7 @@ export function FormularioRegistro({
       <CampoFormulario
         id="registro-email"
         etiqueta="Correo electrónico"
+        obligatorio
         error={errors.email?.message}
       >
         {(control) => (
@@ -158,6 +166,7 @@ export function FormularioRegistro({
       <CampoFormulario
         id="registro-contrasena"
         etiqueta="Contraseña"
+        obligatorio
         error={errors.contrasena?.message}
       >
         {(control) => (
@@ -174,6 +183,7 @@ export function FormularioRegistro({
       <CampoFormulario
         id="registro-confirmacion"
         etiqueta="Repite tu contraseña"
+        obligatorio
         error={errors.confirmacionContrasena?.message}
       >
         {(control) => (

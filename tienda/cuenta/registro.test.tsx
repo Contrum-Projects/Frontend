@@ -67,23 +67,25 @@ const completarObligatorios = async (
     confirmacion = contrasena,
   }: { contrasena?: string; confirmacion?: string } = {},
 ) => {
-  await usuario.type(screen.getByLabelText('Nombre'), 'Camila');
-  await usuario.type(screen.getByLabelText('Apellido'), 'Rojas');
-  await usuario.type(
-    screen.getByLabelText('Correo electrónico'),
-    'camila@correo.cl',
-  );
-  await usuario.type(screen.getByLabelText('Contraseña'), contrasena);
-  await usuario.type(
-    screen.getByLabelText('Repite tu contraseña'),
-    confirmacion,
-  );
+  await usuario.type(porEtiqueta('Nombre'), 'Camila');
+  await usuario.type(porEtiqueta('Apellido'), 'Rojas');
+  await usuario.type(porEtiqueta('Correo electrónico'), 'camila@correo.cl');
+  await usuario.type(porEtiqueta('Contraseña'), contrasena);
+  await usuario.type(porEtiqueta('Repite tu contraseña'), confirmacion);
   return usuario;
 };
 
-/** Campo opcional por su etiqueta: «RUT (opcional)». */
-const opcional = (etiqueta: string) =>
-  screen.getByLabelText(`${etiqueta} (opcional)`);
+/**
+ * Campo por su etiqueta visible: la de un obligatorio termina en «*» (que el lector de
+ * pantalla no lee).
+ */
+const porEtiqueta = (etiqueta: string) =>
+  screen.getByLabelText(etiqueta, {
+    normalizer: (texto) => texto.trim().replace(/\*$/, ''),
+  });
+
+/** Campo opcional por su etiqueta (sin asterisco). */
+const opcional = (etiqueta: string) => porEtiqueta(etiqueta);
 
 const crearCuenta = (usuario: ReturnType<typeof userEvent.setup>) =>
   usuario.click(screen.getByRole('button', { name: 'Crear cuenta' }));
@@ -105,7 +107,9 @@ describe('SCRUM-93 · Registro', () => {
       'Contraseña',
       'Repite tu contraseña',
     ]) {
-      expect(screen.getByLabelText(campo)).toBeVisible();
+      // Obligatorio: «*» solo visual y aria-required para el lector de pantalla
+      expect(porEtiqueta(campo)).toBeVisible();
+      expect(porEtiqueta(campo)).toHaveAttribute('aria-required', 'true');
     }
     // Pestañas del celular, con «Crear cuenta» activa
     expect(
@@ -113,9 +117,10 @@ describe('SCRUM-93 · Registro', () => {
         screen.getByRole('navigation', { name: 'Ingresar o crear cuenta' }),
       ).getByRole('link', { name: 'Crear cuenta' }),
     ).toHaveAttribute('aria-current', 'page');
-    // Los opcionales van en el formulario, sin desplegable, con «(opcional)» en la etiqueta
+    // Los opcionales van en el formulario, sin desplegable, con la etiqueta sola
     for (const campo of ['Teléfono', 'RUT', 'Fecha de nacimiento', 'Género']) {
       expect(opcional(campo)).toBeVisible();
+      expect(opcional(campo)).not.toHaveAttribute('aria-required');
     }
     expect(
       screen.queryByRole('button', { name: /Datos opcionales/ }),
@@ -183,12 +188,12 @@ describe('SCRUM-93 · Registro', () => {
     const usuario = await completarObligatorios();
     await crearCuenta(usuario);
 
-    const correo = screen.getByLabelText('Correo electrónico');
+    const correo = porEtiqueta('Correo electrónico');
     await waitFor(() => expect(correo).toHaveAttribute('aria-invalid', 'true'));
     expect(correo).toHaveAccessibleDescription('El correo ya está registrado.');
     expect(correo).toHaveFocus();
     expect(correo).toHaveValue('camila@correo.cl');
-    expect(screen.getByLabelText('Nombre')).toHaveValue('Camila');
+    expect(porEtiqueta('Nombre')).toHaveValue('Camila');
   });
 
   it('E1-H1 FE · RUT ya registrado: marca el RUT junto a su campo', async () => {
@@ -213,7 +218,7 @@ describe('SCRUM-93 · Registro', () => {
       'El correo y el RUT ya están registrados.',
     );
     expect(rut).toHaveValue('12.345.678-5');
-    expect(screen.getByLabelText('Correo electrónico')).toHaveAttribute(
+    expect(porEtiqueta('Correo electrónico')).toHaveAttribute(
       'aria-invalid',
       'true',
     );
@@ -229,9 +234,9 @@ describe('SCRUM-93 · Registro', () => {
     });
     await crearCuenta(usuario);
 
-    expect(
-      screen.getByLabelText('Repite tu contraseña'),
-    ).toHaveAccessibleDescription('Las contraseñas no coinciden.');
+    expect(porEtiqueta('Repite tu contraseña')).toHaveAccessibleDescription(
+      'Las contraseñas no coinciden.',
+    );
     expect(fetch).not.toHaveBeenCalled();
   });
 
@@ -248,9 +253,9 @@ describe('SCRUM-93 · Registro', () => {
     await crearCuenta(usuario);
 
     await waitFor(() =>
-      expect(
-        screen.getByLabelText('Repite tu contraseña'),
-      ).toHaveAccessibleDescription('Las contraseñas no coinciden.'),
+      expect(porEtiqueta('Repite tu contraseña')).toHaveAccessibleDescription(
+        'Las contraseñas no coinciden.',
+      ),
     );
   });
 
@@ -278,12 +283,10 @@ describe('SCRUM-93 · Registro', () => {
     await usuario.click(
       screen.getByRole('button', { name: '¿No es tu correo? Cambiarlo' }),
     );
-    expect(screen.getByLabelText('Correo electrónico')).toHaveValue(
-      'camila@correo.cl',
-    );
+    expect(porEtiqueta('Correo electrónico')).toHaveValue('camila@correo.cl');
     // Las contraseñas no quedan cargadas en el formulario oculto
-    expect(screen.getByLabelText('Contraseña')).toHaveValue('');
-    expect(screen.getByLabelText('Repite tu contraseña')).toHaveValue('');
+    expect(porEtiqueta('Contraseña')).toHaveValue('');
+    expect(porEtiqueta('Repite tu contraseña')).toHaveValue('');
   });
 
   it('la fecha de nacimiento se puede quitar y entonces no se envía', async () => {
@@ -320,7 +323,7 @@ describe('SCRUM-93 · Registro', () => {
     mostrarRegistro();
 
     const usuario = userEvent.setup();
-    await usuario.type(screen.getByLabelText('Contraseña'), 'solotexto');
+    await usuario.type(porEtiqueta('Contraseña'), 'solotexto');
     await crearCuenta(usuario);
 
     expect(await screen.findByText('Escribe tu nombre.')).toBeInTheDocument();
@@ -379,7 +382,7 @@ describe('SCRUM-93 · Registro', () => {
       ),
     ).toBeInTheDocument();
     expect(screen.queryByText(/Prisma/)).not.toBeInTheDocument();
-    expect(screen.getByLabelText('Apellido')).toHaveValue('Rojas');
+    expect(porEtiqueta('Apellido')).toHaveValue('Rojas');
   });
 
   it('con la sesión ya iniciada no muestra el formulario y redirige', async () => {

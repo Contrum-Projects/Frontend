@@ -6,6 +6,7 @@ export interface PropsControl {
   id: string;
   'aria-invalid'?: true;
   'aria-describedby'?: string;
+  'aria-required'?: true;
 }
 
 /**
@@ -20,15 +21,18 @@ export const CampoFormulario = ({
   id,
   etiqueta,
   error,
-  opcional = false,
+  obligatorio = false,
   className,
   children,
 }: {
   id: string;
   etiqueta: string;
   error?: string;
-  /** Agrega «(opcional)» junto a la etiqueta, en texto secundario. */
-  opcional?: boolean;
+  /**
+   * Marca la etiqueta con «*» (solo visual; el control lleva `aria-required`). El formulario
+   * explica el asterisco una vez.
+   */
+  obligatorio?: boolean;
   className?: string;
   children: (control: PropsControl) => ReactNode;
 }) => (
@@ -39,22 +43,20 @@ export const CampoFormulario = ({
       className,
     )}
   >
-    {/* Abajo de su fila, junto al control; «(opcional)» baja de línea si no cabe */}
-    <Label
-      htmlFor={id}
-      className="flex-wrap items-baseline gap-x-1 gap-y-0 self-end"
-    >
+    {/* Abajo de su fila, junto al control */}
+    <Label htmlFor={id} className="gap-0.5 self-end">
       {etiqueta}
-      {/* El espacio no se ve (flex), pero el lector de pantalla dice «RUT (opcional)» */}
-      {opcional && ' '}
-      {opcional && (
-        <span className="texto-leyenda text-texto-secundario">(opcional)</span>
+      {obligatorio && (
+        <span aria-hidden className="text-destructive">
+          *
+        </span>
       )}
     </Label>
     {children({
       id,
       'aria-invalid': error ? true : undefined,
       'aria-describedby': error ? `${id}-error` : undefined,
+      'aria-required': obligatorio ? true : undefined,
     })}
     {error && (
       <p id={`${id}-error`} className="texto-pequeno text-destructive">

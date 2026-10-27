@@ -22,8 +22,8 @@ import { SelectorFecha } from './selectorFecha';
 const PRIMER_ANIO = 1920;
 
 /**
- * Teléfono, RUT, fecha de nacimiento y género del registro: van en el formulario, cada uno con
- * «(opcional)» en su etiqueta.
+ * Teléfono, RUT, fecha de nacimiento y género del registro: van en el formulario, con la
+ * etiqueta sola (los obligatorios llevan «*»).
  */
 export const CamposOpcionales = ({
   register,
@@ -40,7 +40,6 @@ export const CamposOpcionales = ({
       <CampoFormulario
         id="registro-telefono"
         etiqueta="Teléfono"
-        opcional
         error={errors.telefono?.message}
       >
         {(props) => (
@@ -56,7 +55,6 @@ export const CamposOpcionales = ({
       <CampoFormulario
         id="registro-rut"
         etiqueta="RUT"
-        opcional
         error={errors.rut?.message}
       >
         {(props) => (
@@ -73,7 +71,6 @@ export const CamposOpcionales = ({
       <CampoFormulario
         id="registro-fecha"
         etiqueta="Fecha de nacimiento"
-        opcional
         error={errors.fechaNacimiento?.message}
       >
         {(props) => (
@@ -96,7 +93,6 @@ export const CamposOpcionales = ({
       <CampoFormulario
         id="registro-genero"
         etiqueta="Género"
-        opcional
         error={errors.genero?.message}
       >
         {(props) => (
