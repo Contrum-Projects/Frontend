@@ -34,8 +34,9 @@ export const CamposOpcionales = ({
   control: Control<DatosRegistro>;
   errors: FieldErrors<DatosRegistro>;
 }) => (
-  <div className="flex flex-col gap-3">
-    <div className="grid gap-4 sm:grid-cols-2 sm:gap-3">
+  <div className="flex flex-col gap-4">
+    {/* Una grilla por fila: los campos de cada fila alinean sus controles (subgrid) */}
+    <div className="grid gap-x-3 gap-y-4 sm:grid-cols-2">
       <CampoFormulario
         id="registro-telefono"
         etiqueta="Teléfono"
@@ -67,6 +68,8 @@ export const CamposOpcionales = ({
           />
         )}
       </CampoFormulario>
+    </div>
+    <div className="grid gap-x-3 gap-y-4 sm:grid-cols-2">
       <CampoFormulario
         id="registro-fecha"
         etiqueta="Fecha de nacimiento"
