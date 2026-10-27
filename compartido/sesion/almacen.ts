@@ -11,9 +11,12 @@
  */
 import type { SesionIniciada } from '@/compartido/api/respuestas';
 
+/** Cómo terminó la sesión cuando la persona la cerró (E1-H3); sin valor, la rechazó el servidor. */
+export type CierreDeSesion = 'este' | 'todos';
+
 export type EstadoSesion =
   | { tipo: 'desconocida' }
-  | { tipo: 'anonima' }
+  | { tipo: 'anonima'; cierre?: CierreDeSesion }
   | { tipo: 'activa'; usuario: SesionIniciada['usuario'] };
 
 const RUTA_RENOVAR = '/api/cuentas/sesion/renovar';
@@ -23,6 +26,8 @@ const MARGEN_MS = 30_000;
 let estado: EstadoSesion = { tipo: 'desconocida' };
 let token: { valor: string; venceEn: number } | null = null;
 let renovacionEnCurso: Promise<string | null> | null = null;
+/** Sube cada vez que se olvida la sesión: una renovación iniciada antes no la revive. */
+let generacion = 0;
 const escuchas = new Set<() => void>();
 
 function cambiar(nuevo: EstadoSesion) {
@@ -48,10 +53,14 @@ export function guardarSesion(sesion: SesionIniciada): void {
   cambiar({ tipo: 'activa', usuario: sesion.usuario });
 }
 
-/** Olvida la sesión en esta pestaña (tras cerrar sesión o cuando ya no se puede renovar). */
-export function olvidarSesion(): void {
+/**
+ * Olvida la sesión en esta pestaña. `cierre` cuando la persona cerró sesión; sin él, la sesión
+ * ya no se puede renovar (cerrada en otro dispositivo, vencida o sin cookie).
+ */
+export function olvidarSesion(cierre?: CierreDeSesion): void {
+  generacion += 1;
   token = null;
-  cambiar({ tipo: 'anonima' });
+  cambiar(cierre ? { tipo: 'anonima', cierre } : { tipo: 'anonima' });
 }
 
 /**
@@ -75,7 +84,13 @@ export function renovarSesion(): Promise<string | null> {
   return renovacionEnCurso;
 }
 
+/** Espera la renovación en curso, si hay una (antes de cerrar sesión con la misma cookie). */
+export async function esperarRenovacion(): Promise<void> {
+  await renovacionEnCurso;
+}
+
 async function pedirRenovacion(): Promise<string | null> {
+  const inicio = generacion;
   try {
     const respuesta = await fetch(RUTA_RENOVAR, {
       method: 'POST',
@@ -87,6 +102,8 @@ async function pedirRenovacion(): Promise<string | null> {
       return null;
     }
     const sesion = (await respuesta.json()) as SesionIniciada;
+    // Se cerró la sesión mientras se renovaba: no se revive
+    if (generacion !== inicio) return null;
     guardarSesion(sesion);
     return sesion.tokenAcceso;
   } catch {
@@ -109,5 +126,6 @@ export function reiniciarParaPruebas(): void {
   estado = { tipo: 'desconocida' };
   token = null;
   renovacionEnCurso = null;
+  generacion = 0;
   escuchas.clear();
 }
