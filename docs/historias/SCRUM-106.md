@@ -83,3 +83,7 @@ con un parámetro simulado.
   Figma («Imagen de producto» 5:79) como foto, en PNG de 1056 × 960 (11:10, la proporción de la
   tarjeta). Forma según la categoría (botella, pote, tubo) y tono según la marca. La tarjeta dejó
   `mix-blend-multiply`, que teñía de verde los tonos arena y rosa.
+- **Foto del pack:** el placeholder del pack va sin fondo (PNG transparente), porque se ve sobre la
+  tarjeta «Packs» (`fondo-hueso-oscuro`) y sobre el arco del banner (`fondo-hueso`). En la tarjeta,
+  la foto queda abajo a la derecha y un poco afuera, como en Figma (2016:1277), con
+  `object-contain`.

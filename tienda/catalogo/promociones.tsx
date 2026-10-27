@@ -58,14 +58,15 @@ const TarjetaPacks = ({ imagen }: { imagen?: string }) => (
       </p>
       <EnlaceFlecha href={RUTAS.packs}>Ver packs</EnlaceFlecha>
     </div>
+    {/* Abajo a la derecha y un poco afuera, como en Figma (2016:1277): se ve la base del pack */}
     {imagen && (
-      <div className="absolute top-3 -right-2 size-32 md:size-[180px]">
+      <div className="absolute -right-2 -bottom-2 size-32 md:size-[190px]">
         <Image
           src={imagen}
           alt=""
           fill
-          sizes="(min-width: 768px) 180px, 128px"
-          className="rounded-lg object-cover"
+          sizes="(min-width: 768px) 190px, 128px"
+          className="object-contain object-bottom"
         />
       </div>
     )}
