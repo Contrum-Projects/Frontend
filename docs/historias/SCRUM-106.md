@@ -71,8 +71,9 @@ con un parámetro simulado.
     redondo del carrito junto al precio. El botón está deshabilitado hasta SCRUM-116. El radio de
     la foto es `rounded-md` (8 px): Figma usa 12 px, que no es un token.
   - **Marcas del inicio:** cinta infinita con todas las marcas de la API (decisión del equipo; Figma
-    muestra 6 fijas). Se mueve sola y se detiene con el mouse encima, al enfocar una marca o con el
-    botón de pausa (WCAG 2.2.2). Con «reducir movimiento» queda quieta y se desplaza a mano. Con
+    muestra 6 fijas). Se mueve sola y se detiene con el mouse encima, al enfocar una marca. El
+    botón de pausa se quitó por decisión del equipo (WCAG 2.2.2 pide una forma de detenerla: la
+    cubren el mouse, el foco y «reducir movimiento»). Con «reducir movimiento» queda quieta y se desplaza a mano. Con
     pocas marcas, la vuelta las repite hasta 12, pero solo la primera aparición se lee y se enfoca.
 - **Pedido al backend (línea de formatos de la tarjeta):** agregar a cada producto de
   `GET /tienda/productos` los formatos vendibles, para mostrar «2 formatos · desde 300 ml».

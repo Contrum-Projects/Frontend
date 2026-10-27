@@ -47,11 +47,14 @@
   /* Tipografía: next/font define --fuente-fraunces y --fuente-dm-sans en app/layout.tsx */
   --font-titulo: var(--fuente-fraunces), Georgia, serif;
   --font-sans: var(--fuente-dm-sans), system-ui, sans-serif;
+}
 
-  /*
-   * Cinta de marcas del inicio: la lista va dos veces seguidas y avanza media cinta en bucle.
-   * La duración la fija el componente según la cantidad de marcas (--duracion-cinta).
-   */
+/*
+ * Cinta de marcas del inicio: la lista va dos veces seguidas y avanza media cinta en bucle.
+ * La duración la fija el componente según la cantidad de marcas (--duracion-cinta). Va en
+ * `@theme inline` para que esa variable se lea en el elemento de la cinta y no en :root.
+ */
+@theme inline {
   --animate-cinta: cinta var(--duracion-cinta, 40s) linear infinite;
   @keyframes cinta {
     to {

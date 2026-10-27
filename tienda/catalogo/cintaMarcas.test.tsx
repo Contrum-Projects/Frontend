@@ -1,5 +1,4 @@
 import { render, screen, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { CintaMarcas } from './cintaMarcas';
 
@@ -42,19 +41,13 @@ describe('SCRUM-106 · Cinta de marcas del inicio', () => {
     expect(enfocables).toHaveLength(1);
   });
 
-  it('el botón pausa y reanuda la cinta', async () => {
+  it('la cinta no tiene botón de pausa y su duración depende de la cantidad de marcas', () => {
     mostrarCinta();
-    const usuario = userEvent.setup();
 
-    await usuario.click(
-      screen.getByRole('button', { name: 'Pausar las marcas' }),
-    );
-    await usuario.click(
-      screen.getByRole('button', { name: 'Reanudar las marcas' }),
-    );
-
-    expect(
-      screen.getByRole('button', { name: 'Pausar las marcas' }),
-    ).toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    // 12 marcas por vuelta × 3 s
+    const cinta = screen.getAllByRole('list')[0]!.parentElement!;
+    expect(cinta).toHaveClass('animate-cinta');
+    expect(cinta.style.getPropertyValue('--duracion-cinta')).toBe('36s');
   });
 });

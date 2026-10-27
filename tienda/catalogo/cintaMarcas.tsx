@@ -1,11 +1,7 @@
-'use client';
-
-import { Pause, Play } from 'lucide-react';
 import Link from 'next/link';
-import { useState, type CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 import type { MarcaTienda } from '@/compartido/api/respuestas';
 import { cn } from '@/compartido/lib/utils';
-import { Button } from '@/compartido/ui/button';
 import { urlCatalogo } from '@/tienda/diseno/enlaces';
 
 /** Marcas por vuelta: con pocas se repiten, para que la cinta cubra pantallas de 1440 px. */
@@ -19,13 +15,10 @@ interface CintaMarcasProps {
 }
 
 /**
- * Cinta infinita de marcas del inicio: avanza sola y se detiene con el mouse encima, al
- * enfocar una marca o con el botón de pausa (WCAG 2.2.2). Con «reducir movimiento» queda
- * quieta y se desplaza a mano.
+ * Cinta infinita de marcas del inicio: avanza sola y se detiene con el mouse encima o al
+ * enfocar una marca. Con «reducir movimiento» queda quieta y se desplaza a mano.
  */
 export function CintaMarcas({ marcas, titulo }: CintaMarcasProps) {
-  const [pausada, setPausada] = useState(false);
-
   const repeticiones = Math.ceil(MINIMO_POR_VUELTA / marcas.length);
   const vuelta = Array.from({ length: repeticiones }, () => marcas).flat();
   // Duración según el largo de la vuelta (variable CSS que lee --animate-cinta)
@@ -35,31 +28,16 @@ export function CintaMarcas({ marcas, titulo }: CintaMarcasProps) {
 
   return (
     <>
-      <div className="mb-3 flex items-center justify-between gap-4 md:mb-6">
-        <h2
-          id="titulo-marcas"
-          className="titulo-h3 text-texto-principal md:titulo-h2"
-        >
-          {titulo}
-        </h2>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icono"
-          className="motion-reduce:hidden"
-          onClick={() => setPausada((antes) => !antes)}
-          aria-label={pausada ? 'Reanudar las marcas' : 'Pausar las marcas'}
-        >
-          {pausada ? <Play aria-hidden /> : <Pause aria-hidden />}
-        </Button>
-      </div>
+      <h2
+        id="titulo-marcas"
+        className="mb-3 titulo-h3 text-texto-principal md:mb-6 md:titulo-h2"
+      >
+        {titulo}
+      </h2>
       <div className="group -mx-4 overflow-hidden mask-x-from-90% motion-reduce:overflow-x-auto md:mx-0">
         <div
           style={duracion}
-          className={cn(
-            'flex w-max animate-cinta group-focus-within:[animation-play-state:paused] group-hover:[animation-play-state:paused] motion-reduce:animate-none',
-            pausada && '[animation-play-state:paused]',
-          )}
+          className="flex w-max animate-cinta group-focus-within:[animation-play-state:paused] group-hover:[animation-play-state:paused] motion-reduce:animate-none"
         >
           <ListaMarcas marcas={vuelta} navegables={marcas.length} />
           {/* La copia completa el bucle; los lectores de pantalla y el teclado la saltan */}
