@@ -7,15 +7,9 @@ import {
   type UseFormRegister,
 } from 'react-hook-form';
 import { Input } from '@/compartido/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/compartido/ui/select';
 import { CampoFormulario } from './campoFormulario';
-import { GENEROS, type DatosRegistro } from './esquemaRegistro';
+import type { DatosRegistro } from './esquemaRegistro';
+import { SelectorGenero } from './selectorGenero';
 import { SelectorFecha } from './selectorFecha';
 
 /** La fecha más antigua que ofrece el calendario. */
@@ -100,18 +94,13 @@ export const CamposOpcionales = ({
             name="genero"
             control={control}
             render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger {...props} ref={field.ref} onBlur={field.onBlur}>
-                  <SelectValue placeholder="Seleccionar" />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  {GENEROS.map((genero) => (
-                    <SelectItem key={genero} value={genero}>
-                      {genero}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SelectorGenero
+                control={props}
+                ref={field.ref}
+                valor={field.value}
+                alCambiar={field.onChange}
+                alSalir={field.onBlur}
+              />
             )}
           />
         )}

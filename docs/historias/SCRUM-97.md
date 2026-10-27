@@ -61,6 +61,10 @@ Sin rutas simuladas.
   editarlo, y «Correo confirmado» es siempre cierto con la sesión iniciada (el backend no deja
   ingresar sin confirmar). Un género fuera de la lista no se muestra, pero no se borra si no se
   toca. El 409 (RUT en otra cuenta) y el 403 del RUT van junto al campo RUT.
+- **Género «Sin especificar»:** primera opción del selector de Género, en el registro y en
+  Mis datos (`selectorGenero.tsx`). Deja el campo vacío, así se puede quitar un género ya
+  elegido; Mis datos lo envía como `null`. No es lo mismo que «Prefiero no decir», que sí se
+  guarda (acordado con el usuario).
 - **Reutilizado del registro:** las reglas de los datos personales (`camposPersonales` en
   `esquemaRegistro.ts`), `SelectorFecha`, la lista de géneros y el reparto de errores por campo.
 - **Menú de cuenta (CA4):** escritorio con el menú lateral de SCRUM-95; en celular, «Mis
@@ -74,11 +78,6 @@ Sin rutas simuladas.
 - **Diferencias con Figma, para revisar con diseño:** las tarjetas de dirección usan
   `rounded-lg` (16 px); Figma tiene 12 px sin variable de radio. Los formularios explican el
   asterisco de los campos obligatorios, como el registro, aunque Figma no lo muestra en Mis datos.
-
-**Preguntas abiertas:**
-
-- **Género:** una vez elegido no se puede quitar (el `Select` no tiene opción vacía), aunque el
-  backend acepta `null`. ¿Se agrega una opción para dejarlo sin especificar?
 
 **Pendientes sugeridos (no aplicados):**
 

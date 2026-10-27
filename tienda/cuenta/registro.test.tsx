@@ -129,7 +129,13 @@ describe('SCRUM-93 · Registro', () => {
     await usuario.click(opcional('Género'));
     expect(
       screen.getAllByRole('option').map((opcion) => opcion.textContent),
-    ).toEqual(['Femenino', 'Masculino', 'Otro', 'Prefiero no decir']);
+    ).toEqual([
+      'Sin especificar',
+      'Femenino',
+      'Masculino',
+      'Otro',
+      'Prefiero no decir',
+    ]);
     await usuario.keyboard('{Escape}');
     expect(
       screen.getByRole('checkbox', {

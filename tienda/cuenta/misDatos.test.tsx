@@ -105,6 +105,33 @@ describe('SCRUM-97 · Mis datos', () => {
     expect(within(tarjeta).getByLabelText('RUT')).toHaveValue('7.654.321-6');
   });
 
+  it('E1-H5 FE · editar datos: «Sin especificar» quita el género ya guardado', async () => {
+    const escrituras = simularBackend({
+      'GET /api/cuentas/yo': () => responder({ ...DATOS, genero: 'Femenino' }),
+      'GET /api/cuentas/yo/direcciones': () => responder([]),
+      'PATCH /api/cuentas/yo': (cuerpo) =>
+        responder({ ...DATOS, ...(cuerpo as object) }),
+    });
+    mostrarMisDatos();
+    const tarjeta = await tarjetaDatos();
+    const usuario = userEvent.setup();
+    const genero = within(tarjeta).getByRole('combobox', { name: 'Género' });
+    expect(genero).toHaveTextContent('Femenino');
+
+    await usuario.click(genero);
+    await usuario.click(
+      await screen.findByRole('option', { name: 'Sin especificar' }),
+    );
+    await usuario.click(
+      within(tarjeta).getByRole('button', { name: 'Guardar cambios' }),
+    );
+
+    expect(escrituras).toEqual([
+      { peticion: 'PATCH /api/cuentas/yo', cuerpo: { genero: null } },
+    ]);
+    expect(genero).toHaveTextContent('Seleccionar');
+  });
+
   it('E1-H5 FE · editar datos: valida antes de enviar y no llama al backend', async () => {
     const escrituras = conDatos(() => responder(DATOS));
     mostrarMisDatos();
