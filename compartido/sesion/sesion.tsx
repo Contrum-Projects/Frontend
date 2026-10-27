@@ -15,6 +15,7 @@ import { api } from '@/compartido/api/cliente';
 import { exigir } from '@/compartido/api/errores';
 import type { SesionIniciada } from '@/compartido/api/respuestas';
 import {
+  esperarRenovacion,
   guardarSesion,
   leerEstado,
   olvidarSesion,
@@ -54,17 +55,32 @@ export function useSesion() {
     [clienteConsultas],
   );
 
-  /** E1-H3. `todas: true` cierra la sesión en todos los dispositivos. */
+  /**
+   * E1-H3. `todas: true` cierra la sesión en todos los dispositivos. Devuelve `false` si el
+   * backend no confirmó el cierre (5xx o sin conexión): la sesión sigue abierta para que la
+   * persona lo intente de nuevo, y no crea haber cerrado una sesión que sigue viva. Un 401
+   * significa que ya estaba cerrada.
+   */
   const cerrarSesion = useCallback(
     async ({ todas = false }: { todas?: boolean } = {}) => {
+      // Una renovación en curso cambiaría la cookie que se va a cerrar
+      await esperarRenovacion();
+      let codigo: number;
       try {
-        await (todas
+        const { response } = await (todas
           ? api.DELETE('/api/cuentas/sesion/todas')
           : api.DELETE('/api/cuentas/sesion'));
-      } finally {
-        olvidarSesion();
-        clienteConsultas.clear();
+        codigo = response.status;
+      } catch {
+        return false;
       }
+      if (codigo >= 300 && codigo !== 401) return false;
+      // Con 401 el cliente de la API ya pudo dejar la sesión como rechazada
+      if (leerEstado().tipo === 'activa') {
+        olvidarSesion(todas ? 'todos' : 'este');
+      }
+      clienteConsultas.clear();
+      return true;
     },
     [clienteConsultas],
   );
@@ -72,6 +88,8 @@ export function useSesion() {
   return {
     estado: estado.tipo,
     usuario: estado.tipo === 'activa' ? estado.usuario : undefined,
+    /** Si la persona cerró la sesión (en este dispositivo o en todos). */
+    cierre: estado.tipo === 'anonima' ? estado.cierre : undefined,
     iniciarSesion,
     cerrarSesion,
   };

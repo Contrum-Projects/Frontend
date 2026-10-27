@@ -6,7 +6,9 @@ import type { ComponentProps, ReactNode } from 'react';
 import type { CategoriaTienda } from '@/compartido/api/respuestas';
 import { useSesion } from '@/compartido/sesion/sesion';
 import { Skeleton } from '@/compartido/ui/skeleton';
+import { useCerrarSesion } from '@/tienda/cuenta/useCerrarSesion';
 import { ENLACES_AYUDA, RUTAS, urlCatalogo } from './enlaces';
+import { IconoCerrarSesion } from './iconoCerrarSesion';
 
 /** Partes del menú del celular (./menuCelular.tsx). */
 
@@ -91,7 +93,38 @@ export function PanelPrincipal({
           ))}
         </ul>
       </nav>
+      <CerrarSesionMenu alElegir={alElegir} />
     </>
+  );
+}
+
+/**
+ * «Cerrar sesión» al pie del menú (Figma 2060:2224), solo con sesión (E1-H3). La página sigue
+ * igual, ya como visitante; si era de la cuenta, CuentaProtegida lleva al inicio.
+ */
+function CerrarSesionMenu({ alElegir }: { alElegir: () => void }) {
+  const { usuario } = useSesion();
+  const { cerrar, cerrando, error } = useCerrarSesion({ alCerrar: alElegir });
+
+  if (!usuario) return null;
+
+  return (
+    <div className="px-6 pb-4">
+      <button
+        type="button"
+        onClick={cerrar}
+        disabled={cerrando}
+        className="flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-md texto-pequeno text-texto-secundario hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-profundo disabled:opacity-50"
+      >
+        <IconoCerrarSesion className="size-5 text-texto-principal" />
+        Cerrar sesión
+      </button>
+      {error && (
+        <p role="alert" className="texto-leyenda text-estado-error">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }
 

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   leerEstado,
+  olvidarSesion,
   reiniciarParaPruebas,
   renovarSesion,
   tokenVigente,
@@ -80,5 +81,26 @@ describe('sesión del navegador', () => {
     await renovarSesion();
     expect(await tokenVigente()).toBe('nuevo');
     expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('E1-H3 FE · una renovación que termina después de cerrar sesión no la revive', async () => {
+    let responderRenovacion: (respuesta: Response) => void = () => {};
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          new Promise<Response>((resolver) => {
+            responderRenovacion = resolver;
+          }),
+      ),
+    );
+
+    const renovacion = renovarSesion();
+    olvidarSesion('este');
+    responderRenovacion(responder(sesion('tarde')));
+
+    expect(await renovacion).toBeNull();
+    expect(leerEstado()).toEqual({ tipo: 'anonima', cierre: 'este' });
+    expect(await tokenVigente()).toBeNull();
   });
 });
