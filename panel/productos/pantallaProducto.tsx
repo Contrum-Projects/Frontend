@@ -38,7 +38,7 @@ const VolverAProductos = () => (
 /** «Producto nuevo» (Figma P3 2029:658 y 2024:443, E3-H1 criterio 2). */
 export function PantallaProductoNuevo() {
   return (
-    <div className="flex flex-col gap-2 lg:max-w-3xl">
+    <div className="flex flex-col gap-2">
       <VolverAProductos />
       <div className="flex flex-col gap-4 lg:gap-6">
         <FormularioProductoPanel
@@ -62,7 +62,7 @@ export function PantallaEditarProducto({ id }: { id: string }) {
   const numero = Number(id);
   const valido = Number.isInteger(numero) && numero > 0;
   return (
-    <div className="flex flex-col gap-2 lg:max-w-3xl">
+    <div className="flex flex-col gap-2">
       <VolverAProductos />
       {valido ? <EditarProducto id={numero} /> : <ProductoNoEncontrado />}
     </div>
@@ -205,8 +205,10 @@ const EsqueletoFormulario = () => (
     <Skeleton className="h-9 w-64 max-w-full" />
     <div className="flex flex-col gap-4 rounded-lg border bg-card p-4 lg:p-6">
       <Skeleton className="h-6 w-40" />
-      <CampoEsqueleto />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-x-3 gap-y-4 lg:grid-cols-4">
+        <div className="col-span-2">
+          <CampoEsqueleto />
+        </div>
         <CampoEsqueleto />
         <CampoEsqueleto />
       </div>
@@ -227,7 +229,7 @@ const EsqueletoFormulario = () => (
 
 /** Mientras se lee el id de la ruta: con el lugar de «← Productos» en celular. */
 export const EsqueletoProducto = () => (
-  <div className="flex flex-col gap-2 lg:max-w-3xl">
+  <div className="flex flex-col gap-2">
     <div aria-hidden className="h-10 lg:hidden" />
     <EsqueletoFormulario />
   </div>

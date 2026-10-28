@@ -71,6 +71,10 @@ formato de respuesta acordaste con quien hace la historia backend.
   Formatos (Figma lo pone al final de la página), porque los formatos se guardan aparte.
 - **Vencimiento** con `formatearDia()` nuevo en `compartido/formato/fecha.ts`: `formatearFecha()`
   corría un día las fechas sin hora por la zona de Chile.
+- **Página a todo el ancho** (decisión del usuario): sin `lg:max-w-3xl`, como las demás pantallas
+  del panel. En escritorio, nombre, marca y categoría van en una fila. No se usa la columna
+  derecha de Figma (fotos y sugerencia de IA): **las fotos van dentro de cada formato**, no como
+  panel del producto (para SCRUM-102).
 - **Revisiones:** criterios y seguridad sin bloqueantes. Diseño: los botones del panel lateral
   se desbordaban a 360 px (ahora «Agregar» y «Guardar»; «Guardar cambios» de
   `formularioCategoria.tsx` tiene el mismo problema, fuera de esta historia), el lápiz pasa a 40 px
