@@ -25,8 +25,8 @@ Total: 53 historias, 185 puntos.
 | 7   | [SCRUM-99](SCRUM-99.md) · E13-H2 · Menú y rutas del panel según el rol                   | 5   | Hecha       | Sí      | SCRUM-25 | SCRUM-94             |
 | 8   | [SCRUM-98](SCRUM-98.md) · E13-H1 · Pantalla Personal del panel                           | 3   | Hecha       | Sí      | SCRUM-24 | SCRUM-99             |
 | 9   | [SCRUM-103](SCRUM-103.md) · E3-H4 · Pantalla de marcas y categorías                      | 3   | Hecha       | Sí      | SCRUM-29 | SCRUM-99             |
-| 10  | [SCRUM-100](SCRUM-100.md) · E3-H1 · Panel de productos: listado y formulario             | 8   | En revisión | Parcial | SCRUM-26 | SCRUM-99             |
-| 11  | [SCRUM-101](SCRUM-101.md) · E3-H2 · Tabla de formatos en el producto                     | 5   | En revisión | Sí      | SCRUM-27 | SCRUM-100            |
+| 10  | [SCRUM-100](SCRUM-100.md) · E3-H1 · Panel de productos: listado y formulario             | 8   | Hecha       | Parcial | SCRUM-26 | SCRUM-99             |
+| 11  | [SCRUM-101](SCRUM-101.md) · E3-H2 · Tabla de formatos en el producto                     | 5   | Hecha       | Sí      | SCRUM-27 | SCRUM-100            |
 | 12  | [SCRUM-102](SCRUM-102.md) · E3-H3 · Fotos por formato en el panel                        | 5   | En revisión | Sí      | SCRUM-28 | SCRUM-101            |
 | 13  | [SCRUM-104](SCRUM-104.md) · E3-H5 · Precios minorista y mayorista en el panel            | 3   | Por hacer   | Sí      | SCRUM-30 | SCRUM-101            |
 | 14  | [SCRUM-105](SCRUM-105.md) · E3-H6 · Pantalla Pack nuevo                                  | 5   | Por hacer   | No      | SCRUM-31 | SCRUM-102, SCRUM-104 |

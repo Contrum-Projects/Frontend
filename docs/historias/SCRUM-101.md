@@ -85,4 +85,4 @@ formato de respuesta acordaste con quien hace la historia backend.
   («hasta 99999.99») y en las columnas de alto, ancho y largo ocupan varias líneas; el stock
   mínimo se muestra sin separador de miles.
 - **Pendiente de revisar a mano** con una cuenta del personal: la pantalla a 360 y 1440 px.
-- **PR:** https://github.com/Contrum-Projects/Frontend/pull/18 (En revisión).
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/18, integrado el 28-10-2026. Hecha.
