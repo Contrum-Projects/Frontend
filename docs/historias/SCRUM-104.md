@@ -88,3 +88,4 @@ la simulación no calcula. Sin esos campos la pantalla muestra solo los netos.
 - **Preguntas para el equipo:** en `/panel/productos/nuevo` los precios se fijan después de
   guardar el producto y crear un formato. ¿Basta así? P3c Pack nuevo queda para SCRUM-105.
 - Pendiente: revisar a mano 1440 y 360 px con una cuenta de administrador y el backend real.
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/21 (En revisión).
