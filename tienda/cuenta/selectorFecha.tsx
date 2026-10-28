@@ -37,6 +37,7 @@ export const SelectorFecha = ({
   alCambiar,
   desde,
   hasta,
+  mesInicial,
   control,
   ref,
 }: {
@@ -48,6 +49,8 @@ export const SelectorFecha = ({
   desde: Date;
   /** Último día que se puede elegir. */
   hasta: Date;
+  /** Mes que muestra el calendario sin fecha elegida; si falta, el de `hasta`. */
+  mesInicial?: Date;
   control: PropsControl;
 }) => {
   const [abierto, setAbierto] = useState(false);
@@ -77,7 +80,7 @@ export const SelectorFecha = ({
           mode="single"
           captionLayout="dropdown"
           selected={seleccionada}
-          defaultMonth={seleccionada ?? hasta}
+          defaultMonth={seleccionada ?? mesInicial ?? hasta}
           startMonth={desde}
           endMonth={hasta}
           disabled={{ after: hasta }}

@@ -40,7 +40,7 @@ import { OrigenDescripcionProducto } from './etiquetasProducto';
 import { urlProducto } from './listaProductos';
 
 /** Tarjeta de Figma (P3 2029:742): superficie, borde y título. */
-const Tarjeta = ({
+export const Tarjeta = ({
   titulo,
   extra,
   children,
@@ -170,21 +170,24 @@ export function FormularioProductoPanel({
         </Alert>
       )}
       <Tarjeta titulo="Datos del producto">
-        <CampoFormulario
-          id="producto-nombre"
-          etiqueta="Nombre"
-          obligatorio
-          error={errors.nombre?.message}
-        >
-          {(propsControl) => (
-            <Input
-              {...propsControl}
-              autoComplete="off"
-              {...register('nombre')}
-            />
-          )}
-        </CampoFormulario>
-        <div className="grid grid-cols-2 gap-x-3">
+        {/* Celular: el nombre arriba y marca con categoría lado a lado (Figma 2024:544).
+            Escritorio: los tres en una fila, a todo el ancho de la página. */}
+        <div className="grid grid-cols-2 gap-x-3 gap-y-4 lg:grid-cols-4">
+          <CampoFormulario
+            id="producto-nombre"
+            etiqueta="Nombre"
+            obligatorio
+            error={errors.nombre?.message}
+            className="col-span-2"
+          >
+            {(propsControl) => (
+              <Input
+                {...propsControl}
+                autoComplete="off"
+                {...register('nombre')}
+              />
+            )}
+          </CampoFormulario>
           <CampoFormulario
             id="producto-marca"
             etiqueta="Marca"

@@ -37,3 +37,14 @@ const diaYMes = new Intl.DateTimeFormat('es-CL', {
 /** Día sin hora de la API (AAAA-MM-DD) → «31 de octubre». No depende de la zona del equipo. */
 export const formatearDiaMes = (dia: string) =>
   diaYMes.format(new Date(`${dia}T00:00:00Z`));
+
+const soloDia = new Intl.DateTimeFormat('es-CL', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
+/** Día sin hora de la API (AAAA-MM-DD) → «31 dic 2027». No depende de la zona del equipo. */
+export const formatearDia = (dia: string) =>
+  soloDia.format(new Date(`${dia}T00:00:00Z`));

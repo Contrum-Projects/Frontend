@@ -33,3 +33,9 @@ formato de respuesta acordaste con quien hace la historia backend.
 ## Notas de trabajo
 
 <!-- Decisiones, preguntas abiertas y lo que quedó pendiente. Lo completa /historia. -->
+
+**28-10-2026** (desde SCRUM-101)
+
+- **Las fotos van dentro de cada formato** (decisión del usuario), no en una columna del producto
+  como el panel «Fotos del formato» de Figma (2031:975). La página del producto ya usa todo el
+  ancho en una columna.
