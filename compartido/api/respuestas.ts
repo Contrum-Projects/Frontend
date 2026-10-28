@@ -145,3 +145,63 @@ export interface CuentaPersonal {
   /** Aún no define su contraseña con el enlace de la invitación. */
   invitacionPendiente: boolean;
 }
+
+/** backend: src/common/dominio/valores.ts › ORIGENES_DESCRIPCION */
+export type OrigenDescripcion = 'manual' | 'ia' | 'ia_editada';
+
+/** backend: src/common/dominio/valores.ts › CANALES_VENTA. `profesional`: exclusivo. */
+export type CanalVenta = 'general' | 'profesional';
+
+/**
+ * backend: src/modulos/catalogo/productos.service.ts › crear, actualizar, desactivar y obtener
+ * (modelo Producto de prisma/schema.prisma con `INCLUIR`). Lo que devuelven POST, GET, PATCH y
+ * PATCH …/desactivar de /api/catalogo/productos (E3-H1).
+ */
+export interface ProductoPanel {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  origenDescripcion: OrigenDescripcion;
+  canalVenta: CanalVenta;
+  activo: boolean;
+  marca: { id: number; nombre: string } | null;
+  categoria: { id: number; nombre: string };
+}
+
+/**
+ * Fila del listado del panel (E3-H1, Figma P3a). **Simulada** (SCRUM-100): el backend hoy
+ * entrega solo los datos de `ProductoPanel`; los demás campos se pidieron a SCRUM-26 (ver
+ * docs/historias/SCRUM-100.md). Los decide el backend, el panel solo los muestra.
+ */
+export interface ProductoListadoPanel extends ProductoPanel {
+  /** URL pública de la imagen principal del formato predeterminado, o `null` sin imágenes. */
+  imagen: string | null;
+  /** Cantidad de formatos activos. */
+  formatos: number;
+  /**
+   * Menor precio con IVA entre sus formatos, del canal del producto (minorista si es general,
+   * mayorista si es exclusivo), en pesos enteros. `null` si ningún formato tiene precio.
+   */
+  precioDesde: number | null;
+  /** Unidades en bodegas activas, sumando sus formatos. */
+  stockTotal: number;
+  /** Algún formato está bajo su stock mínimo. */
+  stockBajo: boolean;
+}
+
+/** Cuántos productos hay en cada filtro del listado, con la búsqueda aplicada. Simulado (SCRUM-100). */
+export interface ConteosProductosPanel {
+  todos: number;
+  exclusivos: number;
+  stockBajo: number;
+  inactivos: number;
+}
+
+/** GET /api/catalogo/productos (panel). Simulado (SCRUM-100), ver `ProductoListadoPanel`. */
+export interface ListadoProductosPanel {
+  items: ProductoListadoPanel[];
+  total: number;
+  pagina: number;
+  limite: number;
+  conteos: ConteosProductosPanel;
+}
