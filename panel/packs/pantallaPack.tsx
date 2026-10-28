@@ -10,14 +10,14 @@ import { usePack } from './consultasPacks';
 import { FormularioPackPanel } from './formularioPack';
 import { DisponibilidadPack, FotosPack, PreciosPack } from './tarjetasPack';
 
-/** «← Productos» sobre el título, solo en celular (Figma P3c 2065:9091). */
-const VolverAProductos = () => (
+/** «← Packs» sobre el título, solo en celular (Figma P3c 2065:9091 vuelve a Productos). */
+const VolverAPacks = () => (
   <Link
-    href="/panel/productos"
+    href="/panel/packs"
     className="inline-flex min-h-10 items-center gap-2 self-start texto-etiqueta text-marca-profundo lg:hidden"
   >
     <ArrowLeft aria-hidden className="size-4 stroke-[1.75]" />
-    Productos
+    Packs
   </Link>
 );
 
@@ -25,7 +25,7 @@ const VolverAProductos = () => (
 export function PantallaPackNuevo() {
   return (
     <div className="flex flex-col gap-2">
-      <VolverAProductos />
+      <VolverAPacks />
       <FormularioPackPanel
         titulo={
           <h1 className="flex-1 titulo-h2 text-texto-principal">Pack nuevo</h1>
@@ -51,7 +51,7 @@ export function PantallaEditarPack({ id }: { id: string }) {
   const valido = Number.isInteger(numero) && numero > 0;
   return (
     <div className="flex flex-col gap-2">
-      <VolverAProductos />
+      <VolverAPacks />
       {valido ? <EditarPack id={numero} /> : <PackNoEncontrado />}
     </div>
   );
@@ -64,7 +64,7 @@ const PackNoEncontrado = () => (
       No encontramos este pack.
     </p>
     <Button asChild variant="contorno">
-      <Link href="/panel/productos">Ver productos</Link>
+      <Link href="/panel/packs">Ver packs</Link>
     </Button>
   </div>
 );
@@ -132,7 +132,7 @@ const EsqueletoFormularioPack = () => (
   </div>
 );
 
-/** Mientras se lee el id de la ruta: con el lugar de «← Productos» en celular. */
+/** Mientras se lee el id de la ruta: con el lugar de «← Packs» en celular. */
 export const EsqueletoPack = () => (
   <div className="flex flex-col gap-2">
     <div aria-hidden className="h-10 lg:hidden" />

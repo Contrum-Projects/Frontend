@@ -98,7 +98,7 @@ export function FormularioPackPanel({
       clienteConsultas.setQueryData(clavePack(guardado.id), guardado);
       await Promise.all([
         clienteConsultas.invalidateQueries({
-          queryKey: [...CLAVE_PACKS, 'formatos'],
+          queryKey: [...CLAVE_PACKS, 'lista'],
         }),
         // Si pasó a exclusivo, ya no lleva precio minorista (E3-H5 criterio 2)
         clienteConsultas.invalidateQueries({
@@ -288,7 +288,7 @@ export function FormularioPackPanel({
 }
 
 /**
- * «Cancelar» vuelve a Productos sin guardar; «Guardar pack» envía el formulario aunque esté
+ * «Cancelar» vuelve a Packs sin guardar; «Guardar pack» envía el formulario aunque esté
  * fuera de él (atributo `form`). Figma 2065:2384.
  */
 const AccionesPack = ({
@@ -300,7 +300,7 @@ const AccionesPack = ({
 }) => (
   <>
     <Button asChild variant="contorno" className="max-lg:min-h-10">
-      <Link href="/panel/productos">Cancelar</Link>
+      <Link href="/panel/packs">Cancelar</Link>
     </Button>
     <Button
       type="submit"

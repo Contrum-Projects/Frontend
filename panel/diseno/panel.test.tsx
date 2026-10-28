@@ -91,6 +91,7 @@ describe('Menú del panel según el rol (SCRUM-99)', () => {
       'Inicio',
       'Pedidos',
       'Productos',
+      'Packs',
       'Inventario',
       'Verificaciones',
       'Campañas',
@@ -108,6 +109,7 @@ describe('Menú del panel según el rol (SCRUM-99)', () => {
       'Inicio',
       'Pedidos',
       'Productos',
+      'Packs',
       'Inventario',
     ]);
   });
@@ -162,6 +164,7 @@ describe('Menú del panel según el rol (SCRUM-99)', () => {
 
     const hoja = await screen.findByRole('dialog', { name: 'Más' });
     expect(textosDe(hoja)).toEqual([
+      'Packs',
       'Verificaciones',
       'Campañas',
       'Reportes',

@@ -358,3 +358,11 @@ export interface PackPanel {
   /** Lo que cuestan los componentes por separado, con IVA. Pedido a SCRUM-31. */
   precioMinoristaPorSeparadoConIva?: number | null;
 }
+
+/** backend: src/modulos/catalogo/packs.service.ts › ListadoPacks (GET /api/catalogo/packs). */
+export interface ListadoPacksPanel {
+  items: PackPanel[];
+  total: number;
+  pagina: number;
+  limite: number;
+}

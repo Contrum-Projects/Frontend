@@ -12,6 +12,7 @@ import type { components } from '@/compartido/api/esquema';
 import type {
   ImagenPanel,
   ListadoFormatosParaPack,
+  ListadoPacksPanel,
   PackPanel,
 } from '@/compartido/api/respuestas';
 import { conErrorDeApi } from '@/tienda/cuenta/consultasCuenta';
@@ -26,6 +27,24 @@ export const clavePreciosPack = (id: number) =>
   [...clavePack(id), 'precios'] as const;
 
 export const urlPack = (id: number) => `/panel/packs/${id}` as const;
+
+/**
+ * Packs ordenados por nombre, con sus componentes y si hoy están vigentes. Mientras se pide la
+ * página siguiente sigue a la vista la anterior.
+ */
+export const usePacks = (pagina: number) =>
+  useQuery({
+    queryKey: [...CLAVE_PACKS, 'lista', { pagina }],
+    queryFn: () =>
+      conErrorDeApi(async () =>
+        exigir<ListadoPacksPanel>(
+          await api.GET('/api/catalogo/packs', {
+            params: { query: { pagina } },
+          }),
+        ),
+      ),
+    placeholderData: keepPreviousData,
+  });
 
 /** El pack con sus componentes, sus fotos y su disponibilidad (E3-H6). */
 export const usePack = (id: number) =>

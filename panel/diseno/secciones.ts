@@ -2,6 +2,7 @@ import {
   BadgeCheck,
   Box,
   ChartNoAxesColumn,
+  Gift,
   House,
   Mail,
   ReceiptText,
@@ -24,6 +25,8 @@ export interface SeccionPanel {
   icono: LucideIcon;
   /** Sin permiso: la ve todo el personal. */
   permiso?: Permiso;
+  /** `false`: no entra en la navegación inferior de celular (Figma no la dibuja ahí), va en «Más». */
+  enLaBarra?: false;
 }
 
 /**
@@ -46,6 +49,14 @@ export const SECCIONES: readonly SeccionPanel[] = [
     href: '/panel/productos',
     icono: Tag,
     permiso: PERMISOS.CATALOGO_GESTIONAR,
+  },
+  {
+    // No está en el menú de Figma: se agregó con SCRUM-105 para gestionar los packs aparte
+    texto: 'Packs',
+    href: '/panel/packs',
+    icono: Gift,
+    permiso: PERMISOS.CATALOGO_GESTIONAR,
+    enLaBarra: false,
   },
   {
     texto: 'Inventario',
@@ -88,7 +99,6 @@ export const SECCIONES: readonly SeccionPanel[] = [
  * que no cuelgan de /panel/productos también van aquí.
  */
 const PERMISOS_DE_RUTA: readonly { prefijo: string; permiso: Permiso }[] = [
-  { prefijo: '/panel/packs', permiso: PERMISOS.CATALOGO_GESTIONAR },
   {
     prefijo: '/panel/marcas-y-categorias',
     permiso: PERMISOS.CATALOGO_GESTIONAR,
