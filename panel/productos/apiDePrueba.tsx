@@ -11,6 +11,7 @@ import type {
   FormatoPanel,
   ListadoProductosPanel,
   MarcaPanel,
+  PreciosArticulo,
   ProductoListadoPanel,
   ProductoPanel,
 } from '@/compartido/api/respuestas';
@@ -19,6 +20,7 @@ import {
   guardarSesion,
   reiniciarParaPruebas,
 } from '@/compartido/sesion/almacen';
+import type { Rol } from '@/compartido/sesion/roles';
 import { Toaster } from '@/compartido/ui/sonner';
 
 export const MARCAS: MarcaPanel[] = [
@@ -75,6 +77,20 @@ export const formato = (extra: Partial<FormatoPanel> = {}): FormatoPanel => ({
   esPredeterminado: true,
   activo: true,
   imagenes: [],
+  ...extra,
+});
+
+export const precios = (
+  extra: Partial<PreciosArticulo> = {},
+): PreciosArticulo => ({
+  articuloId: 21,
+  exclusivo: false,
+  precioMinoristaNeto: 10916,
+  precioMayoristaNeto: 7134.45,
+  historial: [],
+  porcentajeIva: 19,
+  precioMinoristaConIva: 12990,
+  precioMayoristaConIva: 8490,
   ...extra,
 });
 
@@ -136,7 +152,7 @@ export const simularBackend = (rutas: Record<string, Manejador>) => {
   return { pedidas, enviados };
 };
 
-export const iniciarSesion = () => {
+export const iniciarSesion = (rol: Rol = 'administrador') => {
   reiniciarParaPruebas();
   act(() =>
     guardarSesion({
@@ -146,7 +162,7 @@ export const iniciarSesion = () => {
         codigoPublico: 'admin-1',
         nombre: 'Violeta',
         apellido: 'Ramírez',
-        rol: 'administrador',
+        rol,
       },
     }),
   );
