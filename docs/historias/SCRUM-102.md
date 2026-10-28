@@ -25,7 +25,15 @@ Nodos del archivo de Figma `cl9eSD5YBS9qF4tQXJki68` (ver `docs/pantallas.md`).
 
 ## API
 
-Estado al 26-10-2026 (`compartido/api/esquema.d.ts` de `main`): **Sí**. `/api/catalogo/articulos/{id}/imagenes…`.
+Estado al 28-10-2026 (`pnpm api:tipos` contra el backend local): **Sí**, sin rutas simuladas.
+
+- `GET /api/catalogo/articulos/{id}/imagenes`: fotos del formato (`id` = id del formato).
+- `POST …/imagenes`: `multipart/form-data` con el campo `imagen` (JPEG, PNG o WebP, 5 MB, hasta
+  10). Errores: 400 tipo, 409 máximo, 413 tamaño, 503 almacén.
+- `PUT …/imagenes`: `{ orden: number[], principalId }`, con todas las fotos.
+- `DELETE …/imagenes/{imagenId}`: 409 si es la única.
+- Las cuatro responden `ImagenPanel[]` (`imagenes.service.ts`), pero el Swagger no lo declara: el
+  tipo está en `compartido/api/respuestas.ts`. `FormatoPanel` ya trae `imagenes`.
 
 Si falta el endpoint, avanza con la API simulada (`docs/api-simulada.md`) y anota aquí qué
 formato de respuesta acordaste con quien hace la historia backend.
@@ -39,3 +47,29 @@ formato de respuesta acordaste con quien hace la historia backend.
 - **Las fotos van dentro de cada formato** (decisión del usuario), no en una columna del producto
   como el panel «Fotos del formato» de Figma (2031:975). La página del producto ya usa todo el
   ancho en una columna.
+
+**28-10-2026** (SCRUM-102)
+
+- Cada formato muestra sus miniaturas: en la columna «Fotos» de la tabla en escritorio y con
+  «N fotos · Gestionar» en la tarjeta del celular. La galería de Figma 2031:975 se abre en un panel
+  lateral, sin los chips de formato, porque las fotos ya están dentro de cada formato.
+- **Orden arrastrando con @dnd-kit** (decisión del usuario; dependencias nuevas `@dnd-kit/core`,
+  `@dnd-kit/sortable` y `@dnd-kit/utilities`). Funciona con mouse, con el dedo (manteniendo
+  presionado, así la página sigue desplazándose) y con teclado (espacio y flechas), y los anuncios
+  van en español. El menú de cada foto sirve para «Marcar como principal» y «Quitar foto».
+- **Se guarda al instante** (decisión del usuario): el orden nuevo se ve antes de que responda el
+  backend y, si lo rechaza, se vuelven a pedir las fotos guardadas.
+- Con una sola foto, «Quitar foto» queda deshabilitado y un texto explica que se necesita al menos
+  una (criterio 3). Si aun así el backend responde 409, se muestra su mensaje.
+- Antes de enviar se revisan el tipo (JPEG, PNG, WebP) y los 5 MB que documenta el Swagger, con
+  los mismos mensajes del backend, para no subir por el proxy un archivo que será rechazado
+  (auditoría de seguridad). El backend los vuelve a revisar. El máximo de 10 fotos lo controla solo
+  el backend; si se alcanza, se muestra su mensaje (409).
+- Revisión de diseño y accesibilidad: foco visible con `outline-marca-profundo`, que conserva el
+  borde de la principal. El nombre accesible de «N fotos · Gestionar» empieza con el texto
+  visible. Al quitar una foto, el foco pasa a «Agregar foto». «Quitar foto», deshabilitado, dice
+  por qué. Sin desplazamiento horizontal a 360 px en la tarjeta.
+- Pendiente: probar a mano el arrastre con mouse y con el dedo, y revisar 1440 y 360 px con el
+  backend real (requiere `R2_*` en el backend y `URL_IMAGENES` en el front). Pregunta para el equipo:
+  ¿se oculta «Agregar foto» al llegar a 10 fotos?
+- Para el backend: declarar la respuesta `ImagenPanel[]` en el Swagger de los cuatro endpoints.
