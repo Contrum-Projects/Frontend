@@ -113,3 +113,4 @@ formatos de cada producto): en desarrollo puede tocar el límite de peticiones p
   backend), «Exclusivo» e «Inactivo». Usa `GET /api/catalogo/packs` real, paginado. En celular
   Packs no entra en la barra inferior de Figma: va en «Más». «Cancelar» y «← Packs» vuelven al
   listado. Falta que diseño la agregue a Figma (menú y pantalla).
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/23
