@@ -99,3 +99,4 @@ formato de respuesta acordaste con quien hace la historia backend.
   botones al final. Figma no dibuja el acceso a «Marcas y categorías» en celular; se muestra igual.
 - **Pedidos al backend (SCRUM-26):** los campos, conteos y filtros del listado (ver «API»), la
   búsqueda por marca y SKU, y una ruta para reactivar un producto si el equipo la quiere.
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/17 (En revisión).
