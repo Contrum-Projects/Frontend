@@ -42,7 +42,7 @@ formato de respuesta acordaste con quien hace la historia backend.
 
 ## Notas de trabajo
 
-**28-10-2026**
+**28-10-2026** · PR: https://github.com/Contrum-Projects/Frontend/pull/15
 
 - **Marcas solo se crean.** El backend no tiene ruta para editar una marca, así que la lista no
   lleva el lápiz de Figma. El criterio 1 queda cumplido en «crea»; «edita» espera el endpoint.
