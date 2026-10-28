@@ -3,7 +3,7 @@
 import { Camera } from 'lucide-react';
 import Image from 'next/image';
 import { useId, useState, type ChangeEvent } from 'react';
-import type { FormatoPanel } from '@/compartido/api/respuestas';
+import type { FormatoPanel, ImagenPanel } from '@/compartido/api/respuestas';
 import { cn } from '@/compartido/lib/utils';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Button } from '@/compartido/ui/button';
@@ -167,9 +167,62 @@ const FotosDelFormato = ({
   const subir = useSubirFoto(productoId, formato.id);
   const ordenar = useOrdenarFotos(productoId, formato.id);
   const quitar = useQuitarFoto(productoId, formato.id);
+  return (
+    <GestorFotos
+      imagenes={formato.imagenes}
+      nombre={formato.nombreFormato}
+      articulo="formato"
+      subir={subir}
+      ordenar={ordenar}
+      quitar={quitar}
+    />
+  );
+};
+
+/** Lo que el gestor necesita de las consultas de fotos de un formato o de un pack. */
+interface AccionesFotos {
+  subir: {
+    isPending: boolean;
+    mutate: (
+      archivo: File,
+      opciones: { onError: (fallo: Error) => void },
+    ) => void;
+  };
+  ordenar: {
+    isPending: boolean;
+    ordenar: (
+      imagenes: ImagenPanel[],
+      principalId: number,
+      alFallar: (fallo: Error) => void,
+    ) => void;
+  };
+  quitar: {
+    isPending: boolean;
+    mutate: (
+      imagenId: number,
+      opciones: { onError: (fallo: Error) => void },
+    ) => void;
+  };
+}
+
+/**
+ * Galería con «Agregar foto» y sus avisos (E3-H3), para las fotos de un formato o de un pack
+ * (E3-H6). `articulo` nombra de quién son las fotos en los avisos.
+ */
+export function GestorFotos({
+  imagenes,
+  nombre,
+  articulo,
+  subir,
+  ordenar,
+  quitar,
+}: AccionesFotos & {
+  imagenes: ImagenPanel[];
+  nombre: string;
+  articulo: 'formato' | 'pack';
+}) {
   const [aviso, setAviso] = useState<string | null>(null);
   const alFallar = (fallo: Error) => setAviso(fallo.message);
-  const imagenes = formato.imagenes;
   const ocupada = subir.isPending || ordenar.isPending || quitar.isPending;
   const idAgregar = useId();
 
@@ -192,7 +245,7 @@ const FotosDelFormato = ({
       )}
       <GaleriaFotos
         imagenes={imagenes}
-        nombreFormato={formato.nombreFormato}
+        nombreFormato={nombre}
         ocupada={ocupada}
         alOrdenar={(nuevas, principalId) => {
           setAviso(null);
@@ -233,14 +286,15 @@ const FotosDelFormato = ({
       </GaleriaFotos>
       <p className="texto-leyenda text-texto-secundario">
         {imagenes.length === 0
-          ? 'Este formato aún no tiene fotos. La primera que subas queda como principal.'
+          ? `Este ${articulo} aún no tiene fotos. La primera que subas queda como principal.`
           : 'Arrastra para cambiar el orden. La principal se muestra en el catálogo.'}
       </p>
       {imagenes.length === 1 && (
         <p className="texto-leyenda text-texto-secundario">
-          El formato necesita al menos una foto: sube otra antes de quitar esta.
+          El {articulo} necesita al menos una foto: sube otra antes de quitar
+          esta.
         </p>
       )}
     </div>
   );
-};
+}
