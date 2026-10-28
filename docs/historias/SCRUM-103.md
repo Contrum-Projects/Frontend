@@ -64,5 +64,7 @@ formato de respuesta acordaste con quien hace la historia backend.
 - **Celular:** no hay diseño; las tarjetas van una debajo de otra.
 - **Claves de consulta** `CLAVES_CATALOGO` en `panel/catalogo/consultasCatalogo.ts`: SCRUM-100
   debe usar `useMarcas()` y `useCategorias()` para que lo creado aquí aparezca en sus selectores.
-- **Menú:** la ruta no tiene entrada propia (Figma marca «Productos»). El enlace desde Productos
-  queda para SCRUM-100.
+- **Acceso:** como en Figma (P3a 2039:980), `/panel/productos` tiene el botón «Marcas y
+  categorías» en su encabezado, y en esta pantalla el menú marca «Productos». De Productos solo
+  existe el encabezado; la tabla, los filtros y «Producto nuevo» son de SCRUM-100. En celular
+  Figma no dibuja el botón, pero se muestra igual: si no, no hay cómo llegar.
