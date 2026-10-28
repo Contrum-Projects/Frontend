@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 43.
+ * Versión de la API: 0.1.0. Rutas: 49.
  */
 
 export interface paths {
@@ -203,6 +203,48 @@ export interface paths {
          * @description Queda como la única principal de la cuenta.
          */
         patch: operations["DireccionesController_marcarPrincipal"];
+        trace?: never;
+    };
+    "/api/cuentas/yo/facturacion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar mis datos de facturación (E9-H2)
+         * @description Todos los registros activos, para elegir uno al pedir factura.
+         */
+        get: operations["DatosFacturacionController_listar"];
+        put?: never;
+        /** Guardar datos de facturación (E9-H2) */
+        post: operations["DatosFacturacionController_crear"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cuentas/yo/facturacion/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Eliminar datos de facturación (E9-H2)
+         * @description Dejan de aparecer en la lista de la cuenta. Los pedidos que los usaron no cambian.
+         */
+        delete: operations["DatosFacturacionController_eliminar"];
+        options?: never;
+        head?: never;
+        /** Editar datos de facturación (E9-H2) */
+        patch: operations["DatosFacturacionController_actualizar"];
         trace?: never;
     };
     "/api/cuentas/recuperar-contrasena": {
@@ -421,6 +463,26 @@ export interface paths {
          * @description Mueve unidades de un formato de una ubicación de origen a otra de destino (activa, de bodega activa), de la misma bodega o de otra. Resta en el origen, suma en el destino y deja un movimiento transferencia con ambas ubicaciones, en una transacción.
          */
         post: operations["TransferenciasController_registrar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inventario/stock/bajo-minimo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Formatos con stock bajo el mínimo (E11-H6)
+         * @description Aviso del panel: los formatos con stock mínimo definido cuyo stock total (todas las ubicaciones) está bajo él, del que más falta al que menos. Se calcula al consultar: un formato sale de la lista al reponerlo.
+         */
+        get: operations["StockController_bajoMinimo"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -861,6 +923,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/carrito": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver mi carrito con totales (E5-H1)
+         * @description Líneas con precio unitario y subtotal con IVA, calculados al consultar según el rol (el profesional ve el mayorista), y el total. Cada línea indica si el artículo sigue a la venta y si el stock cubre la cantidad (sin informar cuántas unidades hay); si no, `impideCrearPedido` es `true` hasta que se quite o se ajuste la cantidad.
+         */
+        get: operations["CarritoController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/carrito/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Agregar un artículo al carrito (E5-H1)
+         * @description Suma las unidades a las que el carrito ya tenga de ese artículo (formato o pack). El artículo debe venderse hoy a la cuenta y el stock debe cubrir la cantidad resultante. Devuelve el carrito con sus totales.
+         */
+        post: operations["CarritoController_agregar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/carrito/items/{articuloId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Quitar un artículo del carrito (E5-H1)
+         * @description Lo elimina aunque ya no se venda y devuelve el carrito con sus totales recalculados.
+         */
+        delete: operations["CarritoController_quitar"];
+        options?: never;
+        head?: never;
+        /**
+         * Cambiar la cantidad de un artículo del carrito (E5-H1)
+         * @description Deja el artículo con la cantidad indicada, que debe cubrir el stock. Devuelve el carrito con sus totales recalculados.
+         */
+        patch: operations["CarritoController_cambiarCantidad"];
+        trace?: never;
+    };
     "/api/territorio/regiones": {
         parameters: {
             query?: never;
@@ -985,6 +1111,46 @@ export interface components {
              * @example 13123
              */
             comuna?: string;
+        };
+        CrearDatosFacturacionDto: {
+            /**
+             * @description RUT de quien recibe la factura. Se guarda como 76086429-3.
+             * @example 76.086.429-3
+             */
+            rut: string;
+            /** @example Peluquería Los Aromos SpA */
+            razonSocial: string;
+            /** @example Servicios de peluquería */
+            giro: string;
+            /** @example Av. Providencia 1234, oficina 5 */
+            direccion: string;
+            /**
+             * @description Código CUT de la comuna.
+             * @example 13123
+             */
+            comuna: string;
+            /**
+             * @description Correo al que se enviará el documento, si es distinto al de la cuenta.
+             * @example facturas@losaromos.cl
+             */
+            correoFacturacion?: Record<string, never> | null;
+        };
+        ActualizarDatosFacturacionDto: {
+            /** @example 76.086.429-3 */
+            rut?: string;
+            /** @example Peluquería Los Aromos SpA */
+            razonSocial?: string;
+            /** @example Servicios de peluquería */
+            giro?: string;
+            /** @example Av. Providencia 1234, oficina 5 */
+            direccion?: string;
+            /**
+             * @description Código CUT de la comuna.
+             * @example 13123
+             */
+            comuna?: string;
+            /** @example facturas@losaromos.cl */
+            correoFacturacion?: Record<string, never> | null;
         };
         SolicitarRecuperacionDto: {
             /** @example camila@correo.cl */
@@ -1382,6 +1548,25 @@ export interface components {
             precioMayoristaNeto?: number;
             /** @example Alza del proveedor */
             motivo: string;
+        };
+        AgregarArticuloCarritoDto: {
+            /**
+             * @description Id del artículo: el de un formato de producto o el de un pack.
+             * @example 11
+             */
+            articuloId: number;
+            /**
+             * @description Unidades que se suman a las que el carrito ya tiene de ese artículo.
+             * @example 2
+             */
+            cantidad: number;
+        };
+        CambiarCantidadCarritoDto: {
+            /**
+             * @description Cantidad final del artículo en el carrito. Para quitarlo se usa DELETE.
+             * @example 3
+             */
+            cantidad: number;
         };
         UbicacionOficialDto: {
             /**
@@ -1919,6 +2104,174 @@ export interface operations {
                 content?: never;
             };
             /** @description La dirección no es de la cuenta. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DatosFacturacionController_listar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Registros de facturación de la cuenta. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DatosFacturacionController_crear: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrearDatosFacturacionDto"];
+            };
+        };
+        responses: {
+            /** @description Datos guardados. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta algún dato obligatorio, hay datos inválidos o la comuna no existe. El mensaje indica cuáles. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DatosFacturacionController_eliminar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Datos eliminados de la lista. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El registro no es de la cuenta o ya fue eliminado. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DatosFacturacionController_actualizar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActualizarDatosFacturacionDto"];
+            };
+        };
+        responses: {
+            /** @description Datos guardados. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Datos inválidos o comuna inexistente. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El registro no es de la cuenta o ya fue eliminado. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2469,6 +2822,38 @@ export interface operations {
                 content?: never;
             };
             /** @description El rol no tiene el permiso de registrar inventario. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StockController_bajoMinimo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Formatos bajo su stock mínimo. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de consultar inventario. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3820,6 +4205,174 @@ export interface operations {
         responses: {
             /** @description Lista de marcas. */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CarritoController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Carrito de la cuenta; vacío si no tiene. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CarritoController_agregar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AgregarArticuloCarritoDto"];
+            };
+        };
+        responses: {
+            /** @description Carrito actualizado. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Datos inválidos, el artículo no existe o no está a la venta, o el stock no alcanza. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CarritoController_quitar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                articuloId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Carrito actualizado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El artículo no está en el carrito. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CarritoController_cambiarCantidad: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                articuloId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CambiarCantidadCarritoDto"];
+            };
+        };
+        responses: {
+            /** @description Carrito actualizado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cantidad inválida, el artículo ya no está a la venta o el stock no alcanza. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El artículo no está en el carrito. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

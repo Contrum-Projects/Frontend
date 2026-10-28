@@ -78,8 +78,7 @@ export const SECCIONES: readonly SeccionPanel[] = [
   },
   {
     texto: 'Personal',
-    // TODO(SCRUM-98): personal
-    href: '/panel/personal' as Route,
+    href: '/panel/personal',
     icono: UsersRound,
     permiso: PERMISOS.PERSONAL_GESTIONAR,
   },

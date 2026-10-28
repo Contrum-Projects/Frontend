@@ -22,8 +22,8 @@ Total: 53 historias, 185 puntos.
 | 4   | [SCRUM-96](SCRUM-96.md) · E1-H4 · Pantallas de recuperación de contraseña                | 3   | Hecha       | Sí      | SCRUM-22 | SCRUM-94             |
 | 5   | [SCRUM-95](SCRUM-95.md) · E1-H3 · Cerrar sesión en el dispositivo o en todos             | 2   | Hecha       | Sí      | SCRUM-21 | SCRUM-94             |
 | 6   | [SCRUM-97](SCRUM-97.md) · E1-H5 · Mis datos y direcciones                                | 5   | Hecha       | Sí      | SCRUM-23 | SCRUM-94             |
-| 7   | [SCRUM-99](SCRUM-99.md) · E13-H2 · Menú y rutas del panel según el rol                   | 5   | En revisión | Sí      | SCRUM-25 | SCRUM-94             |
-| 8   | [SCRUM-98](SCRUM-98.md) · E13-H1 · Pantalla Personal del panel                           | 3   | Por hacer   | Sí      | SCRUM-24 | SCRUM-99             |
+| 7   | [SCRUM-99](SCRUM-99.md) · E13-H2 · Menú y rutas del panel según el rol                   | 5   | Hecha       | Sí      | SCRUM-25 | SCRUM-94             |
+| 8   | [SCRUM-98](SCRUM-98.md) · E13-H1 · Pantalla Personal del panel                           | 3   | En revisión | Sí      | SCRUM-24 | SCRUM-99             |
 | 9   | [SCRUM-103](SCRUM-103.md) · E3-H4 · Pantalla de marcas y categorías                      | 3   | Por hacer   | Sí      | SCRUM-29 | SCRUM-99             |
 | 10  | [SCRUM-100](SCRUM-100.md) · E3-H1 · Panel de productos: listado y formulario             | 8   | Por hacer   | Sí      | SCRUM-26 | SCRUM-99             |
 | 11  | [SCRUM-101](SCRUM-101.md) · E3-H2 · Tabla de formatos en el producto                     | 5   | Por hacer   | Sí      | SCRUM-27 | SCRUM-100            |
