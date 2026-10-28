@@ -107,5 +107,9 @@ formatos de cada producto): en desarrollo puede tocar el límite de peticiones p
 - **Pendiente de revisar a mano:** la pantalla a 360 y 1440 px con el backend real (no hubo
   navegador en la sesión), sobre todo los dos `type="date"` en iOS Safari, y la tabla que se
   vuelve tarjeta con VoiceOver.
-- **Pregunta abierta:** nadie enlaza todavía a `/panel/packs/nuevo` (no hay listado de packs ni
-  botón en Productos). ¿Lo agrega esta historia o otra?
+- **Sección «Packs» (agregada fuera de Figma, a pedido):** entrada «Packs» en el menú lateral
+  después de «Productos» (`catalogo.gestionar`) y listado en `/panel/packs` con nombre y SKU,
+  componentes con su cantidad, vigencia con «Vigente»/«Fuera de vigencia» (campo `vigente` del
+  backend), «Exclusivo» e «Inactivo». Usa `GET /api/catalogo/packs` real, paginado. En celular
+  Packs no entra en la barra inferior de Figma: va en «Más». «Cancelar» y «← Packs» vuelven al
+  listado. Falta que diseño la agregue a Figma (menú y pantalla).
