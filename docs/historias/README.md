@@ -20,9 +20,9 @@ Total: 53 historias, 185 puntos.
 | 2   | [SCRUM-94](SCRUM-94.md) · E1-H2 · Pantalla de inicio de sesión                           | 3   | Hecha       | Sí      | SCRUM-20 | SCRUM-106            |
 | 3   | [SCRUM-93](SCRUM-93.md) · E1-H1 · Pantallas de registro y confirmación del correo        | 5   | Hecha       | Sí      | SCRUM-19 | SCRUM-94             |
 | 4   | [SCRUM-96](SCRUM-96.md) · E1-H4 · Pantallas de recuperación de contraseña                | 3   | Hecha       | Sí      | SCRUM-22 | SCRUM-94             |
-| 5   | [SCRUM-95](SCRUM-95.md) · E1-H3 · Cerrar sesión en el dispositivo o en todos             | 2   | En revisión | Sí      | SCRUM-21 | SCRUM-94             |
-| 6   | [SCRUM-97](SCRUM-97.md) · E1-H5 · Mis datos y direcciones                                | 5   | En revisión | Sí      | SCRUM-23 | SCRUM-94             |
-| 7   | [SCRUM-99](SCRUM-99.md) · E13-H2 · Menú y rutas del panel según el rol                   | 5   | Por hacer   | Revisar | SCRUM-25 | SCRUM-94             |
+| 5   | [SCRUM-95](SCRUM-95.md) · E1-H3 · Cerrar sesión en el dispositivo o en todos             | 2   | Hecha       | Sí      | SCRUM-21 | SCRUM-94             |
+| 6   | [SCRUM-97](SCRUM-97.md) · E1-H5 · Mis datos y direcciones                                | 5   | Hecha       | Sí      | SCRUM-23 | SCRUM-94             |
+| 7   | [SCRUM-99](SCRUM-99.md) · E13-H2 · Menú y rutas del panel según el rol                   | 5   | En revisión | Sí      | SCRUM-25 | SCRUM-94             |
 | 8   | [SCRUM-98](SCRUM-98.md) · E13-H1 · Pantalla Personal del panel                           | 3   | Por hacer   | Sí      | SCRUM-24 | SCRUM-99             |
 | 9   | [SCRUM-103](SCRUM-103.md) · E3-H4 · Pantalla de marcas y categorías                      | 3   | Por hacer   | Sí      | SCRUM-29 | SCRUM-99             |
 | 10  | [SCRUM-100](SCRUM-100.md) · E3-H1 · Panel de productos: listado y formulario             | 8   | Por hacer   | Sí      | SCRUM-26 | SCRUM-99             |
@@ -72,10 +72,6 @@ Total: 53 historias, 185 puntos.
 
 ## Pendientes que bloquean historias
 
-- **Comunas:** SCRUM-97, SCRUM-123 y SCRUM-126 eligen región y comuna de la lista oficial, y
-  la base solo tiene las 16 regiones. Falta la tarea de backend.
-- **Permisos de vendedor y bodeguero** sin definir (SCRUM-99): el panel se arma con la vista
-  del administrador.
 - **Listas por definir:** modalidades y especialidades del perfil profesional (SCRUM-137) y la
   oferta del saludo de cumpleaños (SCRUM-141).
 

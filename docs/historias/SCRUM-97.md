@@ -40,9 +40,8 @@ Reales (ninguno declara su respuesta en el Swagger; tipos copiados del backend a
 - `GET /api/territorio/regiones` y `GET /api/territorio/regiones/{codigoCut}/comunas` (lista
   oficial, `UbicacionOficialDto` en el Swagger): regiones de norte a sur y comunas por nombre.
   Agregadas en el PR [Contrum-Projects/Backend#26](https://github.com/Contrum-Projects/Backend/pull/26),
-  que también carga las 346 comunas del decreto N° 1.115 de 2018 en la semilla. **Hasta que se
-  integre**, el backend de `main` no las tiene: hay que levantar el backend con esa rama y correr
-  `pnpm db:seed`.
+  que también carga las 346 comunas del decreto N° 1.115 de 2018 en la semilla (integrado el
+  27-10-2026).
 
 Sin rutas simuladas.
 
