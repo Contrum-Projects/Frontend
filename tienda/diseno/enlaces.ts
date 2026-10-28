@@ -17,8 +17,7 @@ export const RUTAS = {
   ingresar: '/ingresar',
   registro: '/registro',
   recuperarContrasena: '/recuperar-contrasena',
-  // TODO(SCRUM-99): panel
-  panel: '/panel' as Route,
+  panel: '/panel',
   // TODO(SCRUM-116): carrito
   carrito: '/carrito' as Route,
   misDatos: '/cuenta/datos',
