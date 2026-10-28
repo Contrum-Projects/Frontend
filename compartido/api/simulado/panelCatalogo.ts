@@ -10,10 +10,14 @@
  * Mientras no exista, se piden al backend los productos reales (hasta 100, con los inactivos y
  * la búsqueda) y se completan con valores fijos: sin imagen, 0 formatos, sin precio y stock 0.
  * No se inventan precios ni stock; filtrar y paginar aquí solo sirve para probar la pantalla.
+ *
+ * SCRUM-104 · `GET` y `PUT /catalogo/articulos/:id/precios`: el backend real con los campos de
+ * IVA pedidos a SCRUM-30 (ver `conCamposPedidos` y docs/historias/SCRUM-104.md).
  */
 import 'server-only';
 import type {
   ListadoProductosPanel,
+  PreciosArticulo,
   ProductoListadoPanel,
   ProductoPanel,
 } from '@/compartido/api/respuestas';
@@ -21,6 +25,61 @@ import { entornoServidor } from '@/compartido/config/entorno-servidor';
 import { errorSimulado, type RutaSimulada } from './index';
 
 const POR_PAGINA = 20;
+
+/**
+ * Pide al backend real con las mismas cabeceras que importan en el proxy: el token y la IP
+ * (RNF-09). Un error vuelve con el cuerpo y el estado del backend, sin sus cabeceras (como el
+ * proxy); sin conexión, un 502.
+ */
+const alBackend = async (
+  peticion: Request,
+  camino: string,
+  init: { method?: string; body?: string } = {},
+): Promise<Response> => {
+  const cabeceras = new Headers();
+  for (const nombre of ['authorization', 'x-forwarded-for', 'content-type']) {
+    const valor = peticion.headers.get(nombre);
+    if (valor) cabeceras.set(nombre, valor);
+  }
+  let respuesta: Response;
+  try {
+    respuesta = await fetch(`${entornoServidor().API_URL}${camino}`, {
+      ...init,
+      headers: cabeceras,
+      cache: 'no-store',
+    });
+  } catch {
+    return errorSimulado(
+      502,
+      'No pudimos conectarnos con el servidor. Intenta de nuevo en unos minutos.',
+    );
+  }
+  if (!respuesta.ok) {
+    return Response.json(await respuesta.json().catch(() => null), {
+      status: respuesta.status,
+    });
+  }
+  return respuesta;
+};
+
+/** Solo ids numéricos: «..» no debe llevar el reenvío a otra ruta del backend. */
+const idValido = (id: string) => /^\d+$/.test(id);
+
+/**
+ * SCRUM-104 · los precios del backend real con los campos pedidos a SCRUM-30: `porcentajeIva`
+ * fijo en 19 (el `IVA_PORCENTAJE` de ejemplo) para ver la referencia al escribir, y los precios
+ * con IVA en `null`, porque aquí no se calculan.
+ */
+const conCamposPedidos = async (respuesta: Response) => {
+  if (!respuesta.ok) return respuesta;
+  const precios = (await respuesta.json()) as PreciosArticulo;
+  return Response.json({
+    ...precios,
+    porcentajeIva: 19,
+    precioMinoristaConIva: null,
+    precioMayoristaConIva: null,
+  } satisfies PreciosArticulo);
+};
 
 const completar = (producto: ProductoPanel): ProductoListadoPanel => ({
   ...producto,
@@ -43,30 +102,11 @@ export const rutasPanelCatalogo: RutaSimulada[] = [
       });
       const buscar = url.searchParams.get('buscar');
       if (buscar) consulta.set('buscar', buscar);
-      // Las mismas cabeceras que importan en el proxy: el token y la IP (RNF-09)
-      const cabeceras = new Headers();
-      for (const nombre of ['authorization', 'x-forwarded-for']) {
-        const valor = peticion.headers.get(nombre);
-        if (valor) cabeceras.set(nombre, valor);
-      }
-      let respuesta: Response;
-      try {
-        respuesta = await fetch(
-          `${entornoServidor().API_URL}/api/catalogo/productos?${consulta}`,
-          { headers: cabeceras, cache: 'no-store' },
-        );
-      } catch {
-        return errorSimulado(
-          502,
-          'No pudimos conectarnos con el servidor. Intenta de nuevo en unos minutos.',
-        );
-      }
-      // 401, 403 o 400: el cuerpo y el estado del backend, sin sus cabeceras (como el proxy)
-      if (!respuesta.ok) {
-        return Response.json(await respuesta.json().catch(() => null), {
-          status: respuesta.status,
-        });
-      }
+      const respuesta = await alBackend(
+        peticion,
+        `/api/catalogo/productos?${consulta}`,
+      );
+      if (!respuesta.ok) return respuesta;
 
       const { items } = (await respuesta.json()) as { items: ProductoPanel[] };
       const todos = items.map(completar);
@@ -98,5 +138,34 @@ export const rutasPanelCatalogo: RutaSimulada[] = [
       };
       return Response.json(listado);
     },
+  },
+  {
+    metodo: 'GET',
+    ruta: '/catalogo/articulos/:id/precios',
+    historia: 'SCRUM-104',
+    responder: async ({ peticion, params }) =>
+      idValido(params.id)
+        ? conCamposPedidos(
+            await alBackend(
+              peticion,
+              `/api/catalogo/articulos/${params.id}/precios`,
+            ),
+          )
+        : errorSimulado(404, 'El artículo no existe.'),
+  },
+  {
+    metodo: 'PUT',
+    ruta: '/catalogo/articulos/:id/precios',
+    historia: 'SCRUM-104',
+    responder: async ({ peticion, params }) =>
+      idValido(params.id)
+        ? conCamposPedidos(
+            await alBackend(
+              peticion,
+              `/api/catalogo/articulos/${params.id}/precios`,
+              { method: 'PUT', body: await peticion.text() },
+            ),
+          )
+        : errorSimulado(404, 'El artículo no existe.'),
   },
 ];

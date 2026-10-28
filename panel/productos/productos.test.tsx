@@ -53,7 +53,7 @@ const listaDeProductos = () =>
     .getAllByRole('list')
     .find((lista) => lista.getAttribute('aria-label') === null) as HTMLElement;
 
-beforeEach(iniciarSesion);
+beforeEach(() => iniciarSesion());
 
 afterEach(() => {
   vi.unstubAllGlobals();

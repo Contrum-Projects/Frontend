@@ -26,6 +26,7 @@ import { Textarea } from '@/compartido/ui/textarea';
 import { useCategorias, useMarcas } from '@/panel/catalogo/consultasCatalogo';
 import { opcionesDeCategoria } from '@/panel/catalogo/esquemaCatalogo';
 import { CampoFormulario } from '@/tienda/cuenta/campoFormulario';
+import { clavePreciosProducto } from './consultasPrecios';
 import { CLAVE_PRODUCTOS, claveProducto } from './consultasProductos';
 import {
   PRODUCTO_VACIO,
@@ -135,9 +136,15 @@ export function FormularioProductoPanel({
             }),
       );
       clienteConsultas.setQueryData(claveProducto(guardado.id), guardado);
-      await clienteConsultas.invalidateQueries({
-        queryKey: [...CLAVE_PRODUCTOS, 'lista'],
-      });
+      await Promise.all([
+        clienteConsultas.invalidateQueries({
+          queryKey: [...CLAVE_PRODUCTOS, 'lista'],
+        }),
+        // Si pasó a exclusivo, sus formatos ya no llevan precio minorista (E3-H5 criterio 2)
+        clienteConsultas.invalidateQueries({
+          queryKey: clavePreciosProducto(guardado.id),
+        }),
+      ]);
       if (producto) {
         reset(productoAFormulario(guardado));
         toast.success(`Guardamos los cambios de ${guardado.nombre}.`);

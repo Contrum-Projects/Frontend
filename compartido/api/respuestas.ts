@@ -242,3 +242,41 @@ export interface FormatoPanel {
   /** Imágenes del formato en su orden (E3-H3); puede no tener todavía. */
   imagenes: ImagenPanel[];
 }
+
+/** backend: src/common/dominio/valores.ts › TIPOS_PRECIO */
+export type TipoPrecio = 'minorista' | 'mayorista';
+
+/** backend: src/modulos/catalogo/precios.service.ts › CambioPrecio */
+export interface CambioPrecio {
+  id: number;
+  tipoPrecio: TipoPrecio;
+  precioNeto: number;
+  /** ISO 8601. */
+  fechaInicioVigencia: string;
+  /** `null` mientras es el precio vigente. */
+  fechaFinVigencia: string | null;
+  motivo: string | null;
+  fijadoPor: { nombre: string; apellido: string };
+}
+
+/**
+ * backend: src/modulos/catalogo/precios.service.ts › PreciosArticulo. Lo que devuelven GET y PUT
+ * /api/catalogo/articulos/{id}/precios (E3-H5), con el historial del más reciente al más antiguo.
+ *
+ * `porcentajeIva`, `precioMinoristaConIva` y `precioMayoristaConIva` se pidieron a SCRUM-30 (ver
+ * docs/historias/SCRUM-104.md): mientras no lleguen, la pantalla muestra solo los netos.
+ */
+export interface PreciosArticulo {
+  articuloId: number;
+  /** El producto o pack es exclusivo para profesionales: solo lleva precio mayorista. */
+  exclusivo: boolean;
+  precioMinoristaNeto: number | null;
+  precioMayoristaNeto: number | null;
+  historial: CambioPrecio[];
+  /** Tasa de IVA vigente (`IVA_PORCENTAJE`), p. ej. 19. Pedido a SCRUM-30. */
+  porcentajeIva?: number;
+  /** Precio minorista con IVA en pesos enteros, como en la tienda. Pedido a SCRUM-30. */
+  precioMinoristaConIva?: number | null;
+  /** Precio mayorista con IVA en pesos enteros. Pedido a SCRUM-30. */
+  precioMayoristaConIva?: number | null;
+}

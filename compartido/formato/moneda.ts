@@ -14,3 +14,21 @@ export function formatearPesos(monto: number | string): string {
   if (!Number.isFinite(valor)) return '—';
   return pesos.format(Math.round(valor));
 }
+
+const pesosConDecimales = new Intl.NumberFormat('es-CL', {
+  style: 'currency',
+  currency: 'CLP',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+/**
+ * Precio neto del panel, con sus decimales (se guardan con hasta dos): 8403.3 → «$8.403,30»,
+ * 10916 → «$10.916».
+ */
+export function formatearPesosNetos(monto: number): string {
+  if (!Number.isFinite(monto)) return '—';
+  return Number.isInteger(monto)
+    ? pesos.format(monto)
+    : pesosConDecimales.format(monto);
+}

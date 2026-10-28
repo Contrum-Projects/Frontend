@@ -1,10 +1,12 @@
 'use client';
 
-import { Pencil, Plus } from 'lucide-react';
+import { BadgeDollarSign, Pencil, Plus } from 'lucide-react';
 import { useState } from 'react';
 import type { FormatoPanel } from '@/compartido/api/respuestas';
 import { formatearDia } from '@/compartido/formato/fecha';
 import { cn } from '@/compartido/lib/utils';
+import { PERMISOS, tienePermiso } from '@/compartido/sesion/roles';
+import { useSesion } from '@/compartido/sesion/sesion';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Badge } from '@/compartido/ui/badge';
 import { Button } from '@/compartido/ui/button';
@@ -17,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/compartido/ui/table';
+import { usePreciosFormatos } from './consultasPrecios';
 import { useFormatos } from './consultasProductos';
 import { EstadoProducto } from './etiquetasProducto';
 import {
@@ -25,17 +28,41 @@ import {
   ResumenFotosTarjeta,
 } from './fotosFormato';
 import { PanelFormato, type FormatoEnEdicion } from './formularioFormato';
+import { PanelPrecios } from './formularioPrecios';
 import { Tarjeta } from './formularioProducto';
+import {
+  CeldaPrecio,
+  textoPrecio,
+  type ConsultaPrecios,
+} from './preciosFormato';
 
 /**
  * «Formatos» del producto (Figma P3 2029:770 y 2024:558, E3-H2), con las fotos de cada formato
- * (E3-H3). Los precios llegan con SCRUM-104.
+ * (E3-H3) y sus precios (E3-H5), que solo ve quien tiene el permiso `precios.gestionar`.
  */
 export function FormatosProducto({ productoId }: { productoId: number }) {
   const formatos = useFormatos(productoId);
   const [edicion, setEdicion] = useState<FormatoEnEdicion | null>(null);
   const [fotosDe, setFotosDe] = useState<number | null>(null);
+  const [preciosDe, setPreciosDe] = useState<number | null>(null);
   const lista = formatos.data ?? [];
+  const { usuario } = useSesion();
+  // Comodidad: el backend responde 403 a quien no tiene el permiso
+  const gestionaPrecios = tienePermiso(
+    usuario?.rol,
+    PERMISOS.PRECIOS_GESTIONAR,
+  );
+  const consultasPrecios = usePreciosFormatos(
+    productoId,
+    lista.map((formato) => formato.id),
+    gestionaPrecios,
+  );
+  const acciones = {
+    precios: gestionaPrecios ? consultasPrecios : undefined,
+    alEditar: (formato: FormatoPanel) => setEdicion({ formato }),
+    alGestionarFotos: (formato: FormatoPanel) => setFotosDe(formato.id),
+    alGestionarPrecios: (formato: FormatoPanel) => setPreciosDe(formato.id),
+  };
 
   return (
     <Tarjeta
@@ -74,18 +101,11 @@ export function FormatosProducto({ productoId }: { productoId: number }) {
       )}
       {lista.length > 0 && (
         <>
-          <div className="max-lg:hidden">
-            <TablaFormatos
-              formatos={lista}
-              alEditar={(formato) => setEdicion({ formato })}
-              alGestionarFotos={(formato) => setFotosDe(formato.id)}
-            />
+          {/* Con los precios, la tabla cabe desde xl (1280 px); antes, las tarjetas */}
+          <div className="max-xl:hidden">
+            <TablaFormatos formatos={lista} {...acciones} />
           </div>
-          <ListaFormatosCelular
-            formatos={lista}
-            alEditar={(formato) => setEdicion({ formato })}
-            alGestionarFotos={(formato) => setFotosDe(formato.id)}
-          />
+          <ListaFormatosCelular formatos={lista} {...acciones} />
         </>
       )}
       <PanelFormato
@@ -99,6 +119,13 @@ export function FormatosProducto({ productoId }: { productoId: number }) {
         formatoId={fotosDe}
         alCerrar={() => setFotosDe(null)}
       />
+      {gestionaPrecios && (
+        <PanelPrecios
+          productoId={productoId}
+          formato={lista.find((formato) => formato.id === preciosDe) ?? null}
+          alCerrar={() => setPreciosDe(null)}
+        />
+      )}
     </Tarjeta>
   );
 }
@@ -114,8 +141,11 @@ export const FormatosProductoNuevo = () => (
 
 interface ListaFormatosProps {
   formatos: FormatoPanel[];
+  /** Los precios de cada formato, en el mismo orden; sin el permiso, no se muestran. */
+  precios: ConsultaPrecios[] | undefined;
   alEditar: (formato: FormatoPanel) => void;
   alGestionarFotos: (formato: FormatoPanel) => void;
+  alGestionarPrecios: (formato: FormatoPanel) => void;
 }
 
 /** «Predeterminado»: uno solo por producto (E3-H2 criterio 3). */
@@ -152,8 +182,8 @@ const BotonEditar = ({
   <Button
     variant="ghost"
     size="icono-chico"
-    // 40 px para tocarlo en celular
-    className="max-lg:size-10"
+    // 40 px para tocarlo en celular y tableta
+    className="max-xl:size-10"
     aria-label={`Editar ${formato.nombreFormato}`}
     onClick={() => alEditar(formato)}
   >
@@ -161,28 +191,60 @@ const BotonEditar = ({
   </Button>
 );
 
+const BotonPrecios = ({
+  formato,
+  alGestionarPrecios,
+}: {
+  formato: FormatoPanel;
+  alGestionarPrecios: (formato: FormatoPanel) => void;
+}) => (
+  <Button
+    variant="ghost"
+    size="icono-chico"
+    aria-label={`Precios de ${formato.nombreFormato}`}
+    onClick={() => alGestionarPrecios(formato)}
+  >
+    <BadgeDollarSign aria-hidden />
+  </Button>
+);
+
 const ENCABEZADO = 'h-auto px-2 py-2 texto-leyenda text-texto-secundario';
 
-/** Escritorio (Figma P3 2029:777): formato con su SKU, fotos, stock mínimo, vencimiento y el lápiz. */
+/**
+ * Escritorio (Figma P3 2029:777): formato con su SKU, fotos, precios netos, stock mínimo,
+ * vencimiento y las acciones.
+ */
 const TablaFormatos = ({
   formatos,
+  precios,
   alEditar,
   alGestionarFotos,
+  alGestionarPrecios,
 }: ListaFormatosProps) => (
   <Table className="table-fixed">
     <TableHeader>
       <TableRow className="hover:bg-transparent">
         <TableHead className={ENCABEZADO}>Formato / SKU</TableHead>
         <TableHead className={cn(ENCABEZADO, 'w-36')}>Fotos</TableHead>
-        <TableHead className={cn(ENCABEZADO, 'w-20')}>Mín.</TableHead>
+        {precios && (
+          <>
+            <TableHead className={cn(ENCABEZADO, 'w-36')}>
+              Minorista neto
+            </TableHead>
+            <TableHead className={cn(ENCABEZADO, 'w-36')}>
+              Mayorista neto
+            </TableHead>
+          </>
+        )}
+        <TableHead className={cn(ENCABEZADO, 'w-16')}>Mín.</TableHead>
         <TableHead className={cn(ENCABEZADO, 'w-32')}>Vence</TableHead>
-        <TableHead className={cn(ENCABEZADO, 'w-12')}>
+        <TableHead className={cn(ENCABEZADO, precios ? 'w-24' : 'w-12')}>
           <span className="sr-only">Acciones</span>
         </TableHead>
       </TableRow>
     </TableHeader>
     <TableBody>
-      {formatos.map((formato) => (
+      {formatos.map((formato, indice) => (
         <TableRow key={formato.id} className="hover:bg-transparent">
           <TableCell className="px-2 py-3 whitespace-normal">
             <div className="flex min-w-0 flex-col">
@@ -198,6 +260,16 @@ const TablaFormatos = ({
               alGestionar={() => alGestionarFotos(formato)}
             />
           </TableCell>
+          {precios && (
+            <>
+              <TableCell className="px-2 py-3 whitespace-normal">
+                <CeldaPrecio consulta={precios[indice]} tipo="minorista" />
+              </TableCell>
+              <TableCell className="px-2 py-3 whitespace-normal">
+                <CeldaPrecio consulta={precios[indice]} tipo="mayorista" />
+              </TableCell>
+            </>
+          )}
           <TableCell className="px-2 py-3 texto-pequeno text-texto-principal tabular-nums">
             {formato.stockMinimo}
           </TableCell>
@@ -211,8 +283,16 @@ const TablaFormatos = ({
               </>
             )}
           </TableCell>
-          <TableCell className="px-2 py-3 text-right">
-            <BotonEditar formato={formato} alEditar={alEditar} />
+          <TableCell className="px-2 py-3">
+            <div className="flex justify-end gap-1">
+              {precios && (
+                <BotonPrecios
+                  formato={formato}
+                  alGestionarPrecios={alGestionarPrecios}
+                />
+              )}
+              <BotonEditar formato={formato} alEditar={alEditar} />
+            </div>
           </TableCell>
         </TableRow>
       ))}
@@ -231,11 +311,13 @@ const Dato = ({ etiqueta, valor }: { etiqueta: string; valor: string }) => (
 /** Celular (Figma P3 2024:565): una tarjeta por formato. */
 const ListaFormatosCelular = ({
   formatos,
+  precios,
   alEditar,
   alGestionarFotos,
+  alGestionarPrecios,
 }: ListaFormatosProps) => (
-  <ul className="flex flex-col gap-3 lg:hidden">
-    {formatos.map((formato) => (
+  <ul className="flex flex-col gap-3 xl:hidden">
+    {formatos.map((formato, indice) => (
       <li
         key={formato.id}
         className="flex flex-col gap-2 rounded-md bg-fondo-hueso p-3"
@@ -254,6 +336,18 @@ const ListaFormatosCelular = ({
           alGestionar={() => alGestionarFotos(formato)}
         />
         <dl className="flex flex-col gap-1">
+          {precios && (
+            <>
+              <Dato
+                etiqueta="Precio minorista neto"
+                valor={textoPrecio(precios[indice], 'minorista')}
+              />
+              <Dato
+                etiqueta="Precio mayorista neto"
+                valor={textoPrecio(precios[indice], 'mayorista')}
+              />
+            </>
+          )}
           <Dato etiqueta="Stock mínimo" valor={String(formato.stockMinimo)} />
           <Dato
             etiqueta="Vencimiento (opcional)"
@@ -264,6 +358,17 @@ const ListaFormatosCelular = ({
             }
           />
         </dl>
+        {precios && (
+          <Button
+            variant="link"
+            className="min-h-10 self-end px-0 texto-etiqueta"
+            onClick={() => alGestionarPrecios(formato)}
+          >
+            Gestionar precios
+            {/* El espacio va fuera del span: dentro se pierde en el nombre accesible */}{' '}
+            <span className="sr-only">de {formato.nombreFormato}</span>
+          </Button>
+        )}
       </li>
     ))}
   </ul>
@@ -272,12 +377,12 @@ const ListaFormatosCelular = ({
 /** Encabezado y dos filas en escritorio, dos tarjetas en celular, para que nada salte (RNF-17). */
 const EsqueletoFormatos = () => (
   <div aria-hidden>
-    <div className="flex flex-col gap-3 max-lg:hidden">
+    <div className="flex flex-col gap-3 max-xl:hidden">
       <Skeleton className="h-4 w-32" />
       <Skeleton className="h-14 w-full" />
       <Skeleton className="h-14 w-full" />
     </div>
-    <div className="flex flex-col gap-3 lg:hidden">
+    <div className="flex flex-col gap-3 xl:hidden">
       <Skeleton className="h-28 w-full rounded-md" />
       <Skeleton className="h-28 w-full rounded-md" />
     </div>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { formatearDia, formatearDiaMes } from './fecha';
-import { formatearPesos } from './moneda';
+import { formatearPesos, formatearPesosNetos } from './moneda';
 import { formatearRut, normalizarRut } from './rut';
 
 describe('formatearPesos()', () => {
@@ -11,6 +11,14 @@ describe('formatearPesos()', () => {
 
   it('muestra un guion si el monto no es un número', () => {
     expect(formatearPesos('abc')).toBe('—');
+  });
+});
+
+describe('formatearPesosNetos()', () => {
+  it('muestra los decimales del neto solo cuando los tiene', () => {
+    expect(formatearPesosNetos(8403.36)).toBe('$8.403,36');
+    expect(formatearPesosNetos(10916)).toBe('$10.916');
+    expect(formatearPesosNetos(8403.3)).toBe('$8.403,30');
   });
 });
 
