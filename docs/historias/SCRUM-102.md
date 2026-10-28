@@ -73,4 +73,4 @@ formato de respuesta acordaste con quien hace la historia backend.
   backend real (requiere `R2_*` en el backend y `URL_IMAGENES` en el front). Pregunta para el equipo:
   ¿se oculta «Agregar foto» al llegar a 10 fotos?
 - Para el backend: declarar la respuesta `ImagenPanel[]` en el Swagger de los cuatro endpoints.
-- PR: https://github.com/Contrum-Projects/Frontend/pull/20
+- PR: https://github.com/Contrum-Projects/Frontend/pull/20, integrado el 28-10-2026. Hecha.
