@@ -4,6 +4,7 @@ import * as React from 'react';
 import { cn } from '@/compartido/lib/utils';
 import { XIcon } from 'lucide-react';
 import { Dialog as SheetPrimitive } from 'radix-ui';
+import { Button } from '@/compartido/ui/button';
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
@@ -74,9 +75,16 @@ function SheetContent({
       >
         {children}
         {showCloseButton && (
-          <SheetPrimitive.Close className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-secondary">
-            <XIcon className="size-4" />
-            <span className="sr-only">Cerrar</span>
+          // 40 px de objetivo táctil, con el foco del sistema
+          <SheetPrimitive.Close asChild>
+            <Button
+              variant="ghost"
+              size="icono"
+              className="absolute top-3 right-3"
+            >
+              <XIcon aria-hidden />
+              <span className="sr-only">Cerrar</span>
+            </Button>
           </SheetPrimitive.Close>
         )}
       </SheetPrimitive.Content>

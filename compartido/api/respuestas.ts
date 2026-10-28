@@ -120,3 +120,18 @@ export interface DireccionCuenta {
   esPrincipal: boolean;
   comuna: UbicacionOficial & { region: UbicacionOficial };
 }
+
+/**
+ * backend: src/modulos/personal/personal.service.ts › CuentaPersonal (listar y crear, E13-H1).
+ * No trae el último acceso: se pidió al backend (ver docs/historias/SCRUM-98.md).
+ */
+export interface CuentaPersonal {
+  codigoPublico: string;
+  nombre: string;
+  apellido: string;
+  email: string;
+  rol: Rol;
+  activo: boolean;
+  /** Aún no define su contraseña con el enlace de la invitación. */
+  invitacionPendiente: boolean;
+}

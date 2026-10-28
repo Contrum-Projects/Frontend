@@ -25,13 +25,18 @@ type SalidaRestablecer = z.output<typeof esquemaRestablecer>;
  * Campos de «Nueva contraseña» (E1-H4); el título está en <RestablecerContrasena>. Los
  * errores de la contraseña van junto a su campo sin perder lo escrito; si el backend rechaza
  * el enlace, avisa con `alRechazarEnlace`.
+ *
+ * Con `enlace="invitacion"` define la primera contraseña del personal (E13-H1): el backend
+ * pide los mismos datos y responde los mismos errores.
  */
 export function FormularioRestablecer({
   token,
+  enlace = 'recuperacion',
   alRestablecer,
   alRechazarEnlace,
 }: {
   token: string;
+  enlace?: 'recuperacion' | 'invitacion';
   alRestablecer: (mensaje: string) => void;
   alRechazarEnlace: (mensaje: string) => void;
 }) {
@@ -69,10 +74,11 @@ export function FormularioRestablecer({
     setErrorServidor(null);
     try {
       // Sin useMutation: las variables llevan la contraseña y no deben quedar en caché
+      const body = { token, ...datos };
       const { mensaje } = exigir<MensajeApi>(
-        await api.POST('/api/cuentas/restablecer-contrasena', {
-          body: { token, ...datos },
-        }),
+        enlace === 'invitacion'
+          ? await api.POST('/api/personal/invitacion/aceptar', { body })
+          : await api.POST('/api/cuentas/restablecer-contrasena', { body }),
       );
       alRestablecer(mensaje);
     } catch (error) {
