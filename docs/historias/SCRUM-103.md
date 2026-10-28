@@ -47,6 +47,11 @@ formato de respuesta acordaste con quien hace la historia backend.
 - **Marcas solo se crean.** El backend no tiene ruta para editar una marca, así que la lista no
   lleva el lápiz de Figma. El criterio 1 queda cumplido en «crea»; «edita» espera el endpoint.
   Pedido al backend (SCRUM-29): `PATCH /api/catalogo/marcas/{id}` con `{ nombre }` y el mismo 409.
+- **No se eliminan marcas ni categorías.** No hay ruta `DELETE` (ni la piden la historia, Figma ni
+  las reglas de negocio). Pedido al backend: definir la regla y la ruta. En categorías, qué pasa
+  si tiene productos o subcategorías (rechazar con 409, desactivar o subir las subcategorías un
+  nivel); en marcas, desactivar (`activa`, ya existe en el modelo) en vez de borrar. La pantalla
+  lo sumará cuando exista.
 - **Sin conteo de productos.** Figma muestra «24 productos» por fila, pero ni las marcas ni el
   árbol lo entregan. Se omite; si el backend lo agrega, se suma a la fila.
 - **Formularios en panel lateral** (Sheet), como «Nueva cuenta de personal»: Figma no los dibuja.
