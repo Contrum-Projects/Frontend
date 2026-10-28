@@ -40,6 +40,7 @@ formato de respuesta acordaste con quien hace la historia backend.
 
 ## Notas de trabajo
 
+- **PR:** [Contrum-Projects/Frontend#13](https://github.com/Contrum-Projects/Frontend/pull/13)
 - **Último acceso (pendiente del backend):** `GET /api/personal` no lo entrega. Decisión del
   28-10-2026: la columna se omite y el estado muestra «Invitación pendiente» cuando la persona
   aún no define su contraseña. Pedir al backend `ultimoAcceso` (fecha de la última sesión o
