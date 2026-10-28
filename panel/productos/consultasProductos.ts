@@ -11,6 +11,7 @@ import { exigir } from '@/compartido/api/errores';
 import type { components } from '@/compartido/api/esquema';
 import type {
   FormatoPanel,
+  ImagenPanel,
   ListadoProductosPanel,
   ProductoPanel,
 } from '@/compartido/api/respuestas';
@@ -158,3 +159,108 @@ export const useGuardarFormato = (productoId: number) => {
       ]),
   });
 };
+
+/**
+ * Las fotos son de cada formato (E3-H3): subir, ordenar y quitar responden con todas las fotos
+ * del formato, que se guardan en su lugar de la lista. Se vuelve a pedir el listado de
+ * productos porque muestra la principal del formato predeterminado.
+ */
+const useGuardarFotos = <Variables>(
+  productoId: number,
+  formatoId: number,
+  pedir: (variables: Variables) => Promise<ImagenPanel[]>,
+) => {
+  const clienteConsultas = useQueryClient();
+  const guardarEnLista = (imagenes: ImagenPanel[]) =>
+    clienteConsultas.setQueryData<FormatoPanel[]>(
+      claveFormatos(productoId),
+      (lista) =>
+        lista?.map((formato) =>
+          formato.id === formatoId ? { ...formato, imagenes } : formato,
+        ),
+    );
+  return {
+    guardarEnLista,
+    mutacion: useMutation({
+      mutationFn: (variables: Variables) =>
+        conErrorDeApi(() => pedir(variables)),
+      onSuccess: (imagenes) => {
+        guardarEnLista(imagenes);
+        return clienteConsultas.invalidateQueries({
+          queryKey: [...CLAVE_PRODUCTOS, 'lista'],
+        });
+      },
+    }),
+  };
+};
+
+/** Sube una foto (JPEG, PNG o WebP; el backend revisa el tipo, el tamaño y el máximo). */
+export const useSubirFoto = (productoId: number, formatoId: number) =>
+  useGuardarFotos(productoId, formatoId, async (archivo: File) => {
+    const datos = new FormData();
+    datos.append('imagen', archivo);
+    return exigir<ImagenPanel[]>(
+      await api.POST('/api/catalogo/articulos/{id}/imagenes', {
+        params: { path: { id: formatoId } },
+        body: { imagen: '' },
+        // openapi-fetch deja que el navegador ponga el Content-Type con su separador
+        bodySerializer: () => datos,
+      }),
+    );
+  }).mutacion;
+
+/**
+ * Guarda el orden y la principal. Muestra el orden nuevo al instante (arrastrar no debe
+ * saltar) y, si el backend lo rechaza, vuelve a pedir las fotos guardadas.
+ */
+export const useOrdenarFotos = (productoId: number, formatoId: number) => {
+  const clienteConsultas = useQueryClient();
+  const { mutacion, guardarEnLista } = useGuardarFotos(
+    productoId,
+    formatoId,
+    async (cuerpo: components['schemas']['OrdenarImagenesDto']) =>
+      exigir<ImagenPanel[]>(
+        await api.PUT('/api/catalogo/articulos/{id}/imagenes', {
+          params: { path: { id: formatoId } },
+          body: cuerpo,
+        }),
+      ),
+  );
+  return {
+    ...mutacion,
+    ordenar: (
+      imagenes: ImagenPanel[],
+      principalId: number,
+      alFallar: (fallo: Error) => void,
+    ) => {
+      guardarEnLista(
+        imagenes.map((imagen, indice) => ({
+          ...imagen,
+          orden: indice + 1,
+          esPrincipal: imagen.id === principalId,
+        })),
+      );
+      mutacion.mutate(
+        { orden: imagenes.map((imagen) => imagen.id), principalId },
+        {
+          onError: (fallo) => {
+            alFallar(fallo);
+            return clienteConsultas.invalidateQueries({
+              queryKey: claveFormatos(productoId),
+            });
+          },
+        },
+      );
+    },
+  };
+};
+
+/** Quita una foto. La única del formato no se puede quitar (el backend responde 409). */
+export const useQuitarFoto = (productoId: number, formatoId: number) =>
+  useGuardarFotos(productoId, formatoId, async (imagenId: number) =>
+    exigir<ImagenPanel[]>(
+      await api.DELETE('/api/catalogo/articulos/{id}/imagenes/{imagenId}', {
+        params: { path: { id: formatoId, imagenId } },
+      }),
+    ),
+  ).mutacion;

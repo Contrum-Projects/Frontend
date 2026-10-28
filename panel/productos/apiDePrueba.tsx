@@ -118,8 +118,12 @@ export const simularBackend = (rutas: Record<string, Manejador>) => {
     const url = new URL(peticion.url);
     pedidas.push(`${peticion.method} ${url.pathname}${url.search}`);
     if (peticion.method !== 'GET') {
+      // Solo JSON: el FormData de jsdom no llega al Request de Node (las fotos se revisan
+      // espiando FormData.append)
       const texto = await peticion.clone().text();
-      if (texto) enviados.push(JSON.parse(texto));
+      if (texto && peticion.headers.get('content-type')?.includes('json')) {
+        enviados.push(JSON.parse(texto));
+      }
     }
     const clave = `${peticion.method} ${url.pathname}`;
     if (clave === 'GET /api/catalogo/marcas') return Response.json(MARCAS);
