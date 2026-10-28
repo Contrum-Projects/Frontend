@@ -35,6 +35,7 @@ rol no tiene el permiso. Sin rutas simuladas.
 
 ## Notas de trabajo
 
+- **PR:** [Contrum-Projects/Frontend#12](https://github.com/Contrum-Projects/Frontend/pull/12)
 - **Permisos de vendedor y bodeguero:** la nota de Jira («siguen por definir») quedó
   desactualizada. La matriz se acordó el 19-10-2026 en SCRUM-25 y es la que usa el menú.
 - **Menú por permiso, no por rol.** `panel/diseno/secciones.ts` dice qué permiso pide cada
