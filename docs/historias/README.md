@@ -29,7 +29,7 @@ Total: 53 historias, 185 puntos.
 | 11  | [SCRUM-101](SCRUM-101.md) · E3-H2 · Tabla de formatos en el producto                     | 5   | Hecha       | Sí      | SCRUM-27 | SCRUM-100            |
 | 12  | [SCRUM-102](SCRUM-102.md) · E3-H3 · Fotos por formato en el panel                        | 5   | Hecha       | Sí      | SCRUM-28 | SCRUM-101            |
 | 13  | [SCRUM-104](SCRUM-104.md) · E3-H5 · Precios minorista y mayorista en el panel            | 3   | Hecha       | Sí      | SCRUM-30 | SCRUM-101            |
-| 14  | [SCRUM-105](SCRUM-105.md) · E3-H6 · Pantalla Pack nuevo                                  | 5   | En curso    | Parcial | SCRUM-31 | SCRUM-102, SCRUM-104 |
+| 14  | [SCRUM-105](SCRUM-105.md) · E3-H6 · Pantalla Pack nuevo                                  | 5   | En revisión | Parcial | SCRUM-31 | SCRUM-102, SCRUM-104 |
 | 15  | [SCRUM-107](SCRUM-107.md) · E2-H2 · Búsqueda y filtros del catálogo                      | 5   | Por hacer   | Revisar | SCRUM-33 | SCRUM-106            |
 | 16  | [SCRUM-108](SCRUM-108.md) · E2-H3 · Ficha de producto y de pack                          | 5   | Por hacer   | No      | SCRUM-34 | SCRUM-106            |
 | 17  | [SCRUM-109](SCRUM-109.md) · E2-H4 · Vista de precio profesional                          | 3   | Por hacer   | Revisar | SCRUM-35 | SCRUM-108            |
