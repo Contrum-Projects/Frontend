@@ -13,9 +13,18 @@
  *
  * SCRUM-104 · `GET` y `PUT /catalogo/articulos/:id/precios`: el backend real con los campos de
  * IVA pedidos a SCRUM-30 (ver `conCamposPedidos` y docs/historias/SCRUM-104.md).
+ *
+ * SCRUM-105 · `GET /catalogo/formatos?buscar=`: búsqueda de formatos para armar un pack, que el
+ * backend no tiene. Se arma con los productos activos reales cuyo nombre coincide con la búsqueda
+ * (el backend real buscará también por formato y SKU) y sus formatos activos, sin stock ni
+ * precios: aquí no se calculan y la pantalla muestra «sin dato» (ver docs/historias/SCRUM-105.md).
+ * Los packs van al backend real: los campos pedidos a SCRUM-31 faltan y se ven como «—».
  */
 import 'server-only';
 import type {
+  FormatoPanel,
+  FormatoParaPack,
+  ListadoFormatosParaPack,
   ListadoProductosPanel,
   PreciosArticulo,
   ProductoListadoPanel,
@@ -167,5 +176,58 @@ export const rutasPanelCatalogo: RutaSimulada[] = [
             ),
           )
         : errorSimulado(404, 'El artículo no existe.'),
+  },
+  {
+    metodo: 'GET',
+    ruta: '/catalogo/formatos',
+    historia: 'SCRUM-105',
+    responder: async ({ peticion, url }) => {
+      const consulta = new URLSearchParams({ limite: String(POR_PAGINA) });
+      const buscar = url.searchParams.get('buscar');
+      if (buscar) consulta.set('buscar', buscar);
+      const respuesta = await alBackend(
+        peticion,
+        `/api/catalogo/productos?${consulta}`,
+      );
+      if (!respuesta.ok) return respuesta;
+
+      const { items } = (await respuesta.json()) as { items: ProductoPanel[] };
+      const respuestas = await Promise.all(
+        items.map((producto) =>
+          alBackend(
+            peticion,
+            `/api/catalogo/productos/${producto.id}/formatos`,
+          ),
+        ),
+      );
+      // Una sesión vencida o sin permiso vuelve tal cual, no como «sin resultados» (RNF-03)
+      const rechazo = respuestas.find((respuesta) =>
+        [401, 403].includes(respuesta.status),
+      );
+      if (rechazo) return rechazo;
+      const porProducto = await Promise.all(
+        items.map(async (producto, indice): Promise<FormatoParaPack[]> => {
+          const formatos = respuestas[indice];
+          if (!formatos.ok) return [];
+          return ((await formatos.json()) as FormatoPanel[])
+            .filter((formato) => formato.activo)
+            .map((formato) => ({
+              formatoId: formato.id,
+              sku: formato.sku,
+              nombreFormato: formato.nombreFormato,
+              producto: { id: producto.id, nombre: producto.nombre },
+              canalVenta: producto.canalVenta,
+            }));
+        }),
+      );
+      const todos = porProducto.flat();
+      const listado: ListadoFormatosParaPack = {
+        items: todos.slice(0, POR_PAGINA),
+        total: todos.length,
+        pagina: 1,
+        limite: POR_PAGINA,
+      };
+      return Response.json(listado);
+    },
   },
 ];

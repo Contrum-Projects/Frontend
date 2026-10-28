@@ -10,10 +10,7 @@ import {
 } from 'react-hook-form';
 import { toast } from 'sonner';
 import { ErrorDeApi, errorDeApi } from '@/compartido/api/errores';
-import type {
-  FormatoPanel,
-  PreciosArticulo,
-} from '@/compartido/api/respuestas';
+import type { PreciosArticulo } from '@/compartido/api/respuestas';
 import { formatearPesos } from '@/compartido/formato/moneda';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Input } from '@/compartido/ui/input';
@@ -31,6 +28,7 @@ import {
   useFijarPrecios,
   usePrecios,
   useRecargarPrecios,
+  type ClavePrecios,
 } from './consultasPrecios';
 import {
   campoDelErrorPrecios,
@@ -44,33 +42,41 @@ import {
 } from './esquemaPrecios';
 import { HistorialPrecios } from './historialPrecios';
 
+/** El formato o el pack cuyos precios se fijan. */
+export interface ArticuloConPrecios {
+  id: number;
+  nombre: string;
+  /** De quién es la exclusividad: la del producto del formato o la del pack. */
+  tipo: 'producto' | 'pack';
+}
+
 /**
- * Panel lateral con los precios netos del formato y su historial (E3-H5). Figma no lo dibuja:
- * sigue el panel del formato. Solo se abre con el permiso `precios.gestionar`.
+ * Panel lateral con los precios netos de un formato o de un pack y su historial (E3-H5). Figma
+ * no lo dibuja: sigue el panel del formato. Solo se abre con el permiso `precios.gestionar`.
  */
 export function PanelPrecios({
-  productoId,
-  formato,
+  clave,
+  articulo,
   alCerrar,
 }: {
-  productoId: number;
-  formato: FormatoPanel | null;
+  /** De qué detalle cuelgan los precios (ver `ClavePrecios`). */
+  clave: ClavePrecios;
+  articulo: ArticuloConPrecios | null;
   alCerrar: () => void;
 }) {
   return (
     <PanelLateral
-      titulo={formato ? `Precios de ${formato.nombreFormato}` : 'Precios'}
-      abierto={formato !== null}
+      titulo={articulo ? `Precios de ${articulo.nombre}` : 'Precios'}
+      abierto={articulo !== null}
       alCambiarAbierto={(abierto) => {
         if (!abierto) alCerrar();
       }}
     >
-      {formato && (
+      {articulo && (
         <ContenidoPrecios
-          key={formato.id}
-          productoId={productoId}
-          articuloId={formato.id}
-          nombreFormato={formato.nombreFormato}
+          key={articulo.id}
+          clave={clave}
+          articulo={articulo}
           alCerrar={alCerrar}
         />
       )}
@@ -79,17 +85,15 @@ export function PanelPrecios({
 }
 
 const ContenidoPrecios = ({
-  productoId,
-  articuloId,
-  nombreFormato,
+  clave,
+  articulo,
   alCerrar,
 }: {
-  productoId: number;
-  articuloId: number;
-  nombreFormato: string;
+  clave: ClavePrecios;
+  articulo: ArticuloConPrecios;
   alCerrar: () => void;
 }) => {
-  const precios = usePrecios(productoId, articuloId);
+  const precios = usePrecios(clave, articulo.id);
 
   if (precios.isPending) return <EsqueletoPrecios />;
   if (precios.isError) {
@@ -102,9 +106,8 @@ const ContenidoPrecios = ({
   return (
     <>
       <FormularioPrecios
-        productoId={productoId}
-        articuloId={articuloId}
-        nombreFormato={nombreFormato}
+        clave={clave}
+        articulo={articulo}
         precios={precios.data}
         alCerrar={alCerrar}
       />
@@ -114,20 +117,18 @@ const ContenidoPrecios = ({
 };
 
 function FormularioPrecios({
-  productoId,
-  articuloId,
-  nombreFormato,
+  clave,
+  articulo,
   precios,
   alCerrar,
 }: {
-  productoId: number;
-  articuloId: number;
-  nombreFormato: string;
+  clave: ClavePrecios;
+  articulo: ArticuloConPrecios;
   precios: PreciosArticulo;
   alCerrar: () => void;
 }) {
-  const fijar = useFijarPrecios(productoId, articuloId);
-  const recargar = useRecargarPrecios(productoId, articuloId);
+  const fijar = useFijarPrecios(clave, articulo.id);
+  const recargar = useRecargarPrecios(clave, articulo.id);
   const [aviso, setAviso] = useState<string | null>(null);
   const {
     register,
@@ -161,7 +162,7 @@ function FormularioPrecios({
       }
     }
     if (generales.length > 0) setAviso(generales.join(' '));
-    // El producto pasó a exclusivo mientras tanto: se pide de nuevo para quitar el minorista
+    // El producto o el pack pasó a exclusivo mientras tanto: se pide de nuevo para quitar el minorista
     if (fallo.mensajes.some((mensaje) => mensaje.includes('exclusivo'))) {
       void recargar();
     }
@@ -177,7 +178,7 @@ function FormularioPrecios({
     try {
       // Parte de los precios guardados, con el motivo vacío para el próximo cambio
       reset(preciosAFormulario(await fijar.mutateAsync(cuerpo)));
-      toast.success(`Guardamos los precios de ${nombreFormato}.`);
+      toast.success(`Guardamos los precios de ${articulo.nombre}.`);
     } catch (error) {
       // Sin conexión, fetch lanza TypeError: se muestra el mensaje genérico
       mostrarError(error instanceof ErrorDeApi ? error : errorDeApi(undefined));
@@ -188,7 +189,7 @@ function FormularioPrecios({
     <form
       onSubmit={handleSubmit(enviar)}
       noValidate
-      aria-label={`Precios de ${nombreFormato}`}
+      aria-label={`Precios de ${articulo.nombre}`}
       className="flex flex-col gap-4"
     >
       <p className="texto-leyenda text-texto-secundario">
@@ -202,8 +203,8 @@ function FormularioPrecios({
       {precios.exclusivo && (
         <Alert variant="info">
           <AlertDescription className="text-marca-profundo">
-            Este producto es exclusivo para profesionales: solo lleva precio
-            mayorista.
+            Este {articulo.tipo} es exclusivo para profesionales: solo lleva
+            precio mayorista.
           </AlertDescription>
         </Alert>
       )}

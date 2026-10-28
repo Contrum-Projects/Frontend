@@ -20,8 +20,11 @@ import type { CuerpoPrecios } from './esquemaPrecios';
 export const clavePreciosProducto = (productoId: number) =>
   [...CLAVE_PRODUCTOS, 'detalle', productoId, 'precios'] as const;
 
-const clavePrecios = (productoId: number, articuloId: number) =>
-  [...clavePreciosProducto(productoId), articuloId] as const;
+/** De qué detalle cuelgan los precios: el de un producto o el de un pack (E3-H6). */
+export type ClavePrecios = readonly unknown[];
+
+const clavePrecios = (base: ClavePrecios, articuloId: number) =>
+  [...base, articuloId] as const;
 
 const pedirPrecios = (articuloId: number) =>
   conErrorDeApi(async () =>
@@ -44,16 +47,16 @@ export const usePreciosFormatos = (
 ) =>
   useQueries({
     queries: formatoIds.map((articuloId) => ({
-      queryKey: clavePrecios(productoId, articuloId),
+      queryKey: clavePrecios(clavePreciosProducto(productoId), articuloId),
       queryFn: () => pedirPrecios(articuloId),
       enabled: habilitado,
     })),
   });
 
-/** Precios vigentes del formato y su historial (E3-H5). */
-export const usePrecios = (productoId: number, articuloId: number) =>
+/** Precios vigentes del formato o del pack y su historial (E3-H5). */
+export const usePrecios = (base: ClavePrecios, articuloId: number) =>
   useQuery({
-    queryKey: clavePrecios(productoId, articuloId),
+    queryKey: clavePrecios(base, articuloId),
     queryFn: () => pedirPrecios(articuloId),
   });
 
@@ -61,7 +64,7 @@ export const usePrecios = (productoId: number, articuloId: number) =>
  * Fija los precios que cambian. El backend responde con los precios y el historial, que se
  * guardan en su lugar; se vuelve a pedir el listado de productos porque muestra el precio desde.
  */
-export const useFijarPrecios = (productoId: number, articuloId: number) => {
+export const useFijarPrecios = (base: ClavePrecios, articuloId: number) => {
   const clienteConsultas = useQueryClient();
   return useMutation({
     mutationFn: (cuerpo: CuerpoPrecios) =>
@@ -74,10 +77,7 @@ export const useFijarPrecios = (productoId: number, articuloId: number) => {
         ),
       ),
     onSuccess: (precios) => {
-      clienteConsultas.setQueryData(
-        clavePrecios(productoId, articuloId),
-        precios,
-      );
+      clienteConsultas.setQueryData(clavePrecios(base, articuloId), precios);
       return clienteConsultas.invalidateQueries({
         queryKey: [...CLAVE_PRODUCTOS, 'lista'],
       });
@@ -85,11 +85,11 @@ export const useFijarPrecios = (productoId: number, articuloId: number) => {
   });
 };
 
-/** Vuelve a pedir los precios del formato (p. ej. si el producto pasó a exclusivo). */
-export const useRecargarPrecios = (productoId: number, articuloId: number) => {
+/** Vuelve a pedir los precios (p. ej. si el producto o el pack pasó a exclusivo). */
+export const useRecargarPrecios = (base: ClavePrecios, articuloId: number) => {
   const clienteConsultas = useQueryClient();
   return () =>
     clienteConsultas.invalidateQueries({
-      queryKey: clavePrecios(productoId, articuloId),
+      queryKey: clavePrecios(base, articuloId),
     });
 };

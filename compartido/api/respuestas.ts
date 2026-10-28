@@ -280,3 +280,89 @@ export interface PreciosArticulo {
   /** Precio mayorista con IVA en pesos enteros. Pedido a SCRUM-30. */
   precioMayoristaConIva?: number | null;
 }
+
+/**
+ * Formato que se puede agregar a un pack (E3-H6 criterio 2). **Simulado** (SCRUM-105): el backend
+ * no tiene una búsqueda de formatos; forma pedida a SCRUM-31 (ver docs/historias/SCRUM-105.md).
+ * Solo formatos activos de productos activos, nunca packs.
+ */
+export interface FormatoParaPack {
+  formatoId: number;
+  sku: string;
+  nombreFormato: string;
+  producto: { id: number; nombre: string };
+  /** Canal del producto: un pack general no admite formatos exclusivos. */
+  canalVenta: CanalVenta;
+  /** Unidades en bodegas activas. Opcional mientras se simula: la simulación no lo inventa. */
+  stockTotal?: number;
+  precioMinoristaNeto?: number | null;
+  /** En pesos enteros, como en la tienda. */
+  precioMinoristaConIva?: number | null;
+}
+
+/** GET /api/catalogo/formatos?buscar= (panel). Simulado (SCRUM-105), ver `FormatoParaPack`. */
+export interface ListadoFormatosParaPack {
+  items: FormatoParaPack[];
+  total: number;
+  pagina: number;
+  limite: number;
+}
+
+/**
+ * backend: src/modulos/catalogo/packs.service.ts › ComponentePackPanel. `stockTotal` y los
+ * precios se pidieron a SCRUM-31 (ver docs/historias/SCRUM-105.md).
+ */
+export interface ComponentePackPanel {
+  formatoId: number;
+  sku: string;
+  nombreFormato: string;
+  producto: { id: number; nombre: string };
+  cantidad: number;
+  /** Unidades del formato en bodegas activas. Pedido a SCRUM-31. */
+  stockTotal?: number;
+  /** Pedido a SCRUM-31. */
+  precioMinoristaNeto?: number | null;
+  /** En pesos enteros. Pedido a SCRUM-31. */
+  precioMinoristaConIva?: number | null;
+}
+
+/**
+ * backend: src/modulos/catalogo/packs.service.ts › PackPanel. Lo que devuelven GET, POST y PATCH
+ * de /api/catalogo/packs (E3-H6). Los precios van aparte (E3-H5). `disponibilidad`,
+ * `componenteLimitante` y `precioMinoristaPorSeparadoConIva` se pidieron a SCRUM-31.
+ */
+export interface PackPanel {
+  id: number;
+  sku: string;
+  nombre: string;
+  descripcion: string;
+  canalVenta: CanalVenta;
+  /** AAAA-MM-DD, hora de Chile; `null` sin inicio. */
+  fechaInicioVigencia: string | null;
+  /** AAAA-MM-DD, último día incluido; `null` sin término. */
+  fechaFinVigencia: string | null;
+  /** Hoy (hora de Chile) está dentro de la vigencia. */
+  vigente: boolean;
+  activo: boolean;
+  /** ISO 8601. */
+  fechaCreacion: string;
+  componentes: ComponentePackPanel[];
+  imagenes: ImagenPanel[];
+  /**
+   * Packs que se pueden vender con el stock de hoy: los del componente más escaso, contando las
+   * unidades que lleva el pack (como `disponibilidad` de /tienda/packs/{id}). Pedido a SCRUM-31.
+   */
+  disponibilidad?: number;
+  /** El componente que limita la disponibilidad; `null` sin componentes. Pedido a SCRUM-31. */
+  componenteLimitante?: { formatoId: number; stockTotal: number } | null;
+  /** Lo que cuestan los componentes por separado, con IVA. Pedido a SCRUM-31. */
+  precioMinoristaPorSeparadoConIva?: number | null;
+}
+
+/** backend: src/modulos/catalogo/packs.service.ts › ListadoPacks (GET /api/catalogo/packs). */
+export interface ListadoPacksPanel {
+  items: PackPanel[];
+  total: number;
+  pagina: number;
+  limite: number;
+}

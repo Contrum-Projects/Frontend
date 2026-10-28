@@ -24,8 +24,10 @@ export function NavegacionInferior({ className }: { className?: string }) {
   if (!usuario) return null;
 
   const secciones = seccionesDelRol(usuario.rol);
-  const enLaBarra = secciones.slice(0, EN_LA_BARRA);
-  const enMas = secciones.slice(EN_LA_BARRA);
+  const enLaBarra = secciones
+    .filter((seccion) => seccion.enLaBarra !== false)
+    .slice(0, EN_LA_BARRA);
+  const enMas = secciones.filter((seccion) => !enLaBarra.includes(seccion));
   const actual = seccionDeRuta(ruta);
   const masActivo = masAbierto || (!!actual && enMas.includes(actual));
 

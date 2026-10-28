@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/compartido/ui/table';
-import { usePreciosFormatos } from './consultasPrecios';
+import { clavePreciosProducto, usePreciosFormatos } from './consultasPrecios';
 import { useFormatos } from './consultasProductos';
 import { EstadoProducto } from './etiquetasProducto';
 import {
@@ -28,13 +28,21 @@ import {
   ResumenFotosTarjeta,
 } from './fotosFormato';
 import { PanelFormato, type FormatoEnEdicion } from './formularioFormato';
-import { PanelPrecios } from './formularioPrecios';
+import { PanelPrecios, type ArticuloConPrecios } from './formularioPrecios';
 import { Tarjeta } from './formularioProducto';
 import {
   CeldaPrecio,
   textoPrecio,
   type ConsultaPrecios,
 } from './preciosFormato';
+
+/** El formato cuyos precios se fijan; su exclusividad es la de su producto. */
+const articuloConPrecios = (
+  formato: FormatoPanel | undefined,
+): ArticuloConPrecios | null =>
+  formato
+    ? { id: formato.id, nombre: formato.nombreFormato, tipo: 'producto' }
+    : null;
 
 /**
  * «Formatos» del producto (Figma P3 2029:770 y 2024:558, E3-H2), con las fotos de cada formato
@@ -121,8 +129,10 @@ export function FormatosProducto({ productoId }: { productoId: number }) {
       />
       {gestionaPrecios && (
         <PanelPrecios
-          productoId={productoId}
-          formato={lista.find((formato) => formato.id === preciosDe) ?? null}
+          clave={clavePreciosProducto(productoId)}
+          articulo={articuloConPrecios(
+            lista.find((formato) => formato.id === preciosDe),
+          )}
           alCerrar={() => setPreciosDe(null)}
         />
       )}
