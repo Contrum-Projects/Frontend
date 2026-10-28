@@ -136,6 +136,16 @@ describe('Menú del panel según el rol (SCRUM-99)', () => {
     ).not.toHaveAttribute('aria-current');
   });
 
+  it('E3-H4 FE · marcas: en Marcas y categorías el menú marca Productos', () => {
+    ingresarComo('administrador');
+    navegacion.ruta = '/panel/marcas-y-categorias';
+    mostrarPanel();
+
+    expect(
+      within(menuLateral()).getByRole('link', { name: 'Productos' }),
+    ).toHaveAttribute('aria-current', 'page');
+  });
+
   it('E13-H2 FE · opciones por rol: en celular, «Más» abre las secciones que no caben', async () => {
     ingresarComo('administrador');
     mostrarPanel();

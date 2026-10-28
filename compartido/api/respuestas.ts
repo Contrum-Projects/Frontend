@@ -72,6 +72,16 @@ export interface MarcaTienda {
   nombre: string;
 }
 
+/**
+ * backend: src/modulos/catalogo/marcas.service.ts › crear y listar (modelo Marca de
+ * prisma/schema.prisma). Lo que devuelven POST y GET /api/catalogo/marcas en el panel.
+ */
+export interface MarcaPanel {
+  id: number;
+  nombre: string;
+  activa: boolean;
+}
+
 /** backend: src/modulos/catalogo/tienda-packs.service.ts › PackTienda */
 export interface PackTienda {
   id: number;

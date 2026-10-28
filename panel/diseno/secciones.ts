@@ -43,8 +43,7 @@ export const SECCIONES: readonly SeccionPanel[] = [
   },
   {
     texto: 'Productos',
-    // TODO(SCRUM-100): productos
-    href: '/panel/productos' as Route,
+    href: '/panel/productos',
     icono: Tag,
     permiso: PERMISOS.CATALOGO_GESTIONAR,
   },
@@ -115,13 +114,26 @@ export const seccionesDelRol = (rol: Rol | undefined): SeccionPanel[] =>
       )
     : [];
 
+/**
+ * Páginas que no cuelgan de la ruta de su sección pero el menú las marca dentro de ella: Figma
+ * marca «Productos» en Marcas y categorías (P3b 2039:1311), que se abre desde Productos.
+ */
+const SECCION_DE_PAGINA: readonly { prefijo: string; seccion: Route }[] = [
+  { prefijo: '/panel/marcas-y-categorias', seccion: '/panel/productos' },
+];
+
 /** La sección a la que pertenece la ruta, para marcarla en el menú. Inicio solo en /panel. */
-export const seccionDeRuta = (ruta: string): SeccionPanel | undefined =>
-  SECCIONES.find((seccion) =>
-    seccion.href === '/panel'
+export const seccionDeRuta = (ruta: string): SeccionPanel | undefined => {
+  const propia = SECCION_DE_PAGINA.find(({ prefijo }) =>
+    coincide(ruta, prefijo),
+  )?.seccion;
+  return SECCIONES.find((seccion) => {
+    if (propia) return seccion.href === propia;
+    return seccion.href === '/panel'
       ? ruta === seccion.href
-      : coincide(ruta, seccion.href),
-  );
+      : coincide(ruta, seccion.href);
+  });
+};
 
 /**
  * Si el rol puede abrir la ruta del panel. Manda la regla más específica: primero las páginas
