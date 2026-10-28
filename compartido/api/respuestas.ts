@@ -205,3 +205,40 @@ export interface ListadoProductosPanel {
   limite: number;
   conteos: ConteosProductosPanel;
 }
+
+/** backend: src/modulos/catalogo/imagenes.service.ts › ImagenPanel */
+export interface ImagenPanel {
+  id: number;
+  url: string;
+  orden: number;
+  esPrincipal: boolean;
+}
+
+/** backend: src/common/dominio/valores.ts › UNIDADES_MEDIDA */
+export type UnidadMedida = 'ml' | 'g' | 'unidades';
+
+/**
+ * backend: src/modulos/catalogo/formatos.service.ts › FormatoPanel. Lo que devuelven GET y POST
+ * /api/catalogo/productos/{id}/formatos y PATCH /api/catalogo/formatos/{id} (E3-H2), con el
+ * predeterminado primero en la lista.
+ */
+export interface FormatoPanel {
+  id: number;
+  productoId: number;
+  sku: string;
+  codigoBarras: string | null;
+  nombreFormato: string;
+  contenido: number | null;
+  unidadMedida: UnidadMedida | null;
+  /** AAAA-MM-DD. Solo se muestra en el panel. */
+  fechaVencimiento: string | null;
+  stockMinimo: number;
+  pesoGramos: number;
+  altoCm: number;
+  anchoCm: number;
+  largoCm: number;
+  esPredeterminado: boolean;
+  activo: boolean;
+  /** Imágenes del formato en su orden (E3-H3); puede no tener todavía. */
+  imagenes: ImagenPanel[];
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatearDiaMes } from './fecha';
+import { formatearDia, formatearDiaMes } from './fecha';
 import { formatearPesos } from './moneda';
 import { formatearRut, normalizarRut } from './rut';
 
@@ -36,5 +36,12 @@ describe('formatearDiaMes()', () => {
   it('muestra el día de la API con el mes en palabras, sin correrse por la zona horaria', () => {
     expect(formatearDiaMes('2026-10-31')).toBe('31 de octubre');
     expect(formatearDiaMes('2026-01-01')).toBe('1 de enero');
+  });
+});
+
+describe('formatearDia()', () => {
+  it('muestra el día de la API con día, mes corto y año, sin correrse por la zona horaria', () => {
+    expect(formatearDia('2027-12-31')).toBe('31 dic 2027');
+    expect(formatearDia('2027-01-01')).toBe('1 ene 2027');
   });
 });

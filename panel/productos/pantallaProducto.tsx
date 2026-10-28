@@ -21,6 +21,7 @@ import { Button } from '@/compartido/ui/button';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { useDesactivarProducto, useProducto } from './consultasProductos';
 import { EstadoProducto } from './etiquetasProducto';
+import { FormatosProducto, FormatosProductoNuevo } from './formatosProducto';
 import { FormularioProductoPanel } from './formularioProducto';
 
 /** «← Productos» sobre el título, solo en celular (Figma P3 2024:443). */
@@ -39,13 +40,16 @@ export function PantallaProductoNuevo() {
   return (
     <div className="flex flex-col gap-2 lg:max-w-3xl">
       <VolverAProductos />
-      <FormularioProductoPanel
-        titulo={
-          <h1 className="flex-1 titulo-h2 text-texto-principal">
-            Producto nuevo
-          </h1>
-        }
-      />
+      <div className="flex flex-col gap-4 lg:gap-6">
+        <FormularioProductoPanel
+          titulo={
+            <h1 className="flex-1 titulo-h2 text-texto-principal">
+              Producto nuevo
+            </h1>
+          }
+        />
+        <FormatosProductoNuevo />
+      </div>
     </div>
   );
 }
@@ -109,6 +113,8 @@ const EditarProducto = ({ id }: { id: number }) => {
           </div>
         }
       />
+      {/* Fuera del formulario del producto: los formatos se guardan cada uno por su lado */}
+      <FormatosProducto productoId={producto.data.id} />
       <DesactivarProducto producto={producto.data} />
     </div>
   );

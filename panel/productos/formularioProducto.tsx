@@ -40,7 +40,7 @@ import { OrigenDescripcionProducto } from './etiquetasProducto';
 import { urlProducto } from './listaProductos';
 
 /** Tarjeta de Figma (P3 2029:742): superficie, borde y título. */
-const Tarjeta = ({
+export const Tarjeta = ({
   titulo,
   extra,
   children,

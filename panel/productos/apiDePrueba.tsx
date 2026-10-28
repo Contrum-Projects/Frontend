@@ -8,6 +8,7 @@ import { act, type ReactNode } from 'react';
 import { vi } from 'vitest';
 import type {
   CategoriaTienda,
+  FormatoPanel,
   ListadoProductosPanel,
   MarcaPanel,
   ProductoListadoPanel,
@@ -54,6 +55,26 @@ export const producto = (
   activo: true,
   marca: { id: 1, nombre: 'Kérastase' },
   categoria: { id: 4, nombre: 'Reparación' },
+  ...extra,
+});
+
+export const formato = (extra: Partial<FormatoPanel> = {}): FormatoPanel => ({
+  id: 21,
+  productoId: 7,
+  sku: 'SH-REP-300',
+  codigoBarras: '7801234567890',
+  nombreFormato: '300 ml',
+  contenido: 300,
+  unidadMedida: 'ml',
+  fechaVencimiento: null,
+  stockMinimo: 5,
+  pesoGramos: 320,
+  altoCm: 18.5,
+  anchoCm: 6,
+  largoCm: 4,
+  esPredeterminado: true,
+  activo: true,
+  imagenes: [],
   ...extra,
 });
 

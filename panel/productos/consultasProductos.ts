@@ -8,11 +8,14 @@ import {
 } from '@tanstack/react-query';
 import { api } from '@/compartido/api/cliente';
 import { exigir } from '@/compartido/api/errores';
+import type { components } from '@/compartido/api/esquema';
 import type {
+  FormatoPanel,
   ListadoProductosPanel,
   ProductoPanel,
 } from '@/compartido/api/respuestas';
 import { conErrorDeApi } from '@/tienda/cuenta/consultasCuenta';
+import type { CuerpoFormato } from './esquemaFormato';
 
 export const CLAVE_PRODUCTOS = ['panel', 'catalogo', 'productos'] as const;
 
@@ -96,5 +99,62 @@ export const useDesactivarProducto = (id: number) => {
         queryKey: [...CLAVE_PRODUCTOS, 'lista'],
       });
     },
+  });
+};
+
+export const claveFormatos = (productoId: number) =>
+  [...CLAVE_PRODUCTOS, 'detalle', productoId, 'formatos'] as const;
+
+/** Formatos del producto (E3-H2), con el predeterminado primero. */
+export const useFormatos = (productoId: number) =>
+  useQuery({
+    queryKey: claveFormatos(productoId),
+    queryFn: () =>
+      conErrorDeApi(async () =>
+        exigir<FormatoPanel[]>(
+          await api.GET('/api/catalogo/productos/{id}/formatos', {
+            params: { path: { id: productoId } },
+          }),
+        ),
+      ),
+  });
+
+/**
+ * Agrega (sin `formatoId`) o edita un formato. Marcar uno como predeterminado desmarca a los
+ * demás, así que después se vuelve a pedir la lista entera y la del listado de productos.
+ */
+export const useGuardarFormato = (productoId: number) => {
+  const clienteConsultas = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      formatoId,
+      cuerpo,
+    }: {
+      formatoId?: number;
+      cuerpo: CuerpoFormato;
+    }) =>
+      conErrorDeApi(async () =>
+        exigir<FormatoPanel>(
+          formatoId === undefined
+            ? await api.POST('/api/catalogo/productos/{id}/formatos', {
+                params: { path: { id: productoId } },
+                // TODO(SCRUM-101): el Swagger tipa los campos que admiten null como objetos
+                body: cuerpo as unknown as components['schemas']['CrearFormatoDto'],
+              })
+            : await api.PATCH('/api/catalogo/formatos/{id}', {
+                params: { path: { id: formatoId } },
+                body: cuerpo as unknown as components['schemas']['ActualizarFormatoDto'],
+              }),
+        ),
+      ),
+    onSuccess: () =>
+      Promise.all([
+        clienteConsultas.invalidateQueries({
+          queryKey: claveFormatos(productoId),
+        }),
+        clienteConsultas.invalidateQueries({
+          queryKey: [...CLAVE_PRODUCTOS, 'lista'],
+        }),
+      ]),
   });
 };
