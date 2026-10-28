@@ -19,16 +19,22 @@ import {
 } from '@/compartido/ui/table';
 import { useFormatos } from './consultasProductos';
 import { EstadoProducto } from './etiquetasProducto';
+import {
+  PanelFotos,
+  ResumenFotosTabla,
+  ResumenFotosTarjeta,
+} from './fotosFormato';
 import { PanelFormato, type FormatoEnEdicion } from './formularioFormato';
 import { Tarjeta } from './formularioProducto';
 
 /**
- * «Formatos» del producto (Figma P3 2029:770 y 2024:558, E3-H2). Fotos y precios de cada
- * formato llegan con SCRUM-102 y SCRUM-104.
+ * «Formatos» del producto (Figma P3 2029:770 y 2024:558, E3-H2), con las fotos de cada formato
+ * (E3-H3). Los precios llegan con SCRUM-104.
  */
 export function FormatosProducto({ productoId }: { productoId: number }) {
   const formatos = useFormatos(productoId);
   const [edicion, setEdicion] = useState<FormatoEnEdicion | null>(null);
+  const [fotosDe, setFotosDe] = useState<number | null>(null);
   const lista = formatos.data ?? [];
 
   return (
@@ -72,11 +78,13 @@ export function FormatosProducto({ productoId }: { productoId: number }) {
             <TablaFormatos
               formatos={lista}
               alEditar={(formato) => setEdicion({ formato })}
+              alGestionarFotos={(formato) => setFotosDe(formato.id)}
             />
           </div>
           <ListaFormatosCelular
             formatos={lista}
             alEditar={(formato) => setEdicion({ formato })}
+            alGestionarFotos={(formato) => setFotosDe(formato.id)}
           />
         </>
       )}
@@ -85,6 +93,11 @@ export function FormatosProducto({ productoId }: { productoId: number }) {
         edicion={edicion}
         esPrimero={lista.length === 0}
         alCerrar={() => setEdicion(null)}
+      />
+      <PanelFotos
+        productoId={productoId}
+        formatoId={fotosDe}
+        alCerrar={() => setFotosDe(null)}
       />
     </Tarjeta>
   );
@@ -102,6 +115,7 @@ export const FormatosProductoNuevo = () => (
 interface ListaFormatosProps {
   formatos: FormatoPanel[];
   alEditar: (formato: FormatoPanel) => void;
+  alGestionarFotos: (formato: FormatoPanel) => void;
 }
 
 /** «Predeterminado»: uno solo por producto (E3-H2 criterio 3). */
@@ -149,12 +163,17 @@ const BotonEditar = ({
 
 const ENCABEZADO = 'h-auto px-2 py-2 texto-leyenda text-texto-secundario';
 
-/** Escritorio (Figma P3 2029:777): formato con su SKU, stock mínimo, vencimiento y el lápiz. */
-const TablaFormatos = ({ formatos, alEditar }: ListaFormatosProps) => (
+/** Escritorio (Figma P3 2029:777): formato con su SKU, fotos, stock mínimo, vencimiento y el lápiz. */
+const TablaFormatos = ({
+  formatos,
+  alEditar,
+  alGestionarFotos,
+}: ListaFormatosProps) => (
   <Table className="table-fixed">
     <TableHeader>
       <TableRow className="hover:bg-transparent">
         <TableHead className={ENCABEZADO}>Formato / SKU</TableHead>
+        <TableHead className={cn(ENCABEZADO, 'w-36')}>Fotos</TableHead>
         <TableHead className={cn(ENCABEZADO, 'w-20')}>Mín.</TableHead>
         <TableHead className={cn(ENCABEZADO, 'w-32')}>Vence</TableHead>
         <TableHead className={cn(ENCABEZADO, 'w-12')}>
@@ -172,6 +191,12 @@ const TablaFormatos = ({ formatos, alEditar }: ListaFormatosProps) => (
                 {formato.sku}
               </span>
             </div>
+          </TableCell>
+          <TableCell className="px-2 py-3">
+            <ResumenFotosTabla
+              formato={formato}
+              alGestionar={() => alGestionarFotos(formato)}
+            />
           </TableCell>
           <TableCell className="px-2 py-3 texto-pequeno text-texto-principal tabular-nums">
             {formato.stockMinimo}
@@ -204,7 +229,11 @@ const Dato = ({ etiqueta, valor }: { etiqueta: string; valor: string }) => (
 );
 
 /** Celular (Figma P3 2024:565): una tarjeta por formato. */
-const ListaFormatosCelular = ({ formatos, alEditar }: ListaFormatosProps) => (
+const ListaFormatosCelular = ({
+  formatos,
+  alEditar,
+  alGestionarFotos,
+}: ListaFormatosProps) => (
   <ul className="flex flex-col gap-3 lg:hidden">
     {formatos.map((formato) => (
       <li
@@ -220,6 +249,10 @@ const ListaFormatosCelular = ({ formatos, alEditar }: ListaFormatosProps) => (
           </div>
           <BotonEditar formato={formato} alEditar={alEditar} />
         </div>
+        <ResumenFotosTarjeta
+          formato={formato}
+          alGestionar={() => alGestionarFotos(formato)}
+        />
         <dl className="flex flex-col gap-1">
           <Dato etiqueta="Stock mínimo" valor={String(formato.stockMinimo)} />
           <Dato
