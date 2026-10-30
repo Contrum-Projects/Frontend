@@ -66,7 +66,7 @@ el backend lo tenga.
 
 ## Notas de trabajo
 
-30-10-2026 · rama `SCRUM-107-busqueda-filtros`.
+30-10-2026 · rama `SCRUM-107-busqueda-filtros` · PR [#24](https://github.com/Contrum-Projects/Frontend/pull/24) (En revisión).
 
 **Qué se hizo**
 
