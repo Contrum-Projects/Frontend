@@ -120,6 +120,51 @@ export interface ListadoPacksTienda {
   limite: number;
 }
 
+/**
+ * backend: src/common/dominio/valores.ts › DISPONIBILIDADES. `disponible` con al menos una
+ * unidad en bodegas que abastecen la venta online; el backend no informa cantidades.
+ */
+export type Disponibilidad = 'disponible' | 'agotado';
+
+/** backend: src/modulos/catalogo/tienda-detalle.service.ts › FormatoDetalle */
+export interface FormatoDetalle {
+  id: number;
+  nombre: string;
+  contenido: number | null;
+  unidadMedida: UnidadMedida | null;
+  esPredeterminado: boolean;
+  /** URLs públicas de sus imágenes, la principal primero. */
+  imagenes: string[];
+  /** Precio minorista con IVA incluido, en pesos enteros. */
+  precio: number;
+  disponibilidad: Disponibilidad;
+}
+
+/**
+ * backend: src/modulos/catalogo/tienda-detalle.service.ts › ProductoDetalle (lo que ve quien no
+ * es profesional). GET /api/tienda/productos/{id}: los formatos a la venta, el predeterminado
+ * primero. TODO(SCRUM-108): el Swagger no declara la respuesta; pedido a SCRUM-34.
+ */
+export interface ProductoDetalle {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  marca: { id: number; nombre: string } | null;
+  categoria: { id: number; nombre: string };
+  formatos: FormatoDetalle[];
+}
+
+/**
+ * backend: src/modulos/catalogo/tienda-detalle.service.ts › PackDetalle. GET
+ * /api/tienda/packs/{id}: el pack del listado con todas sus imágenes y la disponibilidad de su
+ * componente más escaso. No trae el precio por separado (ver docs/historias/SCRUM-108.md).
+ */
+export interface PackDetalle extends PackTienda {
+  /** URLs públicas de sus imágenes, la principal primero. */
+  imagenes: string[];
+  disponibilidad: Disponibilidad;
+}
+
 /** backend: src/modulos/cuentas/mi-cuenta.service.ts › DatosPersonales */
 export interface DatosPersonales {
   codigoPublico: string;

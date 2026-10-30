@@ -77,7 +77,6 @@ export const hrefDe = ({ pathname, query }: UrlObject): Route => {
   return `${pathname ?? ''}${texto ? `?${texto}` : ''}` as Route;
 };
 
-// TODO(SCRUM-108): ficha de producto y de pack
 export const urlProducto = (id: number) => `/productos/${id}` as Route;
 export const urlPack = (id: number) => `/packs/${id}` as Route;
 
