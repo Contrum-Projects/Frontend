@@ -137,6 +137,21 @@
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
 }
+/* Precio de la ficha (Figma › 03 Ficha 2007:768 y 2007:739): `texto-precio-ficha-celular md:texto-precio-ficha` */
+@utility texto-precio-ficha-celular {
+  font-family: var(--font-sans);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+@utility texto-precio-ficha {
+  font-family: var(--font-sans);
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
 /* Solo para la marca sobre el nombre del producto (docs/diseno.md: sin sobretítulos decorativos) */
 @utility texto-sobretitulo {
   font-family: var(--font-sans);
