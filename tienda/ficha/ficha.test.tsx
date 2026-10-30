@@ -1,4 +1,6 @@
-import { render, screen, within } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render as renderBase, screen, within } from '@testing-library/react';
+import type { ReactElement } from 'react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type {
@@ -19,6 +21,18 @@ vi.mock('next/navigation', () => ({
 afterEach(() => {
   vi.unstubAllGlobals();
 });
+
+/** La ficha usa la sesión y TanStack Query en el navegador (precio profesional, SCRUM-109). */
+const render = (ui: ReactElement) =>
+  renderBase(
+    <QueryClientProvider
+      client={
+        new QueryClient({ defaultOptions: { queries: { retry: false } } })
+      }
+    >
+      {ui}
+    </QueryClientProvider>,
+  );
 
 const formato = (
   id: number,

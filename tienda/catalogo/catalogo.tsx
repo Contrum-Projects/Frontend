@@ -29,6 +29,11 @@ import {
   GrillaResultados,
   GrillaResultadosEsqueleto,
 } from './grillaResultados';
+import {
+  ResultadosSegunRol,
+  TotalProductos,
+  TotalSegunRol,
+} from './resultadosSegunRol';
 import { buscarCategoria } from './seleccionFiltros';
 import { SinProductos } from './sinProductos';
 import { SinResultados } from './sinResultados';
@@ -38,7 +43,8 @@ import { ResultadosPendientes, TransicionFiltros } from './transicionFiltros';
  * Catálogo y búsqueda (SCRUM-106 y SCRUM-107, Figma › 02 Catálogo 2006:395 y 2005:374, y
  * 11 Búsqueda 2058:2736). Con `buscar` es la búsqueda; los filtros de categoría y marca se
  * combinan con ella. La categoría incluye sus subcategorías (lo resuelve el backend). Una
- * categoría o marca que no existe responde 404.
+ * categoría o marca que no existe responde 404. Con una cuenta profesional, el total y los
+ * resultados se vuelven a pedir con su token: suman los exclusivos y el mayorista (SCRUM-109).
  */
 export async function Catalogo({
   parametros,
@@ -69,6 +75,14 @@ export async function Catalogo({
     orden: parametros.orden,
   };
   const encabezado = encabezar(parametros, caminos, elegidas, total);
+  const vacio = buscar ? (
+    <SinResultados buscar={buscar} categorias={categorias} />
+  ) : (
+    <SinProductos
+      titulo={encabezado.vacio}
+      categorias={categorias.filter((item) => item.id !== caminos[0]?.[0]?.id)}
+    />
+  );
 
   return (
     <main className="mx-auto max-w-[1440px] px-4 pt-4 pb-12 md:px-16 md:pt-8 md:pb-16">
@@ -77,11 +91,11 @@ export async function Catalogo({
         <h1 className="titulo-h2 text-texto-principal md:titulo-h1">
           {encabezado.titulo}
         </h1>
-        {(total > 0 || buscar) && 'listado' in resultado && (
-          <p className="text-texto-secundario">
-            {total === 1 ? '1 producto' : `${total} productos`}
-          </p>
-        )}
+        <TotalSegunRol parametros={parametros}>
+          {(total > 0 || buscar) && 'listado' in resultado && (
+            <TotalProductos total={total} />
+          )}
+        </TotalSegunRol>
       </div>
 
       <TransicionFiltros>
@@ -120,25 +134,20 @@ export async function Catalogo({
                   />
                 </div>
               )}
-              {'error' in resultado ? (
-                <Alert variant="aviso">
-                  <AlertDescription>{resultado.error}</AlertDescription>
-                </Alert>
-              ) : resultado.listado.items.length > 0 ? (
-                <GrillaResultados
-                  listado={resultado.listado}
-                  parametros={parametros}
-                />
-              ) : buscar ? (
-                <SinResultados buscar={buscar} categorias={categorias} />
-              ) : (
-                <SinProductos
-                  titulo={encabezado.vacio}
-                  categorias={categorias.filter(
-                    (item) => item.id !== caminos[0]?.[0]?.id,
-                  )}
-                />
-              )}
+              <ResultadosSegunRol parametros={parametros} vacio={vacio}>
+                {'error' in resultado ? (
+                  <Alert variant="aviso">
+                    <AlertDescription>{resultado.error}</AlertDescription>
+                  </Alert>
+                ) : resultado.listado.items.length > 0 ? (
+                  <GrillaResultados
+                    listado={resultado.listado}
+                    parametros={parametros}
+                  />
+                ) : (
+                  vacio
+                )}
+              </ResultadosSegunRol>
             </ResultadosPendientes>
           </div>
         </div>

@@ -49,13 +49,34 @@ export interface ProductoTienda {
   imagen: string;
 }
 
+/**
+ * backend: src/modulos/catalogo/tienda.service.ts › ProductoTiendaProfesional. Lo que recibe el
+ * profesional (E2-H4): el mayorista y si es exclusivo. TODO(SCRUM-109): el Swagger no lo
+ * declara; pedido a SCRUM-35.
+ */
+export interface ProductoTiendaProfesional extends Omit<
+  ProductoTienda,
+  'precio'
+> {
+  /** Precio minorista con IVA; `null` si el producto es exclusivo para profesionales. */
+  precio: number | null;
+  /** Precio mayorista con IVA incluido, en pesos enteros. */
+  precioMayorista: number;
+  exclusivo: boolean;
+}
+
 /** backend: src/modulos/catalogo/tienda.service.ts › ListadoTienda */
-export interface ListadoTienda {
-  items: ProductoTienda[];
+export interface ListadoTienda<
+  T extends ProductoTienda | ProductoTiendaProfesional = ProductoTienda,
+> {
+  items: T[];
   total: number;
   pagina: number;
   limite: number;
 }
+
+/** El listado con la sesión de un profesional. */
+export type ListadoTiendaProfesional = ListadoTienda<ProductoTiendaProfesional>;
 
 /** backend: src/modulos/catalogo/categorias.service.ts › NodoCategoria */
 export interface CategoriaTienda {
@@ -112,6 +133,15 @@ export interface PackTienda {
   componentes: { producto: string; formato: string; cantidad: number }[];
 }
 
+/** backend: src/modulos/catalogo/tienda-packs.service.ts › PackTiendaProfesional */
+export interface PackTiendaProfesional extends Omit<PackTienda, 'precio'> {
+  /** Precio minorista con IVA; `null` si el pack es exclusivo para profesionales. */
+  precio: number | null;
+  /** Precio mayorista con IVA incluido, en pesos enteros. */
+  precioMayorista: number;
+  exclusivo: boolean;
+}
+
 /** backend: src/modulos/catalogo/tienda-packs.service.ts › ListadoPacksTienda */
 export interface ListadoPacksTienda {
   items: PackTienda[];
@@ -140,6 +170,17 @@ export interface FormatoDetalle {
   disponibilidad: Disponibilidad;
 }
 
+/** backend: src/modulos/catalogo/tienda-detalle.service.ts › FormatoDetalleProfesional */
+export interface FormatoDetalleProfesional extends Omit<
+  FormatoDetalle,
+  'precio'
+> {
+  /** Precio minorista con IVA; `null` si el producto es exclusivo para profesionales. */
+  precio: number | null;
+  /** Precio mayorista con IVA incluido, en pesos enteros. */
+  precioMayorista: number;
+}
+
 /**
  * backend: src/modulos/catalogo/tienda-detalle.service.ts › ProductoDetalle (lo que ve quien no
  * es profesional). GET /api/tienda/productos/{id}: los formatos a la venta, el predeterminado
@@ -155,11 +196,31 @@ export interface ProductoDetalle {
 }
 
 /**
+ * backend: src/modulos/catalogo/tienda-detalle.service.ts › ProductoDetalleProfesional. Lo que
+ * recibe el profesional en GET /api/tienda/productos/{id} (E2-H4). TODO(SCRUM-109): el Swagger
+ * no lo declara; pedido a SCRUM-35.
+ */
+export interface ProductoDetalleProfesional extends Omit<
+  ProductoDetalle,
+  'formatos'
+> {
+  exclusivo: boolean;
+  formatos: FormatoDetalleProfesional[];
+}
+
+/**
  * backend: src/modulos/catalogo/tienda-detalle.service.ts › PackDetalle. GET
  * /api/tienda/packs/{id}: el pack del listado con todas sus imágenes y la disponibilidad de su
  * componente más escaso. No trae el precio por separado (ver docs/historias/SCRUM-108.md).
  */
 export interface PackDetalle extends PackTienda {
+  /** URLs públicas de sus imágenes, la principal primero. */
+  imagenes: string[];
+  disponibilidad: Disponibilidad;
+}
+
+/** backend: src/modulos/catalogo/tienda-detalle.service.ts › PackDetalleProfesional */
+export interface PackDetalleProfesional extends PackTiendaProfesional {
   /** URLs públicas de sus imágenes, la principal primero. */
   imagenes: string[];
   disponibilidad: Disponibilidad;

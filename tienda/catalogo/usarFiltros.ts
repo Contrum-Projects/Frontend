@@ -2,9 +2,11 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { apiPublica } from '@/compartido/api/cliente';
+import { api, apiPublica } from '@/compartido/api/cliente';
 import { exigir } from '@/compartido/api/errores';
 import type { ListadoTienda } from '@/compartido/api/respuestas';
+import { ROLES } from '@/compartido/sesion/roles';
+import { useSesion } from '@/compartido/sesion/sesion';
 import { hrefDe, urlCatalogo } from '@/tienda/diseno/enlaces';
 import {
   consultaProductos,
@@ -50,22 +52,26 @@ export const useAplicarFiltros = ({ buscar, orden }: ContextoFiltros) => {
 
 /**
  * Cuántos productos habría con la selección de los filtros del celular, antes de aplicarla
- * («Ver 10 productos»). Lo cuenta el backend (`limite=1`, se usa solo `total`). Sin sesión,
- * como la página del catálogo (que se arma como visitante), para que el número coincida.
- * TODO(SCRUM-109): pedir con la sesión cuando el catálogo muestre los productos del profesional.
+ * («Ver 10 productos»). Lo cuenta el backend (`limite=1`, se usa solo `total`). Se pide como
+ * la grilla, para que el número coincida: sin sesión, salvo el profesional, que ve también los
+ * exclusivos (SCRUM-109). La clave lleva su cuenta, como las demás lecturas profesionales.
  */
 export const useTotalProductos = (
   filtros: Pick<FiltrosProductos, 'buscar' | 'categoriaIds' | 'marcaIds'>,
   habilitado: boolean,
-) =>
-  useQuery({
-    queryKey: ['tienda', 'productos', 'total', filtros],
+) => {
+  const { usuario } = useSesion();
+  const profesional =
+    usuario?.rol === ROLES.PROFESIONAL ? usuario.codigoPublico : '';
+  return useQuery({
+    queryKey: ['tienda', 'productos', 'total', profesional, filtros],
     queryFn: async () =>
       exigir<ListadoTienda>(
-        await apiPublica.GET('/api/tienda/productos', {
+        await (profesional ? api : apiPublica).GET('/api/tienda/productos', {
           params: { query: consultaProductos({ ...filtros, limite: 1 }) },
         }),
       ).total,
     enabled: habilitado,
     placeholderData: keepPreviousData,
   });
+};

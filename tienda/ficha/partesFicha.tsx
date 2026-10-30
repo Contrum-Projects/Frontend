@@ -60,13 +60,24 @@ export const TituloFicha = ({
   </div>
 );
 
-/** Precio con IVA que entrega el backend; «IVA incluido» solo en ficha, carrito y checkout. */
-export const PrecioFicha = ({ precio }: { precio: number }) => (
+/**
+ * Precio con IVA que entrega el backend; «IVA incluido» solo en ficha, carrito y checkout. El
+ * profesional ve «c/u» porque compra desde 3 unidades (Figma 2007:1767).
+ */
+export const PrecioFicha = ({
+  precio,
+  porUnidad = false,
+}: {
+  precio: number;
+  porUnidad?: boolean;
+}) => (
   <p className="flex flex-wrap items-baseline gap-x-3">
     <span className="texto-precio-ficha-celular text-marca-profundo md:texto-precio-ficha">
       {formatearPesos(precio)}
     </span>
-    <span className="texto-pequeno text-texto-secundario">IVA incluido</span>
+    <span className="texto-pequeno text-texto-secundario">
+      {porUnidad ? 'c/u · IVA incluido' : 'IVA incluido'}
+    </span>
   </p>
 );
 
