@@ -12,6 +12,8 @@ interface CantidadProps {
   maximo?: number;
   /** Para lectores de pantalla: qué se está contando («Cantidad de Shampoo reparador»). */
   etiqueta?: string;
+  /** Id del texto que explica un límite (el mínimo del peluquero), para lectores de pantalla. */
+  descripcion?: string;
   className?: string;
 }
 
@@ -25,11 +27,13 @@ export const Cantidad = ({
   minimo = 1,
   maximo,
   etiqueta = 'Cantidad',
+  descripcion,
   className,
 }: CantidadProps) => (
   <div
     role="group"
     aria-label={etiqueta}
+    aria-describedby={descripcion}
     className={cn(
       'inline-flex items-center gap-1 rounded-full border-[1.5px] border-fondo-hueso-oscuro bg-fondo-superficie p-1',
       className,

@@ -1,7 +1,15 @@
 'use client';
 
-import { type ReactNode, useState } from 'react';
-import type { ProductoDetalle } from '@/compartido/api/respuestas';
+import { useState } from 'react';
+import type {
+  ProductoDetalle,
+  ProductoDetalleProfesional,
+} from '@/compartido/api/respuestas';
+import { Migas } from '@/tienda/catalogo/migas';
+import { RUTAS, urlCatalogo, urlProducto } from '@/tienda/diseno/enlaces';
+import { AvisoPeluquero } from '@/tienda/profesional/avisoPeluquero';
+import { InsigniaPrecioProfesional } from '@/tienda/profesional/insignias';
+import { MINIMO_PROFESIONAL, precioVisible } from '@/tienda/profesional/precio';
 import { Compra } from './compra';
 import { EstadoDisponibilidad } from './disponibilidad';
 import { Galeria } from './galeria';
@@ -9,21 +17,24 @@ import { DisenoFicha, PrecioFicha, TituloFicha } from './partesFicha';
 import { SelectorFormato } from './selectorFormato';
 
 interface InfoProductoProps {
-  producto: ProductoDetalle;
-  migas: ReactNode;
+  /** Con `exclusivo`, es lo que el backend entrega a una cuenta profesional (SCRUM-109). */
+  producto: ProductoDetalle | ProductoDetalleProfesional;
 }
 
 /**
  * Ficha de producto en el navegador: el formato elegido cambia la galería, el precio con IVA y
  * la disponibilidad (criterio 1). Empieza en el predeterminado, que el backend envía primero.
+ * El profesional ve el mayorista, la cantidad desde 3 y su aviso (Figma 2007:1759); el resto,
+ * el minorista y el aviso para verificarse (2007:767).
  */
-export function InfoProducto({ producto, migas }: InfoProductoProps) {
+export function InfoProducto({ producto }: InfoProductoProps) {
   const [elegidoId, setElegidoId] = useState(producto.formatos[0]?.id);
   const elegido =
     producto.formatos.find((formato) => formato.id === elegidoId) ??
     producto.formatos[0];
   if (!elegido) return null;
 
+  const profesional = 'exclusivo' in producto;
   const otrosDisponibles = producto.formatos
     .filter(
       (formato) =>
@@ -33,7 +44,18 @@ export function InfoProducto({ producto, migas }: InfoProductoProps) {
 
   return (
     <DisenoFicha
-      migas={migas}
+      migas={
+        <Migas
+          migas={[
+            { texto: 'Inicio', href: RUTAS.inicio },
+            {
+              texto: producto.categoria.nombre,
+              href: urlCatalogo({ categoria: producto.categoria.id }),
+            },
+            { texto: producto.nombre, href: urlProducto(producto.id) },
+          ]}
+        />
+      }
       descripcion={producto.descripcion}
       galeria={
         <Galeria
@@ -47,7 +69,14 @@ export function InfoProducto({ producto, migas }: InfoProductoProps) {
         sobretitulo={producto.marca?.nombre}
         nombre={producto.nombre}
       />
-      <PrecioFicha precio={elegido.precio} />
+      {profesional ? (
+        <div className="flex flex-col items-start gap-4">
+          <InsigniaPrecioProfesional />
+          <PrecioFicha precio={precioVisible(elegido)} porUnidad />
+        </div>
+      ) : (
+        <PrecioFicha precio={precioVisible(elegido)} />
+      )}
       <SelectorFormato
         formatos={producto.formatos}
         elegido={elegido.id}
@@ -60,7 +89,9 @@ export function InfoProducto({ producto, migas }: InfoProductoProps) {
       <Compra
         disponibilidad={elegido.disponibilidad}
         articulo={`${producto.nombre} ${elegido.nombre}`}
+        minimo={profesional ? MINIMO_PROFESIONAL : undefined}
       />
+      {!profesional && <AvisoPeluquero />}
     </DisenoFicha>
   );
 }

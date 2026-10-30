@@ -6,6 +6,7 @@ import {
   pack,
   pedidas,
   producto,
+  renderizar,
   simularTienda,
 } from './apiDePrueba';
 import { FilaProductos } from './filaProductos';
@@ -26,7 +27,7 @@ describe('SCRUM-106 · Inicio', () => {
       ],
     });
 
-    render(
+    renderizar(
       await FilaProductos({
         titulo: 'Más vendidos',
         orden: 'mas-vendidos',
@@ -47,13 +48,15 @@ describe('SCRUM-106 · Inicio', () => {
   it('E2-H1 FE · inicio: la fila «Novedades» no aparece si no hay productos', async () => {
     simularTienda({ productos: [[]] });
 
-    const fila = await FilaProductos({
-      titulo: 'Novedades',
-      orden: 'novedades',
-      celular: 'grilla',
-    });
+    renderizar(
+      await FilaProductos({
+        titulo: 'Novedades',
+        orden: 'novedades',
+        celular: 'grilla',
+      }),
+    );
 
-    expect(fila).toBeNull();
+    expect(screen.queryByRole('region')).not.toBeInTheDocument();
   });
 
   it('E2-H1 FE · inicio: si la API falla, la fila no se muestra (sin detalles técnicos)', async () => {
@@ -61,13 +64,16 @@ describe('SCRUM-106 · Inicio', () => {
       productos: { estado: 500, cuerpo: { message: 'Error interno' } },
     });
 
-    expect(
+    renderizar(
       await FilaProductos({
         titulo: 'Novedades',
         orden: 'novedades',
         celular: 'grilla',
       }),
-    ).toBeNull();
+    );
+
+    expect(screen.queryByRole('region')).not.toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent('Error interno');
   });
 
   it('E2-H1 FE · inicio: el banner de promociones destaca el pack que vence antes', async () => {

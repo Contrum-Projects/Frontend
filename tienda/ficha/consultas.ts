@@ -12,12 +12,7 @@ import { exigir } from '@/compartido/api/errores';
 import type { PackDetalle, ProductoDetalle } from '@/compartido/api/respuestas';
 import { apiServidor } from '@/compartido/api/servidor';
 
-/** El id de la URL, si es un entero positivo; si no, la ficha no existe (sin llamar al backend). */
-export const leerId = (texto: string): number | null => {
-  if (!/^[1-9]\d{0,9}$/.test(texto)) return null;
-  const id = Number(texto);
-  return Number.isSafeInteger(id) && id <= 2_147_483_647 ? id : null;
-};
+export { leerId } from './idFicha';
 
 /** `null` si el backend responde 404: no existe, no está a la venta o es exclusivo. */
 export const leerProducto = cache(

@@ -1,19 +1,23 @@
 'use client';
 
 import { RadioGroup as RadioGroupPrimitive } from 'radix-ui';
-import type { FormatoDetalle } from '@/compartido/api/respuestas';
+import type {
+  FormatoDetalle,
+  FormatoDetalleProfesional,
+} from '@/compartido/api/respuestas';
 import { formatearPesos } from '@/compartido/formato/moneda';
 import { RadioGroup } from '@/compartido/ui/radio-group';
+import { precioVisible } from '@/tienda/profesional/precio';
 
 interface SelectorFormatoProps {
-  formatos: FormatoDetalle[];
+  formatos: (FormatoDetalle | FormatoDetalleProfesional)[];
   elegido: number;
   onElegir: (id: number) => void;
 }
 
 /**
- * Opciones de formato (Figma › 03 Ficha 2007:741, agotado 2058:3096): nombre y precio con IVA,
- * o «Agotado» si no hay stock. El agotado se puede elegir igual para ver sus fotos (criterio 2).
+ * Opciones de formato (Figma › 03 Ficha 2007:741, agotado 2058:3096): nombre y precio con IVA
+ * (el mayorista para el profesional, 2007:1772), o «Agotado» si no hay stock. El agotado se puede elegir igual para ver sus fotos (criterio 2).
  * Radio de Radix: flechas para moverse, como cualquier grupo de opciones.
  */
 export const SelectorFormato = ({
@@ -38,7 +42,7 @@ export const SelectorFormato = ({
           aria-label={`${formato.nombre}, ${
             formato.disponibilidad === 'agotado'
               ? 'agotado'
-              : formatearPesos(formato.precio)
+              : formatearPesos(precioVisible(formato))
           }`}
           className="flex min-w-24 flex-1 cursor-pointer flex-col items-center gap-1 rounded-lg border-2 border-fondo-hueso-oscuro bg-fondo-superficie px-4 py-3 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/60 data-[state=checked]:border-marca-profundo data-[state=checked]:bg-marca-acento-suave md:flex-none"
         >
@@ -48,7 +52,7 @@ export const SelectorFormato = ({
           <span className="texto-leyenda text-texto-secundario">
             {formato.disponibilidad === 'agotado'
               ? 'Agotado'
-              : formatearPesos(formato.precio)}
+              : formatearPesos(precioVisible(formato))}
           </span>
         </RadioGroupPrimitive.Item>
       ))}

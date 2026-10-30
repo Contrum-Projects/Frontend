@@ -1,4 +1,8 @@
-import type { ListadoTienda } from '@/compartido/api/respuestas';
+import type {
+  ListadoTienda,
+  ProductoTienda,
+  ProductoTiendaProfesional,
+} from '@/compartido/api/respuestas';
 import { urlCatalogo } from '@/tienda/diseno/enlaces';
 import { BotonCargarMas } from './botonCargarMas';
 import { MAXIMO_PAGINAS, type ParametrosCatalogo } from './parametrosCatalogo';
@@ -18,7 +22,7 @@ export const GrillaResultados = ({
   listado,
   parametros: { buscar, categoriaIds, marcaIds, orden, paginas },
 }: {
-  listado: ListadoTienda;
+  listado: ListadoTienda<ProductoTienda | ProductoTiendaProfesional>;
   parametros: ParametrosCatalogo;
 }) => (
   <div>
@@ -52,11 +56,16 @@ export const GrillaResultados = ({
   </div>
 );
 
-export const GrillaResultadosEsqueleto = () => (
+/** `profesional`: mientras llega el listado con el precio profesional (SCRUM-109). */
+export const GrillaResultadosEsqueleto = ({
+  profesional = false,
+}: {
+  profesional?: boolean;
+}) => (
   <ul aria-hidden className={CLASE_GRILLA}>
     {Array.from({ length: 6 }, (_, i) => (
       <li key={i}>
-        <TarjetaProductoEsqueleto />
+        <TarjetaProductoEsqueleto profesional={profesional} />
       </li>
     ))}
   </ul>
