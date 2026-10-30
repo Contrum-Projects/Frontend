@@ -73,6 +73,22 @@ export interface MarcaTienda {
 }
 
 /**
+ * Pedido a SCRUM-33 (forma acordada en docs/historias/SCRUM-107.md): `GET /api/tienda/facetas`,
+ * con los mismos filtros que `/tienda/productos`. Cuántos productos hay en cada categoría (con sus
+ * subcategorías) y en cada marca; solo las que tienen alguno.
+ * TODO(SCRUM-107): quitar cuando el Swagger lo declare (hoy lo responde la API simulada).
+ */
+export interface FacetasTienda {
+  categorias: FacetaTienda[];
+  marcas: FacetaTienda[];
+}
+
+export interface FacetaTienda {
+  id: number;
+  total: number;
+}
+
+/**
  * backend: src/modulos/catalogo/marcas.service.ts › crear y listar (modelo Marca de
  * prisma/schema.prisma). Lo que devuelven POST y GET /api/catalogo/marcas en el panel.
  */

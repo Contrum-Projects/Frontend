@@ -4,7 +4,7 @@ import { cn } from '@/compartido/lib/utils';
 import { urlCatalogo } from '@/tienda/diseno/enlaces';
 
 const CLASE_CHIP =
-  'inline-flex min-h-10 items-center rounded-full border-[1.5px] bg-fondo-superficie px-4 py-2 texto-etiqueta text-texto-principal whitespace-nowrap transition-colors hover:border-marca-profundo';
+  'inline-flex min-h-10 max-w-full items-center rounded-full border-[1.5px] bg-fondo-superficie px-4 py-2 texto-etiqueta text-texto-principal whitespace-nowrap transition-colors hover:border-marca-profundo';
 
 /**
  * Chips de categorías (Figma › Componentes › Chip, «Activo: No»). En el inicio del celular van
@@ -29,12 +29,12 @@ export const ChipsCategorias = ({
     )}
   >
     {categorias.map((categoria) => (
-      <li key={categoria.id} className="shrink-0 snap-start">
+      <li key={categoria.id} className="max-w-full shrink-0 snap-start">
         <Link
           href={urlCatalogo({ categoria: categoria.id })}
           className={CLASE_CHIP}
         >
-          {categoria.nombre}
+          <span className="truncate">{categoria.nombre}</span>
         </Link>
       </li>
     ))}

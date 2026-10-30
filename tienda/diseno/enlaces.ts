@@ -12,8 +12,7 @@ export const RUTAS = {
   inicio: '/',
   catalogo: '/catalogo',
   marcas: '/#marcas',
-  // TODO(SCRUM-107): búsqueda
-  buscar: '/buscar' as Route,
+  buscar: '/buscar',
   ingresar: '/ingresar',
   registro: '/registro',
   recuperarContrasena: '/recuperar-contrasena',
@@ -40,18 +39,43 @@ export const RUTAS = {
   privacidad: '/politica-de-privacidad' as Route,
 } as const;
 
-/** `/catalogo?categoria=<id>&marca=<id>…`, sin los filtros que no vienen. */
+/**
+ * `/catalogo?categoria=<id>&marca=<id>…`, sin los filtros que no vienen. Con `q` es la búsqueda
+ * (`/buscar?q=…`). `categoria` y `marca` aceptan varios ids (se repiten en la URL).
+ */
 export const urlCatalogo = (filtro: {
-  categoria?: number;
-  marca?: number;
+  q?: string;
+  categoria?: number | number[];
+  marca?: number | number[];
   orden?: string;
   pagina?: number;
 }): UrlObject => ({
-  pathname: '/catalogo',
+  pathname: filtro.q ? RUTAS.buscar : RUTAS.catalogo,
   query: Object.fromEntries(
-    Object.entries(filtro).filter(([, valor]) => valor !== undefined),
+    Object.entries(filtro).filter(
+      ([, valor]) =>
+        valor !== undefined &&
+        valor !== '' &&
+        !(Array.isArray(valor) && valor.length === 0),
+    ),
   ),
 });
+
+/** La URL como texto, para `router.push` (los enlaces aceptan el objeto de `urlCatalogo`). */
+export const hrefDe = ({ pathname, query }: UrlObject): Route => {
+  const consulta = new URLSearchParams();
+  if (query && typeof query === 'object') {
+    for (const [clave, valor] of Object.entries(query)) {
+      for (const item of [valor].flat()) {
+        if (item !== undefined && item !== null) {
+          consulta.append(clave, String(item));
+        }
+      }
+    }
+  }
+  const texto = consulta.toString();
+  return `${pathname ?? ''}${texto ? `?${texto}` : ''}` as Route;
+};
 
 // TODO(SCRUM-108): ficha de producto y de pack
 export const urlProducto = (id: number) => `/productos/${id}` as Route;

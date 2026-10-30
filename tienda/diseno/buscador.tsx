@@ -1,21 +1,17 @@
 import { Search } from 'lucide-react';
+import { Suspense } from 'react';
 import { cn } from '@/compartido/lib/utils';
+import { CampoBuscador, type PropsCampoBuscador } from './campoBuscador';
 import { RUTAS } from './enlaces';
 
 /**
- * Buscador del header (RF-02.07). Es un formulario GET a `/buscar?q=`: la página de resultados
- * llega con SCRUM-107.
+ * Buscador del header (RF-02.07). Es un formulario GET a `/buscar?q=` (SCRUM-107). En la
+ * búsqueda, el campo muestra lo que se buscó; mientras lee la URL, el mismo campo vacío.
  */
 export const Buscador = ({
-  id,
-  placeholder,
   className,
-}: {
-  /** El header lo muestra dos veces (escritorio y celular): cada uno con su id. */
-  id: string;
-  placeholder: string;
-  className?: string;
-}) => (
+  ...campo
+}: PropsCampoBuscador & { className?: string }) => (
   <form
     action={RUTAS.buscar}
     role="search"
@@ -29,15 +25,11 @@ export const Buscador = ({
       strokeWidth={1.75}
       aria-hidden
     />
-    <label htmlFor={id} className="sr-only">
+    <label htmlFor={campo.id} className="sr-only">
       Buscar
     </label>
-    <input
-      id={id}
-      name="q"
-      type="search"
-      placeholder={placeholder}
-      className="min-w-0 flex-1 bg-transparent py-3 texto-pequeno text-texto-principal outline-none placeholder:text-texto-secundario"
-    />
+    <Suspense fallback={<CampoBuscador {...campo} />}>
+      <CampoBuscador {...campo} conBusqueda />
+    </Suspense>
   </form>
 );

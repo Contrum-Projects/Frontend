@@ -26,5 +26,6 @@ async function CatalogoConParametros({
 }) {
   const parametros = leerParametrosCatalogo(await busqueda);
   if (!parametros) notFound();
-  return <Catalogo parametros={parametros} />;
+  // La búsqueda vive en /buscar: aquí `q` no filtra
+  return <Catalogo parametros={{ ...parametros, buscar: undefined }} />;
 }

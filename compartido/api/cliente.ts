@@ -58,3 +58,9 @@ export const middlewareDeSesion: Middleware = {
 
 export const api = createClient<paths>({ baseUrl: '' });
 api.use(middlewareDeSesion);
+
+/**
+ * Sin token, a propósito: para datos públicos que deben coincidir con lo que la tienda arma en
+ * el servidor como visitante (p. ej. el total del botón de los filtros del catálogo).
+ */
+export const apiPublica = createClient<paths>({ baseUrl: '' });
