@@ -12,7 +12,9 @@ export const TAMANOS_FOTO = {
   /** Fila de 5 del inicio (carrusel o 2 columnas en celular). */
   inicio: '(min-width: 1440px) 243px, (min-width: 768px) 18vw, 44vw',
   /** Grilla del catálogo: 4, 3 o 2 columnas. */
-  catalogo: '(min-width: 1280px) 310px, (min-width: 768px) 30vw, 45vw',
+  // 3 por fila junto a la columna de filtros (lg) y sin ella (md)
+  catalogo:
+    '(min-width: 1280px) 330px, (min-width: 1024px) 22vw, (min-width: 768px) 30vw, 45vw',
 } as const;
 
 interface TarjetaProductoProps {

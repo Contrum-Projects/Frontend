@@ -1,6 +1,12 @@
-import { render, screen, within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { categoria, pedidas, producto, simularTienda } from './apiDePrueba';
+import {
+  categoria,
+  pedidas,
+  producto,
+  renderizar,
+  simularTienda,
+} from './apiDePrueba';
 import { Catalogo } from './catalogo';
 
 vi.mock('next/server', () => ({ connection: async () => {} }));
@@ -8,6 +14,7 @@ vi.mock('next/navigation', () => ({
   notFound: () => {
     throw new Error('NEXT_NOT_FOUND');
   },
+  useRouter: () => ({ push: vi.fn() }),
 }));
 
 afterEach(() => {
@@ -40,7 +47,11 @@ describe('SCRUM-106 · Catálogo por categoría o marca', () => {
       ],
     });
 
-    render(await Catalogo({ parametros: { categoriaId: 1, paginas: 1 } }));
+    renderizar(
+      await Catalogo({
+        parametros: { categoriaIds: [1], marcaIds: [], paginas: 1 },
+      }),
+    );
 
     expect(
       screen.getByRole('heading', { level: 1, name: 'Shampoo' }),
@@ -76,7 +87,11 @@ describe('SCRUM-106 · Catálogo por categoría o marca', () => {
       productos: [[producto(10, 'Shampoo reparador')]],
     });
 
-    render(await Catalogo({ parametros: { categoriaId: 2, paginas: 1 } }));
+    renderizar(
+      await Catalogo({
+        parametros: { categoriaIds: [2], marcaIds: [], paginas: 1 },
+      }),
+    );
 
     const migas = screen.getByRole('navigation', { name: 'Migas de pan' });
     expect(
@@ -101,7 +116,11 @@ describe('SCRUM-106 · Catálogo por categoría o marca', () => {
       ],
     });
 
-    render(await Catalogo({ parametros: { marcaId: 7, paginas: 1 } }));
+    renderizar(
+      await Catalogo({
+        parametros: { categoriaIds: [], marcaIds: [7], paginas: 1 },
+      }),
+    );
 
     expect(
       screen.getByRole('heading', { level: 1, name: 'Marca B' }),
@@ -123,8 +142,10 @@ describe('SCRUM-106 · Catálogo por categoría o marca', () => {
       total: 13,
     });
 
-    const { unmount } = render(
-      await Catalogo({ parametros: { categoriaId: 1, paginas: 1 } }),
+    const { unmount } = renderizar(
+      await Catalogo({
+        parametros: { categoriaIds: [1], marcaIds: [], paginas: 1 },
+      }),
     );
     expect(
       screen.getByText('Mostrando 12 de 13 productos'),
@@ -134,7 +155,11 @@ describe('SCRUM-106 · Catálogo por categoría o marca', () => {
     ).toHaveAttribute('href', '/catalogo?categoria=1&pagina=2');
     unmount();
 
-    render(await Catalogo({ parametros: { categoriaId: 1, paginas: 2 } }));
+    renderizar(
+      await Catalogo({
+        parametros: { categoriaIds: [1], marcaIds: [], paginas: 2 },
+      }),
+    );
     expect(screen.getAllByRole('article')).toHaveLength(13);
     expect(
       screen.queryByRole('link', { name: 'Cargar más productos' }),
@@ -144,7 +169,11 @@ describe('SCRUM-106 · Catálogo por categoría o marca', () => {
   it('E2-H1 FE · sin productos: lo indica y ofrece explorar otras categorías', async () => {
     simularTienda({ categorias: CATEGORIAS, marcas: MARCAS, productos: [[]] });
 
-    render(await Catalogo({ parametros: { categoriaId: 5, paginas: 1 } }));
+    renderizar(
+      await Catalogo({
+        parametros: { categoriaIds: [5], marcaIds: [], paginas: 1 },
+      }),
+    );
 
     expect(
       screen.getByRole('heading', {
@@ -167,10 +196,14 @@ describe('SCRUM-106 · Catálogo por categoría o marca', () => {
     simularTienda({ categorias: CATEGORIAS, marcas: MARCAS });
 
     await expect(
-      Catalogo({ parametros: { categoriaId: 99, paginas: 1 } }),
+      Catalogo({
+        parametros: { categoriaIds: [99], marcaIds: [], paginas: 1 },
+      }),
     ).rejects.toThrow('NEXT_NOT_FOUND');
     await expect(
-      Catalogo({ parametros: { marcaId: 99, paginas: 1 } }),
+      Catalogo({
+        parametros: { categoriaIds: [], marcaIds: [99], paginas: 1 },
+      }),
     ).rejects.toThrow('NEXT_NOT_FOUND');
   });
 
@@ -185,7 +218,7 @@ describe('SCRUM-106 · Catálogo por categoría o marca', () => {
     });
 
     await expect(
-      Catalogo({ parametros: { marcaId: 4, paginas: 1 } }),
+      Catalogo({ parametros: { categoriaIds: [], marcaIds: [4], paginas: 1 } }),
     ).rejects.toThrow('NEXT_NOT_FOUND');
   });
 });

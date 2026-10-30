@@ -2,9 +2,13 @@
  * Solo para las pruebas: simula el backend en el borde (`fetch`) respondiendo por ruta, como
  * pide CLAUDE.md. Devuelve el mock para revisar qué se pidió.
  */
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render } from '@testing-library/react';
+import { createElement, type ReactElement, type ReactNode } from 'react';
 import { vi } from 'vitest';
 import type {
   CategoriaTienda,
+  FacetasTienda,
   MarcaTienda,
   PackTienda,
   ProductoTienda,
@@ -57,6 +61,8 @@ interface Respuestas {
   productos?: ProductoTienda[][] | { estado: number; cuerpo: unknown };
   total?: number;
   packs?: PackTienda[] | { estado: number; cuerpo: unknown };
+  /** Sin facetas, el backend responde 404 (como hoy, sin la API simulada). */
+  facetas?: FacetasTienda;
 }
 
 const json = (cuerpo: unknown, status = 200) =>
@@ -83,6 +89,10 @@ export function simularTienda(respuestas: Respuestas) {
           limite: 10,
         });
       }
+      case '/api/tienda/facetas':
+        return respuestas.facetas
+          ? json(respuestas.facetas)
+          : json({ statusCode: 404, message: 'No existe.' }, 404);
       case '/api/tienda/productos': {
         const productos = respuestas.productos ?? [[]];
         if (!Array.isArray(productos)) {
@@ -111,3 +121,14 @@ export const pedidas = (mock: ReturnType<typeof simularTienda>) =>
     const url = new URL(entrada instanceof Request ? entrada.url : entrada);
     return `${url.pathname}${url.search}`;
   });
+
+/** Renderiza con TanStack Query (los filtros del celular cuentan los productos en el navegador). */
+export const renderizar = (ui: ReactElement) => {
+  const cliente = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return render(ui, {
+    wrapper: ({ children }: { children: ReactNode }) =>
+      createElement(QueryClientProvider, { client: cliente }, children),
+  });
+};

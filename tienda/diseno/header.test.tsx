@@ -18,6 +18,11 @@ vi.mock('./menuCelularCargado', () => ({
   MenuCelularCargado: () => <button type="button">Abrir menú</button>,
   MenuCelularEsqueleto: () => null,
 }));
+// El buscador lee la URL para mostrar lo buscado (SCRUM-107)
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 const mostrarHeader = () =>
   render(
