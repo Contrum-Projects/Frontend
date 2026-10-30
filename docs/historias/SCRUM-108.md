@@ -53,6 +53,10 @@ El Swagger no declara las respuestas (`content?: never`): los tipos `ProductoDet
 
 **30-10-2026**
 
+- PR: https://github.com/Contrum-Projects/Frontend/pull/26, integrado el 30-10-2026. Hecha: usa
+  solo el backend real (sin rutas simuladas). Queda pendiente del backend el precio por separado
+  del pack (criterio 3).
+
 - Rutas con el `id` del backend (`/productos/[id]`, `/packs/[id]`), como los enlaces del catálogo
   (`urlProducto`, `urlPack`); la historia decía `[codigo]`, pero el backend no tiene código
   público para productos.
