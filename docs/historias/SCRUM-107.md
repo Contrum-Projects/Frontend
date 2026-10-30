@@ -116,3 +116,7 @@ el backend lo tenga.
   `consultas.ts`), y probar con el backend real. Hasta entonces la historia no queda Hecha.
 - Sin navegador en esta sesión: la pantalla a 1440 y 360 px no se miró en vivo (se revisó el HTML del
   servidor y se comparó el código con Figma).
+
+**Hecha el 30-10-2026** (PR #24 integrado), por decisión del equipo antes de que el backend tenga
+lo pedido: `categoriaId`/`marcaId` repetidos y `GET /api/tienda/facetas` (SCRUM-33) siguen simulados. Cuando el backend los tenga, borrar las rutas simuladas y
+probar la pantalla con el backend real.

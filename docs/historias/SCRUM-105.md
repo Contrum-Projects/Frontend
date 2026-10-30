@@ -114,3 +114,7 @@ formatos de cada producto): en desarrollo puede tocar el límite de peticiones p
   Packs no entra en la barra inferior de Figma: va en «Más». «Cancelar» y «← Packs» vuelven al
   listado. Falta que diseño la agregue a Figma (menú y pantalla).
 - **PR:** https://github.com/Contrum-Projects/Frontend/pull/23
+
+**Hecha el 30-10-2026** (PR #23 integrado), por decisión del equipo antes de que el backend tenga
+lo pedido: la búsqueda de formatos (`GET /catalogo/formatos`) y los campos pedidos a SCRUM-31 siguen simulados. Cuando el backend los tenga, borrar las rutas simuladas y
+probar la pantalla con el backend real.
