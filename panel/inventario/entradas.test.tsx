@@ -225,16 +225,25 @@ describe('Entradas de inventario · lista (SCRUM-111)', () => {
     await usuario.click(
       screen.getByRole('button', { name: 'miércoles, 14 de octubre de 2026' }),
     );
+    // El botón muestra el rango elegido antes de mirar la petición
+    expect(
+      await screen.findByRole('button', {
+        name: 'Fechas de recepción: 1 oct 2026 – 14 oct 2026',
+      }),
+    ).toBeInTheDocument();
 
-    await waitFor(() => {
-      const consulta = new URL(pedidas.at(-1)!.url).searchParams;
-      expect(Object.fromEntries(consulta)).toEqual({
-        bodegaId: '2',
-        buscar: 'F-0043',
-        desde: '2026-10-01',
-        hasta: '2026-10-14',
-      });
-    });
+    await waitFor(
+      () => {
+        const consulta = new URL(pedidas.at(-1)!.url).searchParams;
+        expect(Object.fromEntries(consulta)).toEqual({
+          bodegaId: '2',
+          buscar: 'F-0043',
+          desde: '2026-10-01',
+          hasta: '2026-10-14',
+        });
+      },
+      { timeout: 3000 },
+    );
   });
 
   it('E11-H2 FE · CA1 lista: si el backend falla, muestra su mensaje', async () => {
