@@ -110,6 +110,46 @@ const conBusqueda = (extra: Parameters<typeof simularBackend>[0] = {}) =>
     ...extra,
   });
 
+const MESES = [
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
+];
+
+/** Elige AAAA-MM-DD en el date picker del campo; vacío, quita la fecha. */
+const elegirFecha = async (etiqueta: RegExp, fecha: string) => {
+  await userEvent.click(screen.getByLabelText(etiqueta));
+  if (!fecha) {
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Quitar fecha' }),
+    );
+    return;
+  }
+  const [anio, mes, dia] = fecha.split('-').map(Number);
+  await userEvent.selectOptions(
+    await screen.findByRole('combobox', { name: /año/i }),
+    String(anio),
+  );
+  await userEvent.selectOptions(
+    screen.getByRole('combobox', { name: /mes/i }),
+    String(mes - 1),
+  );
+  await userEvent.click(
+    screen.getByRole('button', {
+      name: new RegExp(`, ${dia} de ${MESES[mes - 1]} de ${anio}$`),
+    }),
+  );
+};
+
 const escribir = async (etiqueta: string | RegExp, texto: string) => {
   const campo = screen.getByLabelText(etiqueta);
   await userEvent.clear(campo);
@@ -285,8 +325,8 @@ describe('Pack nuevo (SCRUM-105)', () => {
     });
     mostrar(<PantallaPackNuevo />);
     await llenarDatos();
-    await escribir(/^Vigente desde/, '2026-11-01');
-    await escribir(/^Vigente hasta/, '2026-11-30');
+    await elegirFecha(/^Vigente desde/, '2026-11-01');
+    await elegirFecha(/^Vigente hasta/, '2026-11-30');
     await agregarFormatos(
       'Shampoo reparador · 300 ml',
       'Acondicionador hidratante · 300 ml',
@@ -340,8 +380,8 @@ describe('Pack nuevo (SCRUM-105)', () => {
     const { enviados } = conBusqueda();
     mostrar(<PantallaPackNuevo />);
     await llenarDatos();
-    await escribir(/^Vigente desde/, '2026-11-30');
-    await escribir(/^Vigente hasta/, '2026-11-01');
+    await elegirFecha(/^Vigente desde/, '2026-11-30');
+    await elegirFecha(/^Vigente hasta/, '2026-11-01');
     await agregarFormatos(
       'Shampoo reparador · 300 ml',
       'Acondicionador hidratante · 300 ml',
@@ -510,10 +550,12 @@ describe('Pack guardado (SCRUM-105)', () => {
     );
     mostrar(<PantallaEditarPack id="40" />);
 
-    expect(await screen.findByLabelText(/^Vigente desde/)).toHaveValue(
-      '2026-11-01',
+    expect(await screen.findByLabelText(/^Vigente desde/)).toHaveTextContent(
+      '01/11/2026',
     );
-    expect(screen.getByLabelText(/^Vigente hasta/)).toHaveValue('2026-11-30');
+    expect(screen.getByLabelText(/^Vigente hasta/)).toHaveTextContent(
+      '30/11/2026',
+    );
     expect(tablaComponentes().getAllByRole('row')).toHaveLength(3);
   });
 
@@ -523,7 +565,7 @@ describe('Pack guardado (SCRUM-105)', () => {
     });
     mostrar(<PantallaEditarPack id="40" />);
     await screen.findByLabelText(/^Vigente hasta/);
-    await escribir(/^Vigente hasta/, '');
+    await elegirFecha(/^Vigente hasta/, '');
 
     await guardar();
 

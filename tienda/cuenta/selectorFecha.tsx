@@ -13,7 +13,7 @@ import {
 import type { PropsControl } from './campoFormulario';
 
 /** «1990-05-21» → fecha local (sin hora), o `undefined` si viene vacío. */
-const aFecha = (valor: string) => {
+export const aFecha = (valor: string) => {
   const [anio, mes, dia] = valor.split('-').map(Number);
   return valor ? new Date(anio!, mes! - 1, dia) : undefined;
 };
@@ -21,7 +21,7 @@ const aFecha = (valor: string) => {
 const dosCifras = (numero: number) => String(numero).padStart(2, '0');
 
 /** Fecha local → «1990-05-21», el formato que recibe la API. */
-const aTexto = (fecha: Date) =>
+export const aTexto = (fecha: Date) =>
   `${fecha.getFullYear()}-${dosCifras(fecha.getMonth() + 1)}-${dosCifras(fecha.getDate())}`;
 
 /** «1990-05-21» → «21/05/1990», como lo escribe una persona en Chile. */

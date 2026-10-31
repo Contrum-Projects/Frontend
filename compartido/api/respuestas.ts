@@ -285,6 +285,80 @@ export interface Proveedor {
   cantidadEntradas?: number;
 }
 
+/** backend: src/common/dominio/valores.ts › TIPOS_DOCUMENTO_PROVEEDOR */
+export type TipoDocumentoProveedor = 'factura' | 'guia_despacho';
+
+/** backend: src/modulos/inventario/comprobaciones.ts › UbicacionResumen */
+export interface UbicacionResumen {
+  id: number;
+  codigo: string;
+  /** Nombre de la bodega. */
+  bodega: string;
+}
+
+/**
+ * GET /api/inventario/ubicaciones: ubicaciones activas de bodegas activas, donde se puede
+ * guardar stock. TODO(SCRUM-111): no existe en el backend; simulado y pedido a SCRUM-37 (ver
+ * docs/historias/SCRUM-111.md).
+ */
+export interface UbicacionInventario {
+  id: number;
+  codigo: string;
+  bodega: { id: number; nombre: string };
+}
+
+/**
+ * backend: src/modulos/inventario/entradas.service.ts › EntradaRegistrada (respuesta del POST
+ * /api/inventario/entradas, E11-H2; el Swagger no la declara). TODO(SCRUM-111): los subtotales
+ * y totales no llegan todavía; pedidos a SCRUM-37 como `subtotalNeto`, `unidades` y
+ * `costoNetoTotal` (el frontend no los calcula).
+ */
+export interface EntradaRegistrada {
+  id: number;
+  proveedor: { id: number; rut: string; razonSocial: string };
+  /** AAAA-MM-DD */
+  fechaRecepcion: string;
+  tipoDocumento: TipoDocumentoProveedor;
+  numeroDocumento: string;
+  observacion: string | null;
+  ubicacion: UbicacionResumen;
+  detalles: {
+    formatoId: number;
+    cantidad: number;
+    costoUnitarioNeto: number;
+    movimientoId: number;
+    subtotalNeto?: number;
+  }[];
+  unidades?: number;
+  costoNetoTotal?: number;
+}
+
+/**
+ * Una fila de GET /api/inventario/entradas (E11-H2 criterio 1). TODO(SCRUM-111): no existe en el
+ * backend; simulado con la forma pedida a SCRUM-37 (ver docs/historias/SCRUM-111.md).
+ */
+export interface EntradaListado {
+  id: number;
+  /** AAAA-MM-DD */
+  fechaRecepcion: string;
+  tipoDocumento: TipoDocumentoProveedor;
+  numeroDocumento: string;
+  proveedor: { id: number; razonSocial: string };
+  ubicacion: UbicacionResumen;
+  cantidadFormatos: number;
+  unidades: number;
+  costoNetoTotal: number;
+  registradoPor: { nombre: string };
+}
+
+/** GET /api/inventario/entradas?bodegaId&buscar&desde&hasta&pagina. Simulado (SCRUM-111). */
+export interface ListadoEntradas {
+  items: EntradaListado[];
+  total: number;
+  pagina: number;
+  limite: number;
+}
+
 /** backend: src/common/dominio/valores.ts › ORIGENES_DESCRIPCION */
 export type OrigenDescripcion = 'manual' | 'ia' | 'ia_editada';
 

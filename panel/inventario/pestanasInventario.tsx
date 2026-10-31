@@ -17,8 +17,7 @@ const PESTANAS: readonly { texto: string; href: Route }[] = [
   { texto: 'Stock', href: '/panel/inventario' as Route },
   // TODO(SCRUM-114): movimientos
   { texto: 'Movimientos', href: '/panel/inventario/movimientos' as Route },
-  // TODO(SCRUM-111): entradas
-  { texto: 'Entradas', href: '/panel/inventario/entradas' as Route },
+  { texto: 'Entradas', href: '/panel/inventario/entradas' },
   { texto: 'Proveedores', href: '/panel/inventario/proveedores' },
 ];
 

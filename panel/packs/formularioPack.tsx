@@ -18,6 +18,7 @@ import { Switch } from '@/compartido/ui/switch';
 import { Textarea } from '@/compartido/ui/textarea';
 import { Tarjeta } from '@/panel/productos/formularioProducto';
 import { CampoFormulario } from '@/tienda/cuenta/campoFormulario';
+import { SelectorFecha } from '@/tienda/cuenta/selectorFecha';
 import { ComponentesPack } from './componentesPack';
 import {
   CLAVE_PACKS,
@@ -57,6 +58,8 @@ export function FormularioPackPanel({
   const router = useRouter();
   const clienteConsultas = useQueryClient();
   const idFormulario = useId();
+  /** La vigencia se elige desde el año pasado hasta cinco años más. */
+  const anio = new Date().getFullYear();
   const [aviso, setAviso] = useState<string | null>(null);
   const {
     register,
@@ -179,10 +182,20 @@ export function FormularioPackPanel({
                   className="max-sm:col-span-2"
                 >
                   {(propsControl) => (
-                    <Input
-                      {...propsControl}
-                      type="date"
-                      {...register('fechaInicioVigencia')}
+                    <Controller
+                      control={control}
+                      name="fechaInicioVigencia"
+                      render={({ field }) => (
+                        <SelectorFecha
+                          ref={field.ref}
+                          valor={field.value}
+                          alCambiar={field.onChange}
+                          desde={new Date(anio - 1, 0)}
+                          hasta={new Date(anio + 5, 11, 31)}
+                          mesInicial={new Date()}
+                          control={propsControl}
+                        />
+                      )}
                     />
                   )}
                 </CampoFormulario>
@@ -193,10 +206,20 @@ export function FormularioPackPanel({
                   className="max-sm:col-span-2"
                 >
                   {(propsControl) => (
-                    <Input
-                      {...propsControl}
-                      type="date"
-                      {...register('fechaFinVigencia')}
+                    <Controller
+                      control={control}
+                      name="fechaFinVigencia"
+                      render={({ field }) => (
+                        <SelectorFecha
+                          ref={field.ref}
+                          valor={field.value}
+                          alCambiar={field.onChange}
+                          desde={new Date(anio - 1, 0)}
+                          hasta={new Date(anio + 5, 11, 31)}
+                          mesInicial={new Date()}
+                          control={propsControl}
+                        />
+                      )}
                     />
                   )}
                 </CampoFormulario>

@@ -7,9 +7,11 @@
  */
 import type { RutaSimulada } from './index';
 import { rutasPanelCatalogo } from './panelCatalogo';
+import { rutasPanelInventario } from './panelInventario';
 import { rutasTienda } from './tienda';
 
 export const rutasSimuladas: readonly RutaSimulada[] = [
   ...rutasTienda,
   ...rutasPanelCatalogo,
+  ...rutasPanelInventario,
 ];
