@@ -40,7 +40,7 @@ respuestas**: los tipos están en `compartido/api/respuestas.ts` (`ProductoTiend
 
 **30-10-2026**
 
-- PR: https://github.com/Contrum-Projects/Frontend/pull/28 (En revisión).
+- PR: https://github.com/Contrum-Projects/Frontend/pull/28 (integrado el 30-10-2026).
 - El servidor no sabe quién mira (el token vive solo en memoria): arma la tienda como visitante.
   Con una cuenta profesional, el navegador vuelve a pedir la ficha, la grilla del catálogo o la
   búsqueda (con su total) y las filas del inicio con el token (`tienda/profesional/
