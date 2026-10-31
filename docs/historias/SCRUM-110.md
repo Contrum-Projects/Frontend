@@ -41,6 +41,7 @@ las respuestas**: el tipo `Proveedor` está en `compartido/api/respuestas.ts` ci
 
 **31-10-2026**
 
+- PR: https://github.com/Contrum-Projects/Frontend/pull/30 (En revisión).
 - Sin API simulada: la pantalla usa solo el backend real.
 - «Nuevo proveedor» es un panel lateral como «Nueva cuenta de personal» (Figma no lo dibuja):
   Razón social, RUT, Nombre de contacto, Correo y Teléfono (los tres últimos opcionales). Los
