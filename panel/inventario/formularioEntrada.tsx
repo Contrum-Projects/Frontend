@@ -23,6 +23,7 @@ import {
 import { Spinner } from '@/compartido/ui/spinner';
 import { Tarjeta } from '@/panel/productos/formularioProducto';
 import { CampoFormulario } from '@/tienda/cuenta/campoFormulario';
+import { aFecha, SelectorFecha } from '@/tienda/cuenta/selectorFecha';
 import { CLAVE_ENTRADAS } from './consultasEntradas';
 import {
   ENTRADA_VACIA,
@@ -40,11 +41,13 @@ import { SelectorProveedor, SelectorUbicacion } from './selectoresEntrada';
 
 const RUTA_ENTRADAS = '/panel/inventario/entradas';
 
-/** Hoy en la tienda (AAAA-MM-DD): tope del calendario. El backend vuelve a comprobarlo. */
+/** Hoy en la tienda: tope del calendario. El backend vuelve a comprobarlo. */
 const hoyEnChile = () =>
-  new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Santiago' }).format(
-    new Date(),
-  );
+  aFecha(
+    new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Santiago' }).format(
+      new Date(),
+    ),
+  )!;
 
 /**
  * «Nueva entrada de inventario» (Figma P5 2029:4319 y 2025:603, E11-H2 criterios 2 y 3):
@@ -60,6 +63,7 @@ export function FormularioEntrada({
 }) {
   const clienteConsultas = useQueryClient();
   const idFormulario = useId();
+  const hoy = hoyEnChile();
   const [aviso, setAviso] = useState<string | null>(null);
   const alertaAviso = useRef<HTMLDivElement>(null);
   // En celular el botón queda al final: el aviso de arriba se trae a la vista
@@ -216,11 +220,19 @@ export function FormularioEntrada({
               className="max-sm:col-span-2"
             >
               {(propsControl) => (
-                <Input
-                  {...propsControl}
-                  type="date"
-                  max={hoyEnChile()}
-                  {...register('fechaRecepcion')}
+                <Controller
+                  control={control}
+                  name="fechaRecepcion"
+                  render={({ field }) => (
+                    <SelectorFecha
+                      ref={field.ref}
+                      valor={field.value}
+                      alCambiar={field.onChange}
+                      desde={new Date(hoy.getFullYear() - 2, 0)}
+                      hasta={hoy}
+                      control={propsControl}
+                    />
+                  )}
                 />
               )}
             </CampoFormulario>

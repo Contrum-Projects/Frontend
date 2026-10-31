@@ -73,6 +73,8 @@ registradoPor: { nombre } }], total, pagina, limite }`, de la más reciente a la
 - El selector de proveedor usa `GET /inventario/proveedores`, que pide `proveedores.gestionar`.
   Hoy todo rol con `inventario.registrar` también lo tiene; si eso cambia, confirmar con SCRUM-37.
 - `BuscadorFormatos` (packs) acepta ahora `destino` y `aviso` para reutilizarlo aquí.
+- **Fechas:** con el date picker de shadcn: `SelectorFecha` en la fecha de recepción (hasta hoy)
+  y `Calendar` en modo rango en el filtro de la lista.
 - **Paginación:** Figma P5e no la dibuja; la lista muestra la primera página y, si hay más, avisa
   que se usen los filtros.
 - Pendiente para «Hecha»: probar con el backend real (sin rutas simuladas) y revisión visual a

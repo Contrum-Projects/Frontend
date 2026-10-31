@@ -5,8 +5,7 @@ import { useEffect, useEffectEvent, useState } from 'react';
 import { formatearDia } from '@/compartido/formato/fecha';
 import { cn } from '@/compartido/lib/utils';
 import { Button } from '@/compartido/ui/button';
-import { Input } from '@/compartido/ui/input';
-import { Label } from '@/compartido/ui/label';
+import { Calendar } from '@/compartido/ui/calendar';
 import {
   Popover,
   PopoverContent,
@@ -24,6 +23,7 @@ import {
   useUbicaciones,
   type FiltrosEntradas as Filtros,
 } from './consultasEntradas';
+import { aFecha, aTexto } from '@/tienda/cuenta/selectorFecha';
 
 /** Espera tras la última tecla antes de buscar, para no pedir una búsqueda por letra. */
 const ESPERA_BUSQUEDA_MS = 300;
@@ -170,35 +170,29 @@ const FiltroFechas = ({
         <ChevronDown aria-hidden />
       </Button>
     </PopoverTrigger>
-    <PopoverContent align="start" className="flex w-72 flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="entradas-desde">Desde</Label>
-        <Input
-          id="entradas-desde"
-          type="date"
-          value={desde}
-          max={hasta || undefined}
-          onChange={(evento) => alCambiar(evento.target.value, hasta)}
-        />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="entradas-hasta">Hasta</Label>
-        <Input
-          id="entradas-hasta"
-          type="date"
-          value={hasta}
-          min={desde || undefined}
-          onChange={(evento) => alCambiar(desde, evento.target.value)}
-        />
-      </div>
+    <PopoverContent align="start" className="w-auto p-0">
+      <Calendar
+        mode="range"
+        selected={{ from: aFecha(desde), to: aFecha(hasta) }}
+        defaultMonth={aFecha(desde)}
+        disabled={{ after: new Date() }}
+        onSelect={(rango) =>
+          alCambiar(
+            rango?.from ? aTexto(rango.from) : '',
+            rango?.to ? aTexto(rango.to) : '',
+          )
+        }
+      />
       {(desde || hasta) && (
-        <Button
-          variant="link"
-          className="self-start"
-          onClick={() => alCambiar('', '')}
-        >
-          Quitar fechas
-        </Button>
+        <div className="border-t p-2">
+          <Button
+            variant="ghost"
+            className="w-full"
+            onClick={() => alCambiar('', '')}
+          >
+            Quitar fechas
+          </Button>
+        </div>
       )}
     </PopoverContent>
   </Popover>

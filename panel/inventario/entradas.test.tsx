@@ -123,6 +123,9 @@ const mostrar = (pantalla: ReactNode) =>
   );
 
 beforeEach(() => {
+  // Solo la fecha: el calendario abre en octubre de 2026 y «hoy» no cambia según el día
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-10-31T12:00:00-03:00'));
   reiniciarParaPruebas();
   act(() =>
     guardarSesion({
@@ -139,6 +142,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 
@@ -215,14 +219,20 @@ describe('Entradas de inventario · lista (SCRUM-111)', () => {
     await usuario.click(
       screen.getByRole('button', { name: /Fechas de recepción/ }),
     );
-    await usuario.type(screen.getByLabelText('Desde'), '2026-09-01');
+    await usuario.click(
+      screen.getByRole('button', { name: 'jueves, 1 de octubre de 2026' }),
+    );
+    await usuario.click(
+      screen.getByRole('button', { name: 'miércoles, 14 de octubre de 2026' }),
+    );
 
     await waitFor(() => {
       const consulta = new URL(pedidas.at(-1)!.url).searchParams;
       expect(Object.fromEntries(consulta)).toEqual({
         bodegaId: '2',
         buscar: 'F-0043',
-        desde: '2026-09-01',
+        desde: '2026-10-01',
+        hasta: '2026-10-14',
       });
     });
   });
@@ -269,9 +279,9 @@ const completarEntrada = async (
   usuario: ReturnType<typeof userEvent.setup>,
 ) => {
   await elegir(usuario, 'Proveedor', 'Distribuidora Capilar SpA');
-  await usuario.type(
-    screen.getByLabelText(/^Fecha de recepción/),
-    '2026-10-12',
+  await usuario.click(screen.getByLabelText(/^Fecha de recepción/));
+  await usuario.click(
+    screen.getByRole('button', { name: 'lunes, 12 de octubre de 2026' }),
   );
   await elegir(usuario, 'Documento', 'Factura');
   await usuario.type(
