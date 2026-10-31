@@ -79,3 +79,6 @@ registradoPor: { nombre } }], total, pagina, limite }`, de la más reciente a la
   que se usen los filtros.
 - Pendiente para «Hecha»: probar con el backend real (sin rutas simuladas) y revisión visual a
   1440 y 360 px (no hubo navegador en esta sesión).
+
+**PR:** https://github.com/Contrum-Projects/Frontend/pull/32 (En revisión; endpoints simulados:
+`GET /inventario/entradas` y `GET /inventario/ubicaciones`).
