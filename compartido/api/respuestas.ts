@@ -268,6 +268,23 @@ export interface CuentaPersonal {
   invitacionPendiente: boolean;
 }
 
+/**
+ * backend: src/modulos/inventario/proveedores.service.ts › listar y crear (fila de `proveedor`,
+ * E11-H1). TODO(SCRUM-110): la cantidad de entradas no llega todavía; pedida a SCRUM-36 como
+ * `cantidadEntradas` (ver docs/historias/SCRUM-110.md).
+ */
+export interface Proveedor {
+  id: number;
+  /** Formato único: `76086428-5`. */
+  rut: string;
+  razonSocial: string;
+  nombreContacto: string | null;
+  telefono: string | null;
+  email: string | null;
+  activo: boolean;
+  cantidadEntradas?: number;
+}
+
 /** backend: src/common/dominio/valores.ts › ORIGENES_DESCRIPCION */
 export type OrigenDescripcion = 'manual' | 'ia' | 'ia_editada';
 

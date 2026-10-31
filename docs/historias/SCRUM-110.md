@@ -25,11 +25,29 @@ Nodos del archivo de Figma `cl9eSD5YBS9qF4tQXJki68` (ver `docs/pantallas.md`).
 
 ## API
 
-Estado al 26-10-2026 (`compartido/api/esquema.d.ts` de `main`): **Sí**. `/api/inventario/proveedores`.
+Estado al 31-10-2026: **Sí**, con un faltante. `GET /api/inventario/proveedores` (activos, por
+razón social) y `POST /api/inventario/proveedores` con `proveedores.gestionar` (administrador y
+bodeguero); el POST responde 409 «Ya existe un proveedor con ese RUT.». El Swagger **no declara
+las respuestas**: el tipo `Proveedor` está en `compartido/api/respuestas.ts` citando
+`proveedores.service.ts`.
 
-Si falta el endpoint, avanza con la API simulada (`docs/api-simulada.md`) y anota aquí qué
-formato de respuesta acordaste con quien hace la historia backend.
+**Falta en el backend (pedido a SCRUM-36):** la cantidad de entradas de cada proveedor
+(criterio 1). Forma propuesta: `cantidadEntradas: number` en cada fila del GET (por ejemplo con
+`_count: { entradas }` de Prisma). Mientras no llegue, la columna muestra «—».
 
 ## Notas de trabajo
 
 <!-- Decisiones, preguntas abiertas y lo que quedó pendiente. Lo completa /historia. -->
+
+**31-10-2026**
+
+- Sin API simulada: la pantalla usa solo el backend real.
+- «Nuevo proveedor» es un panel lateral como «Nueva cuenta de personal» (Figma no lo dibuja):
+  Razón social, RUT, Nombre de contacto, Correo y Teléfono (los tres últimos opcionales). Los
+  errores 400 y el 409 van junto a su campo según cómo empieza el mensaje del backend.
+- Pestañas Stock, Movimientos, Entradas y Proveedores como enlaces, según el permiso de cada ruta
+  (`puedeAbrir`): el vendedor no ve Entradas ni Proveedores. Stock y Movimientos (SCRUM-114) y
+  Entradas (SCRUM-111) aún no tienen página (`as Route` con TODO).
+- El buscador «RUT o razón social» filtra en el navegador la lista ya cargada: la API no busca.
+- En celular se omite «Bodega principal ▾»: es de Stock (SCRUM-114).
+- Pendiente del backend: `cantidadEntradas` en el GET y declarar las respuestas en el Swagger.
