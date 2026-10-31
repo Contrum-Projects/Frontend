@@ -24,20 +24,27 @@ export const nombreDelFormato = (formato: {
 }) => `${formato.producto.nombre} · ${formato.nombreFormato}`;
 
 /**
- * Panel «Agregar formato» (E3-H6 criterio 2). Figma no lo dibuja: sigue el panel lateral del
- * catálogo. La búsqueda la hace el backend y solo devuelve formatos de producto.
+ * Panel «Agregar formato» (E3-H6 criterio 2; también en la entrada de inventario, E11-H2).
+ * Figma no lo dibuja: sigue el panel lateral del catálogo. La búsqueda la hace el backend y solo
+ * devuelve formatos de producto.
  */
 export function BuscadorFormatos({
   abierto,
   alCambiarAbierto,
   agregados,
   alAgregar,
+  destino = 'el pack',
+  aviso = AVISO_SOLO_FORMATOS,
 }: {
   abierto: boolean;
   alCambiarAbierto: (abierto: boolean) => void;
-  /** Ids de los formatos que ya están en el pack. */
+  /** Ids de los formatos que ya están agregados. */
   agregados: number[];
   alAgregar: (formato: FormatoParaPack) => void;
+  /** Dónde se agregan, para «… ya está en el pack». */
+  destino?: string;
+  /** Texto bajo el buscador; `null` lo omite. */
+  aviso?: string | null;
 }) {
   return (
     <PanelLateral
@@ -45,7 +52,14 @@ export function BuscadorFormatos({
       abierto={abierto}
       alCambiarAbierto={alCambiarAbierto}
     >
-      {abierto && <Busqueda agregados={agregados} alAgregar={alAgregar} />}
+      {abierto && (
+        <Busqueda
+          agregados={agregados}
+          alAgregar={alAgregar}
+          destino={destino}
+          aviso={aviso}
+        />
+      )}
     </PanelLateral>
   );
 }
@@ -53,9 +67,13 @@ export function BuscadorFormatos({
 const Busqueda = ({
   agregados,
   alAgregar,
+  destino,
+  aviso,
 }: {
   agregados: number[];
   alAgregar: (formato: FormatoParaPack) => void;
+  destino: string;
+  aviso: string | null;
 }) => {
   const [texto, setTexto] = useState('');
   const [buscar, setBuscar] = useState('');
@@ -82,9 +100,7 @@ const Busqueda = ({
           onChange={(evento) => setTexto(evento.target.value)}
         />
       </div>
-      <p className="texto-leyenda text-texto-secundario">
-        {AVISO_SOLO_FORMATOS}
-      </p>
+      {aviso && <p className="texto-leyenda text-texto-secundario">{aviso}</p>}
       {formatos.isPending && <EsqueletoResultados />}
       {formatos.isError && (
         <Alert variant="destructive">
@@ -104,6 +120,7 @@ const Busqueda = ({
                 formato={formato}
                 agregado={agregados.includes(formato.formatoId)}
                 alAgregar={() => alAgregar(formato)}
+                destino={destino}
               />
             </li>
           ))}
@@ -122,10 +139,12 @@ const ResultadoFormato = ({
   formato,
   agregado,
   alAgregar,
+  destino,
 }: {
   formato: FormatoParaPack;
   agregado: boolean;
   alAgregar: () => void;
+  destino: string;
 }) => {
   const nombre = nombreDelFormato(formato);
   const idDetalle = `formato-${formato.formatoId}-detalle`;
@@ -135,7 +154,7 @@ const ResultadoFormato = ({
       type="button"
       aria-disabled={agregado}
       aria-label={
-        agregado ? `${nombre} ya está en el pack` : `Agregar ${nombre}`
+        agregado ? `${nombre} ya está en ${destino}` : `Agregar ${nombre}`
       }
       aria-describedby={idDetalle}
       onClick={agregado ? undefined : alAgregar}
