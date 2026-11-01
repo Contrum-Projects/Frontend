@@ -740,3 +740,21 @@ export interface ListadoPacksPanel {
   pagina: number;
   limite: number;
 }
+
+/**
+ * Un elemento de GET /api/inventario/stock/bajo-minimo (E11-H6, SCRUM-41). El Swagger no
+ * declara la respuesta: backend `src/modulos/inventario/stock-bajo.service.ts` ›
+ * `FormatoBajoMinimo`. Viene ordenada del que más falta al que menos; el stock es el total de
+ * todas las ubicaciones.
+ */
+export interface FormatoBajoMinimo {
+  formatoId: number;
+  sku: string;
+  producto: string;
+  nombreFormato: string;
+  activo: boolean;
+  stockMinimo: number;
+  stockTotal: number;
+  /** Unidades que faltan para llegar al mínimo. */
+  faltante: number;
+}
