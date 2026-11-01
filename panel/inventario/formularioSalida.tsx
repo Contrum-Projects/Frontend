@@ -5,40 +5,37 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
-import { api } from '@/compartido/api/cliente';
-import { ErrorDeApi, errorDeApi, exigir } from '@/compartido/api/errores';
-import type { SalidaRegistrada } from '@/compartido/api/respuestas';
+import { ErrorDeApi, errorDeApi } from '@/compartido/api/errores';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Button } from '@/compartido/ui/button';
-import { Input } from '@/compartido/ui/input';
 import { Spinner } from '@/compartido/ui/spinner';
 import { AccionesPanelLateral } from '@/panel/catalogo/panelLateral';
 import { CampoFormulario } from '@/tienda/cuenta/campoFormulario';
-import { nombreUbicacion } from './consultasEntradas';
+import { CamposMovimiento } from './camposMovimiento';
 import { CLAVE_STOCK } from './consultasSalidas';
 import {
   SALIDA_VACIA,
   campoDelError,
-  cuerpoSalida,
   esquemaSalida,
+  textoBoton,
   type DatosSalida,
   type FormularioSalida as Formulario,
 } from './esquemaSalida';
+import { registrarMovimiento } from './registrarMovimiento';
 import { SelectorFormatoSalida } from './selectorFormatoSalida';
-import { SelectorUbicacionSalida } from './selectorUbicacionSalida';
 import { TiposSalida } from './tiposSalida';
 
 /**
- * «Registrar salida» (Figma P5c 2043:1951 y 2044:1209, E11-H3): merma o consumo de un formato en
- * una ubicación. Si la cantidad no alcanza lo decide el backend y su mensaje queda junto a la
- * cantidad (criterio 2). En el panel lateral lleva «Cancelar»; en la pantalla de celular, solo
- * el botón ancho.
+ * «Registrar salida» (Figma P5c 2043:1951 y 2044:1209): merma o consumo (E11-H3), ajuste o
+ * transferencia (E11-H4) de un formato. Si la cantidad alcanza lo decide el backend y su
+ * mensaje queda junto a la cantidad. En el panel lateral lleva «Cancelar»; en la pantalla de
+ * celular, solo el botón ancho.
  */
 export function FormularioSalida({
   alRegistrar,
   alCancelar,
 }: {
-  alRegistrar: (salida: SalidaRegistrada) => void;
+  alRegistrar: () => void;
   /** Con él, las acciones son las del panel lateral. */
   alCancelar?: () => void;
 }) {
@@ -56,7 +53,7 @@ export function FormularioSalida({
     resolver: zodResolver(esquemaSalida),
     defaultValues: SALIDA_VACIA,
   });
-  const formatoId = useWatch({ control, name: 'formato' })?.formatoId;
+  const tipo = useWatch({ control, name: 'tipo' });
 
   const mostrarError = (fallo: ErrorDeApi) => {
     if (fallo.estado !== 400) {
@@ -65,7 +62,7 @@ export function FormularioSalida({
     }
     const generales: string[] = [];
     for (const mensaje of fallo.mensajes) {
-      const campo = campoDelError(mensaje);
+      const campo = campoDelError(mensaje, tipo);
       if (campo) {
         setError(
           campo,
@@ -82,16 +79,10 @@ export function FormularioSalida({
   const enviar = async (datos: DatosSalida) => {
     setAviso(null);
     try {
-      const salida = exigir<SalidaRegistrada>(
-        await api.POST('/api/inventario/salidas', {
-          body: cuerpoSalida(datos),
-        }),
-      );
+      const mensaje = await registrarMovimiento(datos);
       await clienteConsultas.invalidateQueries({ queryKey: CLAVE_STOCK });
-      toast.success(
-        `Salida registrada. Quedan ${salida.stockRestante} en ${nombreUbicacion(salida.ubicacion)}.`,
-      );
-      alRegistrar(salida);
+      toast.success(mensaje);
+      alRegistrar();
     } catch (error) {
       // Sin conexión, fetch lanza TypeError: se muestra el mensaje genérico
       mostrarError(error instanceof ErrorDeApi ? error : errorDeApi(undefined));
@@ -118,7 +109,14 @@ export function FormularioSalida({
             id="salida-tipo"
             ref={field.ref}
             valor={field.value}
-            alCambiar={field.onChange}
+            alCambiar={(valor) => {
+              field.onChange(valor);
+              // Cada tipo elige sus ubicaciones de otra lista: se vuelven a elegir
+              setValue('ubicacionId', '');
+              setValue('destinoId', '');
+              setValue('sentido', '');
+              clearErrors();
+            }}
             error={errors.tipo?.message}
           />
         )}
@@ -139,8 +137,8 @@ export function FormularioSalida({
                 valor={field.value}
                 alCambiar={(formato) => {
                   field.onChange(formato);
-                  // La ubicación depende del formato: se vuelve a elegir, y el error de stock
-                  // del backend ya no aplica
+                  // Las ubicaciones dependen del formato: se vuelven a elegir, y el error de
+                  // stock del backend ya no aplica
                   setValue('ubicacionId', '');
                   clearErrors(['ubicacionId', 'cantidad']);
                 }}
@@ -150,66 +148,19 @@ export function FormularioSalida({
           />
         )}
       </CampoFormulario>
-      <div className="grid gap-x-3 gap-y-4 sm:grid-cols-2">
-        <CampoFormulario
-          id="salida-ubicacion"
-          etiqueta="Ubicación"
-          error={errors.ubicacionId?.message}
-        >
-          {(propsControl) => (
-            <Controller
-              control={control}
-              name="ubicacionId"
-              render={({ field }) => (
-                <SelectorUbicacionSalida
-                  formatoId={formatoId}
-                  propsControl={propsControl}
-                  ref={field.ref}
-                  valor={field.value}
-                  alCambiar={(ubicacion) => {
-                    field.onChange(ubicacion);
-                    clearErrors('cantidad');
-                  }}
-                  alSalir={field.onBlur}
-                />
-              )}
-            />
-          )}
-        </CampoFormulario>
-        <CampoFormulario
-          id="salida-cantidad"
-          etiqueta="Cantidad"
-          error={errors.cantidad?.message}
-        >
-          {(propsControl) => (
-            <Input
-              {...propsControl}
-              inputMode="numeric"
-              autoComplete="off"
-              {...register('cantidad')}
-            />
-          )}
-        </CampoFormulario>
-      </div>
-      <CampoFormulario
-        id="salida-observacion"
-        etiqueta="Comentario (opcional)"
-        error={errors.observacion?.message}
-      >
-        {(propsControl) => (
-          <Input
-            {...propsControl}
-            autoComplete="off"
-            {...register('observacion')}
-          />
-        )}
-      </CampoFormulario>
+      <CamposMovimiento
+        control={control}
+        register={register}
+        errors={errors}
+        clearErrors={clearErrors}
+        setValue={setValue}
+      />
       <p className="texto-leyenda text-texto-secundario">
-        Una salida nunca puede dejar el stock bajo cero.
+        Un movimiento nunca puede dejar el stock bajo cero.
       </p>
       {alCancelar ? (
         <AccionesPanelLateral
-          texto="Registrar salida"
+          texto={textoBoton(tipo)}
           enviando={isSubmitting}
           alCancelar={alCancelar}
         />
@@ -221,7 +172,7 @@ export function FormularioSalida({
           disabled={isSubmitting}
         >
           {isSubmitting && <Spinner aria-hidden />}
-          Registrar salida
+          {textoBoton(tipo)}
         </Button>
       )}
     </form>
