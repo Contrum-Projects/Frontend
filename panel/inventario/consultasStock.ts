@@ -5,6 +5,7 @@ import { useSyncExternalStore } from 'react';
 import { api } from '@/compartido/api/cliente';
 import { exigir } from '@/compartido/api/errores';
 import type {
+  FormatoBajoMinimo,
   GrupoMovimientos,
   ListadoMovimientos,
   ListadoStock,
@@ -99,6 +100,24 @@ export const useStockFormato = (formatoId: number | undefined) =>
       ),
     enabled: formatoId !== undefined,
     staleTime: 0,
+  });
+
+/**
+ * Formatos con el stock total bajo su mínimo, del que más falta al que menos (GET
+ * /inventario/stock/bajo-minimo, SCRUM-41). Solo bodega y administración: con `habilitada` en
+ * falso no pide nada. Va bajo `CLAVE_STOCK`, así que un movimiento lo vuelve a pedir.
+ */
+export const useStockBajoMinimo = (habilitada: boolean) =>
+  useQuery({
+    queryKey: [...CLAVE_STOCK, 'bajo-minimo'],
+    queryFn: () =>
+      conErrorDeApi(async () =>
+        // El Swagger no declara la respuesta (ver FormatoBajoMinimo en respuestas.ts)
+        exigir<FormatoBajoMinimo[]>(
+          await api.GET('/api/inventario/stock/bajo-minimo'),
+        ),
+      ),
+    enabled: habilitada,
   });
 
 /**
