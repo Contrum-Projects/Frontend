@@ -1,0 +1,12 @@
+# Fines de línea LF en todo el repo, sin depender de core.autocrlf de cada integrante
+* text=auto eol=lf
+
+# Binarios
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
