@@ -70,5 +70,9 @@ Estado al 01-11-2026 (`compartido/api/esquema.d.ts` de `main` y repo del backend
 - Pendiente para «Hecha»: probar con el backend real y revisar a 1440 y 360 px (no hubo
   navegador en esta sesión).
 
-**PR:** https://github.com/Contrum-Projects/Frontend/pull/33 (En revisión; endpoint simulado:
-`GET /catalogo/formatos`, desde SCRUM-105).
+**PR:** https://github.com/Contrum-Projects/Frontend/pull/33 (integrado el 01-11-2026; endpoint
+simulado: `GET /catalogo/formatos`, desde SCRUM-105).
+
+**01-11-2026:** pasa a «Hecha» por decisión del equipo. Sigue pendiente del backend
+`GET /catalogo/formatos` con permiso para `inventario.registrar` (ver arriba): al tenerlo, quitar
+la ruta simulada y probar la pantalla con el backend real.
