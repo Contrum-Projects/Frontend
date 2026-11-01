@@ -44,6 +44,8 @@ Estado al 01-11-2026 (`compartido/api/esquema.d.ts` y backend `main`): **Sí**.
 
 **01-11-2026 (rama `SCRUM-115-avisos-stock-bajo`)**
 
+PR: https://github.com/Contrum-Projects/Frontend/pull/38 (En revisión).
+
 - **Criterio 1:** `panel/resumen/avisoStockBajo.tsx` en `/panel`: indicador ámbar «n · Formatos
   con stock bajo» y tarjeta «Stock bajo el mínimo» (tabla en escritorio, lista con «2 / mín. 5»
   en celular) con enlace a `/panel/inventario`. Endpoint **real**, sin API simulada.
