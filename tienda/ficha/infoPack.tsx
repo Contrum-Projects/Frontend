@@ -75,6 +75,10 @@ export const InfoPack = ({
       </div>
     )}
     <EstadoDisponibilidad disponibilidad={pack.disponibilidad} />
-    <Compra disponibilidad={pack.disponibilidad} articulo={pack.nombre} />
+    <Compra
+      articuloId={pack.id}
+      disponibilidad={pack.disponibilidad}
+      articulo={pack.nombre}
+    />
   </DisenoFicha>
 );

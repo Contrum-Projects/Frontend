@@ -17,8 +17,9 @@ export const RUTAS = {
   registro: '/registro',
   recuperarContrasena: '/recuperar-contrasena',
   panel: '/panel',
-  // TODO(SCRUM-116): carrito
-  carrito: '/carrito' as Route,
+  carrito: '/carrito',
+  // TODO(SCRUM-118): checkout
+  checkout: '/checkout' as Route,
   misDatos: '/cuenta/datos',
   direcciones: '/cuenta/datos#direcciones',
   // TODO(SCRUM-126): datos de facturación

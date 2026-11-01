@@ -16,6 +16,9 @@ vi.mock('next/navigation', () => ({
   notFound: () => {
     throw new Error('NEXT_NOT_FOUND');
   },
+  // «Agregar al carrito» (SCRUM-116) navega con el router
+  useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => '/productos/10',
 }));
 
 afterEach(() => {

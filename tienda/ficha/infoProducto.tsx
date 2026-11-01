@@ -87,6 +87,8 @@ export function InfoProducto({ producto }: InfoProductoProps) {
         otrosDisponibles={otrosDisponibles}
       />
       <Compra
+        key={elegido.id}
+        articuloId={elegido.id}
         disponibilidad={elegido.disponibilidad}
         articulo={`${producto.nombre} ${elegido.nombre}`}
         minimo={profesional ? MINIMO_PROFESIONAL : undefined}

@@ -1,9 +1,10 @@
-import { BadgeCheck, ShoppingCart } from 'lucide-react';
+import { BadgeCheck } from 'lucide-react';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { Logo } from '@/compartido/marca/logo';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { Buscador } from './buscador';
+import { CarritoHeader } from './carritoHeader';
 import { CuentaHeader } from './cuentaHeader';
 import { RUTAS } from './enlaces';
 import { MenuCelularCargado, MenuCelularEsqueleto } from './menuCelularCargado';
@@ -36,13 +37,7 @@ export function Header() {
         />
         <div className="flex w-24 items-center justify-end gap-2 md:w-auto md:gap-4">
           <CuentaHeader />
-          <Link
-            href={RUTAS.carrito}
-            aria-label="Carrito"
-            className="inline-flex size-10 items-center justify-center rounded-md text-texto-principal"
-          >
-            <ShoppingCart className="size-6" strokeWidth={1.75} />
-          </Link>
+          <CarritoHeader />
         </div>
       </div>
       <div className="px-4 pb-3 md:hidden">
