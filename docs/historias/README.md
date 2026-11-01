@@ -39,7 +39,7 @@ Total: 53 historias, 185 puntos.
 | 21  | [SCRUM-113](SCRUM-113.md) · E11-H4 · Ajustes y transferencias de stock                   | 2   | En revisión | Parcial | SCRUM-39 | SCRUM-112            |
 | 22  | [SCRUM-114](SCRUM-114.md) · E11-H5 · Inventario: stock y movimientos                     | 5   | En revisión | Parcial | SCRUM-40 | SCRUM-111            |
 | 23  | [SCRUM-115](SCRUM-115.md) · E11-H6 · Avisos de stock bajo en el panel                    | 2   | En revisión | Sí      | SCRUM-41 | SCRUM-114            |
-| 24  | [SCRUM-116](SCRUM-116.md) · E5-H1 · Pantalla del carrito                                 | 5   | En curso    | Sí      | SCRUM-43 | SCRUM-108            |
+| 24  | [SCRUM-116](SCRUM-116.md) · E5-H1 · Pantalla del carrito                                 | 5   | En revisión | Sí      | SCRUM-43 | SCRUM-108            |
 | 25  | [SCRUM-117](SCRUM-117.md) · E5-H2 · Carrito del visitante en el navegador                | 3   | Por hacer   | No      | SCRUM-44 | SCRUM-116            |
 | 26  | [SCRUM-119](SCRUM-119.md) · E5-H4 · Aviso del mínimo de 3 unidades del peluquero         | 2   | Por hacer   | No      | SCRUM-46 | SCRUM-109, SCRUM-116 |
 | 27  | [SCRUM-126](SCRUM-126.md) · E9-H2 · Pantalla Datos de facturación                        | 3   | Por hacer   | No      | SCRUM-54 | SCRUM-97             |
