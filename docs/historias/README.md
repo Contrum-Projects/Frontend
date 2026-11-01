@@ -35,7 +35,7 @@ Total: 53 historias, 185 puntos.
 | 17  | [SCRUM-109](SCRUM-109.md) · E2-H4 · Vista de precio profesional                          | 3   | Hecha       | Sí      | SCRUM-35 | SCRUM-108            |
 | 18  | [SCRUM-110](SCRUM-110.md) · E11-H1 · Pantalla Proveedores                                | 2   | Hecha       | Parcial | SCRUM-36 | SCRUM-99             |
 | 19  | [SCRUM-111](SCRUM-111.md) · E11-H2 · Entradas de inventario                              | 5   | En revisión | Parcial | SCRUM-37 | SCRUM-101, SCRUM-110 |
-| 20  | [SCRUM-112](SCRUM-112.md) · E11-H3 · Registrar salidas que no son venta                  | 3   | Por hacer   | No      | SCRUM-38 | SCRUM-111            |
+| 20  | [SCRUM-112](SCRUM-112.md) · E11-H3 · Registrar salidas que no son venta                  | 3   | En curso    | Parcial | SCRUM-38 | SCRUM-111            |
 | 21  | [SCRUM-113](SCRUM-113.md) · E11-H4 · Ajustes y transferencias de stock                   | 2   | Por hacer   | No      | SCRUM-39 | SCRUM-112            |
 | 22  | [SCRUM-114](SCRUM-114.md) · E11-H5 · Inventario: stock y movimientos                     | 5   | Por hacer   | No      | SCRUM-40 | SCRUM-111            |
 | 23  | [SCRUM-115](SCRUM-115.md) · E11-H6 · Avisos de stock bajo en el panel                    | 2   | Por hacer   | No      | SCRUM-41 | SCRUM-114            |
