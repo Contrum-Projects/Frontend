@@ -74,3 +74,4 @@ está en `compartido/api/respuestas.ts`. Exigen sesión de cliente o profesional
   cerrar sesión.
 - Pendiente: probar en el navegador con una cuenta de cliente del backend local (la semilla solo
   crea la del administrador).
+- PR: https://github.com/Contrum-Projects/Frontend/pull/39 (En revisión desde el 01-11-2026; sin capturas, falta probar en el navegador con una cuenta de cliente).
