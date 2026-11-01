@@ -373,6 +373,40 @@ export interface SalidaRegistrada {
 }
 
 /**
+ * backend: src/modulos/inventario/ajustes.service.ts › AjusteRegistrado (respuesta del POST
+ * /api/inventario/ajustes, E11-H4; el Swagger no la declara).
+ */
+export interface AjusteRegistrado {
+  movimientoId: number;
+  tipo: 'ajuste_positivo' | 'ajuste_negativo';
+  formatoId: number;
+  ubicacion: UbicacionResumen;
+  /** La diferencia con signo, como se pidió: +3 sumó, -2 descontó. */
+  cantidad: number;
+  /** Unidades que quedan del formato en esa ubicación. */
+  stockResultante: number;
+  observacion: string;
+  /** ISO 8601 */
+  fechaHora: string;
+}
+
+/**
+ * backend: src/modulos/inventario/transferencias.service.ts › TransferenciaRegistrada
+ * (respuesta del POST /api/inventario/transferencias, E11-H4; el Swagger no la declara). Cada
+ * ubicación trae el stock que le quedó.
+ */
+export interface TransferenciaRegistrada {
+  movimientoId: number;
+  formatoId: number;
+  origen: UbicacionResumen & { stock: number };
+  destino: UbicacionResumen & { stock: number };
+  cantidad: number;
+  observacion: string | null;
+  /** ISO 8601 */
+  fechaHora: string;
+}
+
+/**
  * backend: src/modulos/inventario/stock.service.ts › StockFormato (respuesta de GET
  * /api/inventario/stock/formatos/{id}, E11-H5; el Swagger no la declara). Solo las ubicaciones
  * con unidades; `activa` es falso si la ubicación o su bodega está desactivada.

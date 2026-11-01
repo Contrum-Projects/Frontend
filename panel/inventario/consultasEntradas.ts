@@ -56,8 +56,11 @@ export const useEntradas = (filtros: FiltrosEntradas) => {
   });
 };
 
-/** Ubicaciones activas donde se puede recibir mercadería, con su bodega. */
-export const useUbicaciones = () =>
+/**
+ * Ubicaciones activas donde se puede recibir mercadería, con su bodega. Con `habilitada` en
+ * falso no pide nada (la salida no las necesita; el ajuste y la transferencia sí).
+ */
+export const useUbicaciones = (habilitada = true) =>
   useQuery({
     queryKey: CLAVE_UBICACIONES,
     queryFn: () =>
@@ -66,6 +69,7 @@ export const useUbicaciones = () =>
           await pedir('/api/inventario/ubicaciones'),
         ),
       ),
+    enabled: habilitada,
   });
 
 /** «Bodega principal · A-01» */
