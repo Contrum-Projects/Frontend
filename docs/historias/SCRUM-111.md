@@ -80,5 +80,9 @@ registradoPor: { nombre } }], total, pagina, limite }`, de la más reciente a la
 - Pendiente para «Hecha»: probar con el backend real (sin rutas simuladas) y revisión visual a
   1440 y 360 px (no hubo navegador en esta sesión).
 
-**PR:** https://github.com/Contrum-Projects/Frontend/pull/32 (En revisión; endpoints simulados:
-`GET /inventario/entradas` y `GET /inventario/ubicaciones`).
+**PR:** https://github.com/Contrum-Projects/Frontend/pull/32 (integrado el 31-10-2026; endpoints
+simulados: `GET /inventario/entradas` y `GET /inventario/ubicaciones`).
+
+**01-11-2026:** pasa a «Hecha» por decisión del equipo. Siguen pendientes del backend
+(SCRUM-37) `GET /inventario/entradas` y `GET /inventario/ubicaciones`: al tenerlos, quitar sus
+rutas simuladas y probar la pantalla con el backend real.
