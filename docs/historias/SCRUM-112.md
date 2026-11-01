@@ -69,3 +69,6 @@ Estado al 01-11-2026 (`compartido/api/esquema.d.ts` de `main` y repo del backend
   de formatos de inventario.
 - Pendiente para «Hecha»: probar con el backend real y revisar a 1440 y 360 px (no hubo
   navegador en esta sesión).
+
+**PR:** https://github.com/Contrum-Projects/Frontend/pull/33 (En revisión; endpoint simulado:
+`GET /catalogo/formatos`, desde SCRUM-105).
