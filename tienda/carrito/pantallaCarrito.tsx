@@ -5,7 +5,7 @@ import type { Route } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type { CarritoCuenta } from '@/compartido/api/respuestas';
-import { ROLES } from '@/compartido/sesion/roles';
+import { ROLES, esPersonal } from '@/compartido/sesion/roles';
 import { useSesion } from '@/compartido/sesion/sesion';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Button } from '@/compartido/ui/button';
@@ -46,6 +46,18 @@ export function PantallaCarrito() {
             </Button>
           }
         />
+      </DisenoCarrito>
+    );
+  }
+  // El personal de tienda no compra: el backend le responde 403 y no se le pide el carrito
+  if (esPersonal(usuario?.rol)) {
+    return (
+      <DisenoCarrito>
+        <Alert variant="aviso">
+          <AlertDescription>
+            No tienes permiso para hacer esto.
+          </AlertDescription>
+        </Alert>
       </DisenoCarrito>
     );
   }
@@ -154,19 +166,19 @@ const DisenoCarrito = ({
   </main>
 );
 
+/** Con el título real, para que la página tenga su h1 y no salte al cargar. */
 const EsqueletoCarrito = () => (
-  <main
-    aria-busy
-    className="mx-auto flex max-w-[1440px] flex-col gap-4 px-4 pt-6 pb-8 md:gap-6 md:px-16 md:pt-8 md:pb-16"
-  >
-    <Skeleton className="h-9 w-48 md:h-12" />
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:gap-12">
+  <DisenoCarrito>
+    <div
+      aria-hidden
+      className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:gap-12"
+    >
       <div className="flex flex-col gap-4">
         {Array.from({ length: 3 }, (_, i) => (
-          <Skeleton key={i} className="h-36 rounded-lg md:h-32" />
+          <Skeleton key={i} className="h-40 rounded-lg md:h-32" />
         ))}
       </div>
       <Skeleton className="h-64 rounded-xl" />
     </div>
-  </main>
+  </DisenoCarrito>
 );

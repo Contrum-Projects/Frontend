@@ -5,7 +5,7 @@ import { Button } from '@/compartido/ui/button';
 import { RUTAS } from '@/tienda/diseno/enlaces';
 
 /**
- * Tarjeta centrada con ícono, título, texto y un botón (Figma › 04b Carrito vacío 2060:2381).
+ * Tarjeta centrada con ícono, título, texto y un botón (Figma › 04b Carrito vacío 2060:2231, tarjeta 2060:2381).
  * Sirve para el carrito vacío y para pedir que ingrese al visitante.
  */
 export const AvisoCarrito = ({
@@ -17,7 +17,7 @@ export const AvisoCarrito = ({
   texto?: string;
   accion: ReactNode;
 }) => (
-  <div className="flex flex-col items-center gap-2.5 rounded-lg bg-fondo-superficie px-6 py-10 text-center md:py-16">
+  <div className="flex flex-col items-center gap-2 rounded-lg bg-fondo-superficie px-6 py-12 text-center md:py-16">
     <ShoppingCart
       className="size-9 text-texto-principal"
       strokeWidth={1.75}

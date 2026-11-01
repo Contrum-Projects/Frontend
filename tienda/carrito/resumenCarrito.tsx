@@ -20,13 +20,14 @@ interface ResumenCarritoProps {
  */
 export function ResumenCarrito({ carrito, unidades }: ResumenCarritoProps) {
   const idMotivo = useId();
+  const idTitulo = useId();
   return (
     <section
-      aria-labelledby="titulo-resumen"
+      aria-labelledby={idTitulo}
       className="flex flex-col gap-3 rounded-xl border bg-fondo-superficie p-4 md:gap-4 md:p-8"
     >
       <h2
-        id="titulo-resumen"
+        id={idTitulo}
         className="sr-only md:not-sr-only md:mb-2 md:titulo-h2 md:text-texto-principal"
       >
         Resumen

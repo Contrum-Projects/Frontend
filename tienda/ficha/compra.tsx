@@ -38,6 +38,8 @@ export const Compra = ({
   minimo,
 }: CompraProps) => {
   const [cantidad, setCantidad] = useState(minimo ?? 1);
+  // Cubre también la espera de la sesión, antes de que empiece la mutación (sin doble clic)
+  const [esperando, setEsperando] = useState(false);
   const idMinimo = useId();
   const router = useRouter();
   const ruta = usePathname();
@@ -53,7 +55,9 @@ export const Compra = ({
 
   const agregar = async () => {
     // Recién abierta la página, la sesión puede estar renovándose: se espera para saber quién es
+    setEsperando(true);
     await esperarRenovacion();
+    setEsperando(false);
     // TODO(SCRUM-117): el visitante agrega al carrito del navegador
     if (leerEstado().tipo !== 'activa') {
       router.push(
@@ -90,7 +94,7 @@ export const Compra = ({
       type="button"
       size="grande"
       className="w-full sm:w-auto sm:flex-1"
-      disabled={agregarAlCarrito.isPending}
+      disabled={esperando || agregarAlCarrito.isPending}
       onClick={() => void agregar()}
     >
       {minimo ? `Agregar ${cantidad} al carrito` : 'Agregar al carrito'}

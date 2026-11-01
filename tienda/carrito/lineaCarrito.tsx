@@ -39,7 +39,6 @@ export function LineaCarrito({ linea, profesional }: LineaCarritoProps) {
 
   return (
     <li
-      aria-describedby={aviso ? idAviso : undefined}
       className={cn(
         'flex flex-col gap-3 rounded-lg border bg-fondo-superficie p-3 md:gap-4 md:p-4',
         linea.impideCrearPedido &&
@@ -49,7 +48,7 @@ export function LineaCarrito({ linea, profesional }: LineaCarritoProps) {
       {/* Celular: foto, datos y quitar; debajo, cantidad y subtotal. Escritorio: todo en una fila */}
       <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-3 md:grid-cols-[auto_minmax(0,1fr)_auto_auto_auto] md:items-center md:gap-x-6">
         <FotoLinea imagen={linea.imagen} />
-        <div className="flex min-w-0 flex-col gap-0.5 md:gap-1">
+        <div className="flex min-w-0 flex-col gap-1">
           <h2 className="texto-cuerpo-fuerte text-texto-principal md:titulo-h3">
             {linea.nombre}
           </h2>
@@ -70,6 +69,7 @@ export function LineaCarrito({ linea, profesional }: LineaCarritoProps) {
             linea={linea}
             cantidad={cantidad}
             titulo={titulo}
+            descripcion={aviso ? idAviso : undefined}
             deshabilitada={ocupada}
             onCambiar={(valor) => cambiar.mutate(valor)}
           />
@@ -80,11 +80,12 @@ export function LineaCarrito({ linea, profesional }: LineaCarritoProps) {
         <Button
           type="button"
           variant="ghost"
-          size="icono-chico"
+          size="icono"
           aria-label={`Quitar ${titulo} del carrito`}
+          aria-describedby={aviso ? idAviso : undefined}
           disabled={ocupada}
           onClick={() => quitar.mutate()}
-          className="col-start-3 row-start-1 md:col-start-5"
+          className="col-start-3 row-start-1 -mt-2 -mr-2 justify-self-end md:col-start-5 md:m-0"
         >
           <Trash2 aria-hidden />
         </Button>
@@ -146,7 +147,7 @@ const PrecioUnitario = ({
   profesional ? (
     <p className="flex items-center gap-1 texto-leyenda text-marca-profundo">
       <BadgeCheck
-        className="size-3.5 shrink-0 text-marca-acento"
+        className="size-4 shrink-0 text-marca-acento"
         strokeWidth={1.75}
         aria-hidden
       />
@@ -163,12 +164,15 @@ const ControlCantidad = ({
   linea,
   cantidad,
   titulo,
+  descripcion,
   deshabilitada,
   onCambiar,
 }: {
   linea: Linea;
   cantidad: number;
   titulo: string;
+  /** Id del aviso de la línea, para que el lector de pantalla lo lea en la cantidad. */
+  descripcion?: string;
   deshabilitada: boolean;
   onCambiar: (valor: number) => void;
 }) => {
@@ -180,6 +184,7 @@ const ControlCantidad = ({
         onCambiar={onCambiar}
         maximo={MAXIMO_UNIDADES_LINEA}
         etiqueta={`Cantidad de ${titulo}`}
+        descripcion={descripcion}
         className={cn(linea.impideCrearPedido && 'border-estado-aviso-texto')}
       />
     </fieldset>

@@ -80,7 +80,8 @@ export const TarjetaProducto = ({
             {formatearPesos(producto.precio)}
           </p>
         )}
-        {/* TODO(SCRUM-116): agregar al carrito. Deshabilitado, el clic pasa al enlace de la tarjeta */}
+        {/* Sin historia: el carrito agrega formatos y la tarjeta muestra el producto (SCRUM-116 agrega
+            desde la ficha). Deshabilitado, el clic pasa al enlace de la tarjeta */}
         <Button
           type="button"
           size="icono"

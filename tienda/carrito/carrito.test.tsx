@@ -12,6 +12,7 @@ import {
 } from '@/compartido/sesion/almacen';
 import type { Rol } from '@/compartido/sesion/roles';
 import { responder, simularBackend } from '@/tienda/cuenta/cuentaDePrueba';
+import { CarritoHeader } from '@/tienda/diseno/carritoHeader';
 import { Compra } from '@/tienda/ficha/compra';
 import { PantallaCarrito } from './pantallaCarrito';
 
@@ -207,8 +208,9 @@ describe('SCRUM-116 · Pantalla del carrito', () => {
     });
     mostrar(<PantallaCarrito />);
 
+    await screen.findByRole('list', { name: 'Productos del carrito' });
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Tu carrito' }),
+      screen.getByRole('heading', { level: 1, name: 'Tu carrito' }),
     ).toBeInTheDocument();
     expect(
       screen.getByText(
@@ -334,10 +336,15 @@ describe('SCRUM-116 · Pantalla del carrito', () => {
     const lineas = within(
       await screen.findByRole('list', { name: 'Productos del carrito' }),
     ).getAllByRole('listitem');
-    expect(lineas[0]).toHaveAccessibleDescription(
+    // El aviso se lee al llegar a los controles de la línea
+    expect(
+      within(lineas[0]).getByRole('group', { name: /Cantidad de/ }),
+    ).toHaveAccessibleDescription(
       'No hay stock para esta cantidad. Baja la cantidad o quítalo del carrito.',
     );
-    expect(lineas[1]).toHaveAccessibleDescription(
+    expect(
+      within(lineas[1]).getByRole('button', { name: /Quitar/ }),
+    ).toHaveAccessibleDescription(
       'Este producto ya no está disponible. Quítalo del carrito.',
     );
     // Lo que ya no se vende solo se puede quitar
@@ -403,5 +410,48 @@ describe('SCRUM-116 · Pantalla del carrito', () => {
       await screen.findByRole('button', { name: 'Reintentar' }),
     ).toBeInTheDocument();
     expect(screen.queryByText(/Prisma/)).not.toBeInTheDocument();
+  });
+
+  it('E5-H1 FE · el personal de tienda no tiene carrito: ve un aviso y no se pide a la API', () => {
+    iniciarSesion('vendedor');
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    mostrar(<PantallaCarrito />);
+
+    expect(
+      screen.getByText('No tienes permiso para hacer esto.'),
+    ).toBeInTheDocument();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('SCRUM-116 · Contador del header', () => {
+  it('E5-H1 FE · agregar y cambiar: el header muestra las unidades del carrito de la cuenta', async () => {
+    iniciarSesion();
+    simularBackend({
+      'GET /api/carrito': () =>
+        responder(
+          carrito([
+            linea({ cantidad: 2 }),
+            linea({ articuloId: 12, cantidad: 3 }),
+          ]),
+        ),
+    });
+    mostrar(<CarritoHeader />);
+
+    expect(
+      await screen.findByRole('link', { name: 'Carrito, 5 unidades' }),
+    ).toHaveAttribute('href', '/carrito');
+  });
+
+  it('E5-H1 FE · carrito vacío: el header muestra solo el ícono', async () => {
+    iniciarSesion();
+    simularBackend({ 'GET /api/carrito': () => responder(carrito([])) });
+    mostrar(<CarritoHeader />);
+
+    await waitFor(() =>
+      expect(screen.getByRole('link', { name: 'Carrito' })).toBeInTheDocument(),
+    );
+    expect(screen.queryByText('0')).not.toBeInTheDocument();
   });
 });

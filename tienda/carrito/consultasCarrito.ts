@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/compartido/api/cliente';
 import { exigir } from '@/compartido/api/errores';
 import type { CarritoCuenta } from '@/compartido/api/respuestas';
+import { leerEstado } from '@/compartido/sesion/almacen';
 import { esPersonal } from '@/compartido/sesion/roles';
 import { useSesion } from '@/compartido/sesion/sesion';
 import { conErrorDeApi } from '@/tienda/cuenta/consultasCuenta';
@@ -42,12 +43,20 @@ export const useCarrito = () => {
   });
 };
 
-/** Guarda en la caché el carrito que devolvió el backend. */
+/**
+ * Guarda en la caché el carrito que devolvió el backend. Si la sesión se cerró o cambió de cuenta
+ * mientras se guardaba, no lo deja en la caché (RNF-30).
+ */
 const useGuardarCarrito = () => {
   const cuenta = useCuentaCompradora();
   const clienteConsultas = useQueryClient();
-  return (carrito: CarritoCuenta) =>
+  return (carrito: CarritoCuenta) => {
+    const sesion = leerEstado();
+    if (sesion.tipo !== 'activa' || sesion.usuario.codigoPublico !== cuenta) {
+      return;
+    }
     clienteConsultas.setQueryData(CLAVES_CARRITO.carrito(cuenta), carrito);
+  };
 };
 
 export const useAgregarAlCarrito = () => {
