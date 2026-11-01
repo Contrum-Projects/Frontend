@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 49.
+ * Versión de la API: 0.1.0. Rutas: 56.
  */
 
 export interface paths {
@@ -931,8 +931,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Ver mi carrito con totales (E5-H1)
-         * @description Líneas con precio unitario y subtotal con IVA, calculados al consultar según el rol (el profesional ve el mayorista), y el total. Cada línea indica si el artículo sigue a la venta y si el stock cubre la cantidad (sin informar cuántas unidades hay); si no, `impideCrearPedido` es `true` hasta que se quite o se ajuste la cantidad.
+         * Ver mi carrito con totales (E5-H1, E5-H4)
+         * @description Líneas con precio unitario y subtotal con IVA, calculados al consultar según el rol (el profesional ve el mayorista), y el total. Cada línea indica si el artículo sigue a la venta, si el stock cubre la cantidad (sin informar cuántas unidades hay) y, para el profesional, si un formato está bajo el mínimo (`bajoMinimo`); en esos casos `impideCrearPedido` es `true` hasta que se quite o se ajuste la cantidad.
          */
         get: operations["CarritoController_obtener"];
         put?: never;
@@ -985,6 +985,150 @@ export interface paths {
          * @description Deja el artículo con la cantidad indicada, que debe cubrir el stock. Devuelve el carrito con sus totales recalculados.
          */
         patch: operations["CarritoController_cambiarCantidad"];
+        trace?: never;
+    };
+    "/api/carrito/unir": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Unir el carrito del navegador al de la cuenta (E5-H2)
+         * @description Se llama al iniciar sesión con los artículos que el visitante guardó en su navegador. Un artículo que ya estaba en la cuenta suma sus unidades. Lo que no se vende a la cuenta o está agotado se descarta, y una suma sobre 999 queda en 999; cada caso va en `ajustes`. Una cantidad mayor al stock se une sin recortar (recortarla revelaría cuántas unidades hay) y la línea queda con `impideCrearPedido` hasta ajustarla; lo mismo un formato bajo el mínimo del profesional (`bajoMinimo`). Devuelve el carrito de la cuenta con sus totales. Después de unir, el navegador debe vaciar su carrito.
+         */
+        post: operations["CarritoController_unir"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/carrito/cotizar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cotizar el carrito del visitante, sin sesión (E5-H2)
+         * @description Recibe los artículos que el visitante guarda en su navegador y devuelve, con la misma forma que `GET /api/carrito`, sus precios con IVA (minorista) y si el stock cubre cada cantidad, sin informar cuántas unidades hay. No guarda nada. Un artículo que no se vende sin cuenta sale con `aLaVenta: false` y sin nombre, tipo ni imagen.
+         */
+        post: operations["CarritoVisitanteController_cotizar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pedidos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver mi historial de pedidos (E8-H1)
+         * @description Los pedidos de la cuenta, del más reciente al más antiguo, con fecha, total con IVA y estado actual. Paginado con `pagina` y `limite`.
+         */
+        get: operations["MisPedidosController_listar"];
+        put?: never;
+        /**
+         * Crear mi pedido desde el carrito (E5-H3, E5-H4)
+         * @description Recalcula precios, IVA y total, crea el pedido, reserva el stock, vacía el carrito y da el plazo para pagar. Repetir la misma `claveIdempotencia` devuelve el mismo pedido. El profesional debe llevar el mínimo de unidades de cada formato (los packs no tienen mínimo). El despacho a domicilio se guarda con costo 0 hasta que exista la cotización (E7-H2).
+         */
+        post: operations["CrearPedidoController_crear"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pedidos/{codigoPedido}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver el detalle de un pedido mío (E8-H1)
+         * @description Artículos con su precio con IVA, montos, forma de entrega (con la dirección y el seguimiento si es despacho) y cambios de estado con su fecha. Un pedido de otra cuenta responde 404, igual que uno que no existe.
+         */
+        get: operations["MisPedidosController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pedidos/{codigoPedido}/cancelar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancelar un pedido pendiente de pago (E8-H3)
+         * @description Deja el pedido cancelado, devuelve su stock a las ubicaciones de donde salió y registra el cambio en el historial con quién lo hizo y el comentario opcional, todo en una transacción. Solo se puede cancelar un pedido pendiente de pago.
+         */
+        post: operations["CancelarPedidoController_cancelar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pedidos/{codigoPedido}/pago": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ir a pagar un pedido en Mercado Pago (E6-H1)
+         * @description Prepara el cobro del total del pedido en Mercado Pago y devuelve la URL donde paga el comprador y la hora límite. Tras un pago rechazado se puede pedir otra vez mientras el pedido siga pendiente de pago y dentro del plazo. No se guardan datos de la tarjeta.
+         */
+        post: operations["PagarPedidoController_iniciar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pedidos/{codigoPedido}/pago/confirmar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirmar el pago al volver de Mercado Pago (E6-H1)
+         * @description Consulta el pago a Mercado Pago y lo registra. Aprobado y por el total: el pedido queda pagado. Rechazado: el pedido sigue pendiente de pago y se puede reintentar dentro del plazo. Confirmar dos veces el mismo pago no cambia nada; un segundo pago aprobado no se acepta.
+         */
+        post: operations["PagarPedidoController_confirmar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/territorio/regiones": {
@@ -1567,6 +1711,60 @@ export interface components {
              * @example 3
              */
             cantidad: number;
+        };
+        ArticuloNavegadorDto: {
+            /**
+             * @description Id del artículo: el de un formato de producto o el de un pack.
+             * @example 11
+             */
+            articuloId: number;
+            /** @example 2 */
+            cantidad: number;
+        };
+        ArticulosNavegadorDto: {
+            /** @description Artículos del carrito del navegador, cada uno una sola vez con su cantidad. */
+            articulos: components["schemas"]["ArticuloNavegadorDto"][];
+        };
+        CrearPedidoDto: {
+            /**
+             * @description UUID que el navegador genera para esta confirmación y repite si reintenta.
+             * @example 0f8fad5b-d9cb-469f-a165-70867728950e
+             */
+            claveIdempotencia: string;
+            /**
+             * @example retiro
+             * @enum {string}
+             */
+            tipoEntrega: "despacho" | "retiro";
+            /**
+             * @description Id de una dirección de la cuenta; solo con despacho.
+             * @example 12
+             */
+            direccionId?: number;
+            /**
+             * @example boleta
+             * @enum {string}
+             */
+            tipoDocumento: "boleta" | "factura";
+            /**
+             * @description Id de los datos de facturación de la cuenta; solo con factura.
+             * @example 3
+             */
+            datosFacturacionId?: number;
+        };
+        CancelarPedidoDto: {
+            /**
+             * @description Motivo de la cancelación; queda en el historial del pedido.
+             * @example El cliente pidió anular la compra.
+             */
+            comentario?: string;
+        };
+        ConfirmarPagoDto: {
+            /**
+             * @description Id del pago que Mercado Pago entrega al volver a la tienda (`payment_id`).
+             * @example 1234567890
+             */
+            pagoId: string;
         };
         UbicacionOficialDto: {
             /**
@@ -4373,6 +4571,426 @@ export interface operations {
             };
             /** @description El artículo no está en el carrito. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CarritoController_unir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArticulosNavegadorDto"];
+            };
+        };
+        responses: {
+            /** @description Carrito de la cuenta con la unión. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Lista vacía, con más de 50 artículos, con artículos repetidos o con cantidades inválidas. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CarritoVisitanteController_cotizar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArticulosNavegadorDto"];
+            };
+        };
+        responses: {
+            /** @description Carrito del visitante con sus totales. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Lista vacía, con más de 50 artículos, con artículos repetidos o con cantidades inválidas. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 60 cotizaciones por minuto desde la IP. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MisPedidosController_listar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Página de pedidos con el total; vacía si no tiene. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Paginación inválida. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CrearPedidoController_crear: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrearPedidoDto"];
+            };
+        };
+        responses: {
+            /** @description Detalle del pedido. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Datos del pedido inválidos. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda, o cuenta sin el correo confirmado. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La dirección o los datos de facturación no son de la cuenta. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ya hay un pedido pendiente de pago, carrito vacío, artículo que ya no se vende, sin stock o formatos bajo el mínimo del profesional. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 5 solicitudes por minuto de la misma cuenta. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MisPedidosController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codigoPedido: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Detalle del pedido. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pedido no existe o no es de esta cuenta. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CancelarPedidoController_cancelar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codigoPedido: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelarPedidoDto"];
+            };
+        };
+        responses: {
+            /** @description Pedido cancelado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Comentario inválido. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar pedidos (los clientes no pueden cancelar). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pedido no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pedido no está pendiente de pago (ya pagado o cancelado). */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PagarPedidoController_iniciar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codigoPedido: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description URL de pago y hora límite. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pedido no existe o no es de esta cuenta. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pedido ya está pagado, fue cancelado o venció su plazo. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 10 solicitudes por minuto de la misma cuenta. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Mercado Pago no responde o no está configurado. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PagarPedidoController_confirmar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codigoPedido: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmarPagoDto"];
+            };
+        };
+        responses: {
+            /** @description Estado del pago y detalle del pedido (como en E8-H1). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Id de pago inválido, el pago no es de este pedido o no es por su total. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pedido no existe o no es de esta cuenta. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pedido ya tenía un pago aprobado o fue cancelado. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 10 solicitudes por minuto de la misma cuenta. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Mercado Pago no responde o no está configurado. */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
