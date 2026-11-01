@@ -33,4 +33,7 @@ formato de respuesta acordaste con quien hace la historia backend.
 
 ## Notas de trabajo
 
-<!-- Decisiones, preguntas abiertas y lo que quedó pendiente. Lo completa /historia. -->
+- **01-11-2026:** el criterio 2 («Alerta en inventario») quedó hecho en SCRUM-114. `CifraStock`
+  (`panel/inventario/listaStock.tsx`) pinta la cifra con `estado-aviso` cuando el backend marca
+  `bajoMinimo`. Prueba: `E11-H6 FE · CA2 alerta en inventario (celular)`. Falta el criterio 1
+  (aviso en el resumen).

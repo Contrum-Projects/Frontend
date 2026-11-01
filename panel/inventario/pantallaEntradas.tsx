@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Skeleton } from '@/compartido/ui/skeleton';
-import { AccionesInventario } from './accionesInventario';
+import { CabeceraInventario } from './cabeceraInventario';
 import {
   FILTROS_VACIOS,
   useEntradas,
@@ -11,7 +11,6 @@ import {
 } from './consultasEntradas';
 import { FiltrosEntradas } from './filtrosEntradas';
 import { ListaEntradasCelular, TablaEntradas } from './listaEntradas';
-import { PestanasInventario } from './pestanasInventario';
 
 /**
  * «Inventario · Entradas» (Figma P5e 2064:2663 y 2069:1703, E11-H2 criterio 1): lo recibido de
@@ -23,12 +22,7 @@ export function PantallaEntradas() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="titulo-h2 text-texto-principal">Inventario</h1>
-        <AccionesInventario disposicion="cabecera" />
-      </div>
-      <PestanasInventario />
-      <AccionesInventario disposicion="ancho" />
+      <CabeceraInventario />
       <div className="flex flex-col gap-4 lg:gap-3 lg:rounded-lg lg:border lg:bg-card lg:p-4">
         <FiltrosEntradas filtros={filtros} alCambiar={setFiltros} />
         <Entradas filtros={filtros} />

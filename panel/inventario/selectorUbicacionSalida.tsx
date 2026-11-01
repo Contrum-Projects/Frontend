@@ -10,7 +10,7 @@ import {
 } from '@/compartido/ui/select';
 import type { PropsControl } from '@/tienda/cuenta/campoFormulario';
 import { nombreUbicacion, useUbicaciones } from './consultasEntradas';
-import { useStockFormato } from './consultasSalidas';
+import { useStockFormato } from './consultasStock';
 
 interface OpcionUbicacion {
   id: number;

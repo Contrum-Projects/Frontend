@@ -216,6 +216,15 @@ describe('Entradas de inventario · lista (SCRUM-111)', () => {
       screen.getByLabelText('Buscar entradas por proveedor o documento'),
       'F-0043',
     );
+    // La búsqueda espera a que se deje de escribir: si se aplica entre los dos clics del
+    // calendario, jsdom pierde el segundo. Se espera a que llegue antes de abrirlo.
+    await waitFor(
+      () =>
+        expect(new URL(pedidas.at(-1)!.url).searchParams.get('buscar')).toBe(
+          'F-0043',
+        ),
+      { timeout: 3000 },
+    );
     await usuario.click(
       screen.getByRole('button', { name: /Fechas de recepción/ }),
     );
