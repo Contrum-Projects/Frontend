@@ -77,3 +77,6 @@ Estado al 01-11-2026 (`compartido/api/esquema.d.ts` de `main` y repo del backend
 - Pendiente para «Hecha»: probar con el backend real (el destino depende de
   `GET /inventario/ubicaciones`, simulado) y revisar a 1440 y 360 px (no hubo navegador en esta
   sesión).
+
+**PR:** https://github.com/Contrum-Projects/Frontend/pull/36 (En revisión; endpoints simulados:
+`GET /inventario/ubicaciones`, desde SCRUM-111, y `GET /catalogo/formatos`, desde SCRUM-105).
