@@ -351,6 +351,50 @@ export interface EntradaListado {
   registradoPor: { nombre: string };
 }
 
+/** backend: src/common/dominio/valores.ts › TIPOS_SALIDA */
+export type TipoSalida =
+  'merma_vencimiento' | 'merma_dano' | 'consumo_peluqueria';
+
+/**
+ * backend: src/modulos/inventario/salidas.service.ts › SalidaRegistrada (respuesta del POST
+ * /api/inventario/salidas, E11-H3; el Swagger no la declara).
+ */
+export interface SalidaRegistrada {
+  movimientoId: number;
+  tipo: TipoSalida;
+  formatoId: number;
+  ubicacion: UbicacionResumen;
+  cantidad: number;
+  /** Unidades que quedan del formato en esa ubicación. */
+  stockRestante: number;
+  observacion: string | null;
+  /** ISO 8601 */
+  fechaHora: string;
+}
+
+/**
+ * backend: src/modulos/inventario/stock.service.ts › StockFormato (respuesta de GET
+ * /api/inventario/stock/formatos/{id}, E11-H5; el Swagger no la declara). Solo las ubicaciones
+ * con unidades; `activa` es falso si la ubicación o su bodega está desactivada.
+ */
+export interface StockFormato {
+  formato: {
+    id: number;
+    nombreFormato: string;
+    sku: string;
+    producto: string;
+    activo: boolean;
+  };
+  ubicaciones: (UbicacionResumen & { activa: boolean; cantidad: number })[];
+  total: number;
+  ultimaEntrada: {
+    /** AAAA-MM-DD */
+    fechaRecepcion: string;
+    proveedor: { id: number; rut: string; razonSocial: string };
+    costoUnitarioNeto: number;
+  } | null;
+}
+
 /** GET /api/inventario/entradas?bodegaId&buscar&desde&hasta&pagina. Simulado (SCRUM-111). */
 export interface ListadoEntradas {
   items: EntradaListado[];
