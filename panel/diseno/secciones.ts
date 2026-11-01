@@ -60,8 +60,7 @@ export const SECCIONES: readonly SeccionPanel[] = [
   },
   {
     texto: 'Inventario',
-    // TODO(SCRUM-114): inventario
-    href: '/panel/inventario' as Route,
+    href: '/panel/inventario',
     icono: Box,
     permiso: PERMISOS.INVENTARIO_CONSULTAR,
   },

@@ -25,6 +25,7 @@ import { Tarjeta } from '@/panel/productos/formularioProducto';
 import { CampoFormulario } from '@/tienda/cuenta/campoFormulario';
 import { aFecha, SelectorFecha } from '@/tienda/cuenta/selectorFecha';
 import { CLAVE_ENTRADAS } from './consultasEntradas';
+import { CLAVE_STOCK } from './consultasStock';
 import {
   ENTRADA_VACIA,
   TIPOS_DOCUMENTO,
@@ -139,7 +140,10 @@ export function FormularioEntrada({
           body: cuerpoEntrada(datos),
         }),
       );
-      await clienteConsultas.invalidateQueries({ queryKey: CLAVE_ENTRADAS });
+      await Promise.all([
+        clienteConsultas.invalidateQueries({ queryKey: CLAVE_ENTRADAS }),
+        clienteConsultas.invalidateQueries({ queryKey: CLAVE_STOCK }),
+      ]);
       toast.success(`Registramos la entrada de ${textoDocumento(entrada)}.`);
       alRegistrar(
         entrada,

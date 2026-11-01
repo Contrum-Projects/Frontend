@@ -437,6 +437,89 @@ export interface ListadoEntradas {
   limite: number;
 }
 
+/** backend: src/common/dominio/valores.ts › TIPOS_MOVIMIENTO */
+export type TipoMovimiento =
+  | 'entrada'
+  | 'merma_vencimiento'
+  | 'merma_dano'
+  | 'consumo_peluqueria'
+  | 'ajuste_positivo'
+  | 'ajuste_negativo'
+  | 'transferencia'
+  | 'venta'
+  | 'reingreso';
+
+/**
+ * Una fila de GET /api/inventario/stock (E11-H5 criterio 1). TODO(SCRUM-114): no existe en el
+ * backend; simulado con la forma pedida a SCRUM-40 (ver docs/historias/SCRUM-114.md).
+ * `ubicaciones` y `stock` son de la bodega elegida (o de todas); `bajoMinimo` lo decide el
+ * backend.
+ */
+export interface StockListado {
+  formatoId: number;
+  sku: string;
+  producto: string;
+  nombreFormato: string;
+  /** Foto principal del formato. */
+  imagen: string | null;
+  ubicaciones: { id: number; codigo: string }[];
+  stock: number;
+  stockMinimo: number | null;
+  bajoMinimo: boolean;
+  /** Nula si el formato nunca se recibió. */
+  ultimaEntrada: {
+    costoUnitarioNeto: number;
+    proveedor: { id: number; razonSocial: string };
+  } | null;
+}
+
+/** GET /api/inventario/stock?bodegaId&buscar&bajoMinimo&pagina&limite. Simulado (SCRUM-114). */
+export interface ListadoStock {
+  items: StockListado[];
+  total: number;
+  pagina: number;
+  limite: number;
+  /** Formatos bajo el mínimo con la bodega y la búsqueda elegidas, para el chip. */
+  totalBajoMinimo: number;
+}
+
+/**
+ * Una fila de GET /api/inventario/movimientos (E11-H5 criterio 2). TODO(SCRUM-114): no existe
+ * en el backend; simulado con la forma pedida a SCRUM-40 (ver docs/historias/SCRUM-114.md).
+ */
+export interface MovimientoListado {
+  id: number;
+  /** ISO 8601 */
+  fechaHora: string;
+  tipo: TipoMovimiento;
+  formato: { id: number; producto: string; nombreFormato: string };
+  /** Con signo; la transferencia, positiva. */
+  cantidad: number;
+  /** El origen, en la transferencia. */
+  ubicacion: UbicacionResumen;
+  /** Solo en la transferencia. */
+  destino: UbicacionResumen | null;
+  /** N.º de documento, código del pedido u observación. */
+  referencia: string | null;
+  /** Nulo: lo registró el sistema (ventas y reingresos). */
+  registradoPor: { nombre: string } | null;
+}
+
+/** Grupos de los chips de «Movimientos»; el backend decide qué tipos entran en cada uno. */
+export type GrupoMovimientos =
+  'entradas' | 'ventas' | 'salidas' | 'transferencias';
+
+/**
+ * GET /api/inventario/movimientos?bodegaId&grupo&desde&hasta&buscar&pagina&limite, del más
+ * reciente al más antiguo. Simulado (SCRUM-114).
+ */
+export interface ListadoMovimientos {
+  items: MovimientoListado[];
+  total: number;
+  pagina: number;
+  limite: number;
+}
+
 /** backend: src/common/dominio/valores.ts › ORIGENES_DESCRIPCION */
 export type OrigenDescripcion = 'manual' | 'ia' | 'ia_editada';
 

@@ -37,7 +37,7 @@ Total: 53 historias, 185 puntos.
 | 19  | [SCRUM-111](SCRUM-111.md) · E11-H2 · Entradas de inventario                              | 5   | Hecha       | Parcial | SCRUM-37 | SCRUM-101, SCRUM-110 |
 | 20  | [SCRUM-112](SCRUM-112.md) · E11-H3 · Registrar salidas que no son venta                  | 3   | Hecha       | Parcial | SCRUM-38 | SCRUM-111            |
 | 21  | [SCRUM-113](SCRUM-113.md) · E11-H4 · Ajustes y transferencias de stock                   | 2   | En revisión | Parcial | SCRUM-39 | SCRUM-112            |
-| 22  | [SCRUM-114](SCRUM-114.md) · E11-H5 · Inventario: stock y movimientos                     | 5   | Por hacer   | No      | SCRUM-40 | SCRUM-111            |
+| 22  | [SCRUM-114](SCRUM-114.md) · E11-H5 · Inventario: stock y movimientos                     | 5   | En curso    | Parcial | SCRUM-40 | SCRUM-111            |
 | 23  | [SCRUM-115](SCRUM-115.md) · E11-H6 · Avisos de stock bajo en el panel                    | 2   | Por hacer   | No      | SCRUM-41 | SCRUM-114            |
 | 24  | [SCRUM-116](SCRUM-116.md) · E5-H1 · Pantalla del carrito                                 | 5   | Por hacer   | No      | SCRUM-43 | SCRUM-108            |
 | 25  | [SCRUM-117](SCRUM-117.md) · E5-H2 · Carrito del visitante en el navegador                | 3   | Por hacer   | No      | SCRUM-44 | SCRUM-116            |

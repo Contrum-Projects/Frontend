@@ -9,14 +9,11 @@ import { puedeAbrir } from '@/panel/diseno/secciones';
 
 /**
  * Pestañas de Inventario (Figma P5f 2064:3101). Cada una pide el permiso de su ruta, así que el
- * vendedor no ve «Entradas» ni «Proveedores». Varias rutas todavía no tienen página: llevan
- * `as Route`.
+ * vendedor no ve «Entradas» ni «Proveedores».
  */
 const PESTANAS: readonly { texto: string; href: Route }[] = [
-  // TODO(SCRUM-114): stock
-  { texto: 'Stock', href: '/panel/inventario' as Route },
-  // TODO(SCRUM-114): movimientos
-  { texto: 'Movimientos', href: '/panel/inventario/movimientos' as Route },
+  { texto: 'Stock', href: '/panel/inventario' },
+  { texto: 'Movimientos', href: '/panel/inventario/movimientos' },
   { texto: 'Entradas', href: '/panel/inventario/entradas' },
   { texto: 'Proveedores', href: '/panel/inventario/proveedores' },
 ];

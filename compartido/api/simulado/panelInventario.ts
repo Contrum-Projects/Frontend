@@ -17,14 +17,14 @@ import { json, type RutaSimulada } from './index';
 const PRINCIPAL = { id: 1, nombre: 'Bodega principal' };
 const SALA = { id: 2, nombre: 'Sala de ventas' };
 
-const UBICACIONES: UbicacionInventario[] = [
+export const UBICACIONES: UbicacionInventario[] = [
   { id: 1, codigo: 'A-01', bodega: PRINCIPAL },
   { id: 2, codigo: 'A-02', bodega: PRINCIPAL },
   { id: 3, codigo: 'B-01', bodega: PRINCIPAL },
   { id: 4, codigo: 'S-01', bodega: SALA },
 ];
 
-const ubicacion = (id: number) => {
+export const ubicacion = (id: number) => {
   const { codigo, bodega } = UBICACIONES.find((u) => u.id === id)!;
   return { id, codigo, bodega: bodega.nombre };
 };

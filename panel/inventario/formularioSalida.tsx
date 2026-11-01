@@ -12,7 +12,7 @@ import { Spinner } from '@/compartido/ui/spinner';
 import { AccionesPanelLateral } from '@/panel/catalogo/panelLateral';
 import { CampoFormulario } from '@/tienda/cuenta/campoFormulario';
 import { CamposMovimiento } from './camposMovimiento';
-import { CLAVE_STOCK } from './consultasSalidas';
+import { CLAVE_STOCK } from './consultasStock';
 import {
   SALIDA_VACIA,
   campoDelError,
