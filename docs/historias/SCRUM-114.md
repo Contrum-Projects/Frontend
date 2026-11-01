@@ -83,6 +83,8 @@ Errores de ambos: 401, 403 (sin permiso de consultar inventario).
 
 **01-11-2026 (rama `SCRUM-114-stock-movimientos`)**
 
+PR: https://github.com/Contrum-Projects/Frontend/pull/37 (En revisión).
+
 Decisiones:
 
 - **API simulada** para `GET /inventario/stock` y `GET /inventario/movimientos`, con la forma de
