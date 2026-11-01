@@ -758,3 +758,46 @@ export interface FormatoBajoMinimo {
   /** Unidades que faltan para llegar al mínimo. */
   faltante: number;
 }
+
+/**
+ * Una línea del carrito de la cuenta (E5-H1, SCRUM-43). El Swagger no declara la respuesta:
+ * backend `src/modulos/carrito/carrito.service.ts` › `LineaCarrito`. Precio, subtotal, stock y
+ * si impide el pedido los calcula el backend al consultar, según el rol (RNF-03).
+ */
+export interface LineaCarrito {
+  /** Id del formato o del pack. */
+  articuloId: number;
+  /** `formato` o `pack`; `null` si no se debe mostrar (carrito del visitante, E5-H2). */
+  tipo: 'formato' | 'pack' | null;
+  /** Nombre del producto o del pack. */
+  nombre: string;
+  /** Nombre del formato; `null` en un pack. */
+  nombreFormato: string | null;
+  /** URL pública de su imagen principal; `null` si no tiene. */
+  imagen: string | null;
+  cantidad: number;
+  /** Precio unitario con IVA; `null` si ya no se vende a esta cuenta. */
+  precioUnitario: number | null;
+  /** Precio unitario por cantidad, con IVA; `null` si ya no se vende. */
+  subtotal: number | null;
+  aLaVenta: boolean;
+  /** Si el stock cubre la cantidad (no dice cuántas hay); `null` si ya no se vende. */
+  stockSuficiente: boolean | null;
+  /** E5-H4 · Solo el profesional: un formato bajo el mínimo de unidades. */
+  bajoMinimo: boolean;
+  /** Mientras sea `true` no se puede crear el pedido: hay que quitarlo o ajustarlo. */
+  impideCrearPedido: boolean;
+}
+
+/**
+ * GET /api/carrito y las respuestas de agregar, cambiar y quitar (E5-H1, SCRUM-43). Backend
+ * `src/modulos/carrito/carrito.service.ts` › `CarritoCuenta`. TODO(SCRUM-116): el Swagger no
+ * declara la respuesta; pedido a SCRUM-43.
+ */
+export interface CarritoCuenta {
+  items: LineaCarrito[];
+  /** Suma de los subtotales que se venden, con IVA. */
+  total: number;
+  /** Hay artículos y ninguno impide crear el pedido. */
+  puedeCrearPedido: boolean;
+}
