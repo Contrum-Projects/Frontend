@@ -111,6 +111,10 @@ const PERMISOS_DE_RUTA: readonly { prefijo: string; permiso: Permiso }[] = [
     prefijo: '/panel/inventario/entradas',
     permiso: PERMISOS.INVENTARIO_REGISTRAR,
   },
+  {
+    prefijo: '/panel/inventario/salidas',
+    permiso: PERMISOS.INVENTARIO_REGISTRAR,
+  },
 ];
 
 const coincide = (ruta: string, prefijo: string) =>

@@ -1,11 +1,9 @@
 'use client';
 
-import type { Route } from 'next';
-import Link from 'next/link';
 import { useState } from 'react';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
-import { Button } from '@/compartido/ui/button';
 import { Skeleton } from '@/compartido/ui/skeleton';
+import { AccionesInventario } from './accionesInventario';
 import {
   FILTROS_VACIOS,
   useEntradas,
@@ -14,8 +12,6 @@ import {
 import { FiltrosEntradas } from './filtrosEntradas';
 import { ListaEntradasCelular, TablaEntradas } from './listaEntradas';
 import { PestanasInventario } from './pestanasInventario';
-
-export const RUTA_ENTRADA_NUEVA: Route = '/panel/inventario/entradas/nueva';
 
 /**
  * «Inventario · Entradas» (Figma P5e 2064:2663 y 2069:1703, E11-H2 criterio 1): lo recibido de
@@ -29,14 +25,10 @@ export function PantallaEntradas() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-3">
         <h1 className="titulo-h2 text-texto-principal">Inventario</h1>
-        <Button asChild className="max-lg:hidden">
-          <Link href={RUTA_ENTRADA_NUEVA}>Nueva entrada</Link>
-        </Button>
+        <AccionesInventario disposicion="cabecera" />
       </div>
       <PestanasInventario />
-      <Button asChild className="w-full max-lg:min-h-10 lg:hidden">
-        <Link href={RUTA_ENTRADA_NUEVA}>Nueva entrada</Link>
-      </Button>
+      <AccionesInventario disposicion="ancho" />
       <div className="flex flex-col gap-4 lg:gap-3 lg:rounded-lg lg:border lg:bg-card lg:p-4">
         <FiltrosEntradas filtros={filtros} alCambiar={setFiltros} />
         <Entradas filtros={filtros} />
