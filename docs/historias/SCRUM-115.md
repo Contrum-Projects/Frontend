@@ -1,6 +1,6 @@
 # SCRUM-115 · E11-H6 · Avisos de stock bajo en el panel
 
-**Orden:** 23 de 53 · **Puntos:** 2 · **Historia backend:** SCRUM-41 · **API:** No
+**Orden:** 23 de 53 · **Puntos:** 2 · **Historia backend:** SCRUM-41 · **API:** Sí
 
 **Necesita antes (frontend):** [SCRUM-114](SCRUM-114.md)  
 **La necesitan después:** [SCRUM-145](SCRUM-145.md)
@@ -26,10 +26,14 @@ Nodos del archivo de Figma `cl9eSD5YBS9qF4tQXJki68` (ver `docs/pantallas.md`).
 
 ## API
 
-Estado al 26-10-2026 (`compartido/api/esquema.d.ts` de `main`): **No**. Aún no existe en el Swagger.
+Estado al 01-11-2026 (`compartido/api/esquema.d.ts` y backend `main`): **Sí**.
 
-Si falta el endpoint, avanza con la API simulada (`docs/api-simulada.md`) y anota aquí qué
-formato de respuesta acordaste con quien hace la historia backend.
+- `GET /api/inventario/stock/bajo-minimo` (SCRUM-41): formatos con mínimo definido cuyo stock
+  total (todas las ubicaciones) está bajo él, del que más falta al que menos. Solo bodega y
+  administración (`inventario.registrar`): el vendedor recibe 403.
+- El Swagger no declara la respuesta: tipo `FormatoBajoMinimo` en `respuestas.ts`, copiado de
+  backend `src/modulos/inventario/stock-bajo.service.ts`
+  (`{ formatoId, sku, producto, nombreFormato, activo, stockMinimo, stockTotal, faltante }[]`).
 
 ## Notas de trabajo
 
@@ -37,3 +41,20 @@ formato de respuesta acordaste con quien hace la historia backend.
   (`panel/inventario/listaStock.tsx`) pinta la cifra con `estado-aviso` cuando el backend marca
   `bajoMinimo`. Prueba: `E11-H6 FE · CA2 alerta en inventario (celular)`. Falta el criterio 1
   (aviso en el resumen).
+
+**01-11-2026 (rama `SCRUM-115-avisos-stock-bajo`)**
+
+- **Criterio 1:** `panel/resumen/avisoStockBajo.tsx` en `/panel`: indicador ámbar «n · Formatos
+  con stock bajo» y tarjeta «Stock bajo el mínimo» (tabla en escritorio, lista con «2 / mín. 5»
+  en celular) con enlace a `/panel/inventario`. Endpoint **real**, sin API simulada.
+- **Criterio 3:** sin formatos bajo el mínimo no se muestra ni el indicador ni la tarjeta
+  (decisión del usuario).
+- **Filas:** la tarjeta lista los 5 que más faltan (decisión del usuario); el indicador dice el
+  total.
+- **Permiso:** solo bodeguero y administrador ven el aviso y solo ellos lo piden (igual que el
+  backend). El vendedor ve el Resumen sin el aviso.
+- La consulta va bajo la clave del stock: registrar un movimiento la vuelve a pedir.
+- Los demás indicadores y «Pedidos recientes» de Figma P1 quedan para SCRUM-130 y SCRUM-135.
+
+Pendiente en el backend (SCRUM-41): declarar en el Swagger la respuesta de
+`/inventario/stock/bajo-minimo`.
