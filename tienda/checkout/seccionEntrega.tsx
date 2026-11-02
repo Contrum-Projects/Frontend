@@ -1,10 +1,11 @@
 'use client';
 
 import { Store, Truck, type LucideIcon } from 'lucide-react';
-import { useId, type ReactNode } from 'react';
+import { useId, useRef, type ReactNode, type Ref } from 'react';
 import { formatearPesos } from '@/compartido/formato/moneda';
 import { cn } from '@/compartido/lib/utils';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
+import { Button } from '@/compartido/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/compartido/ui/radio-group';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { DireccionDespacho } from './direccionDespacho';
@@ -22,6 +23,7 @@ import type { Entrega, TipoEntrega } from './useEntrega';
 export const SeccionEntrega = ({ entrega }: { entrega: Entrega }) => {
   const conDespacho = entrega.tipo === 'despacho';
   const { cotizacion } = entrega;
+  const radioRetiro = useRef<HTMLButtonElement>(null);
   return (
     <SeccionCheckout titulo="1. ¿Cómo quieres recibirlo?">
       {(idTitulo) => (
@@ -43,10 +45,25 @@ export const SeccionEntrega = ({ entrega }: { entrega: Entrega }) => {
           {conDespacho && <DireccionDespacho entrega={entrega} />}
           {conDespacho && cotizacion.isError && (
             <Alert variant="aviso" className="md:ml-16 md:w-auto">
-              <AlertDescription>{cotizacion.error.message}</AlertDescription>
+              <AlertDescription className="flex flex-col items-start gap-3">
+                <p>{cotizacion.error.message}</p>
+                {entrega.ofreceRetiro && (
+                  <Button
+                    variant="contorno"
+                    onClick={() => {
+                      entrega.cambiarTipo('retiro');
+                      // El aviso desaparece: el foco pasa a la opción que quedó elegida
+                      radioRetiro.current?.focus();
+                    }}
+                  >
+                    Retirar en tienda
+                  </Button>
+                )}
+              </AlertDescription>
             </Alert>
           )}
           <OpcionEntrega
+            refRadio={radioRetiro}
             valor="retiro"
             elegida={!conDespacho}
             Icono={Store}
@@ -83,6 +100,7 @@ const CostoDespacho = ({ entrega }: { entrega: Entrega }) => {
  * tarjeta, no solo en el círculo.
  */
 const OpcionEntrega = ({
+  refRadio,
   valor,
   elegida,
   Icono,
@@ -90,6 +108,7 @@ const OpcionEntrega = ({
   descripcion,
   costo,
 }: {
+  refRadio?: Ref<HTMLButtonElement>;
   valor: TipoEntrega;
   elegida: boolean;
   Icono: LucideIcon;
@@ -108,7 +127,7 @@ const OpcionEntrega = ({
           : 'border-[1.5px] border-fondo-hueso-oscuro bg-fondo-superficie',
       )}
     >
-      <RadioGroupItem id={id} value={valor} />
+      <RadioGroupItem ref={refRadio} id={id} value={valor} />
       <Icono
         className="hidden size-6 shrink-0 text-texto-principal md:block"
         strokeWidth={1.75}
