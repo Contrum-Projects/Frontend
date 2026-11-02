@@ -24,7 +24,6 @@ interface ResumenCarritoProps {
 export function ResumenCarrito({
   carrito,
   unidades,
-  // TODO(SCRUM-118): la pantalla de checkout
   destino = RUTAS.checkout,
 }: ResumenCarritoProps) {
   const idMotivo = useId();
