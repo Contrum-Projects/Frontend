@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { RUTAS } from '@/tienda/diseno/enlaces';
 import { ErrorProfesional } from '@/tienda/profesional/errorProfesional';
-import { AvisoUnion } from './avisoUnion';
+import { AvisoErrorUnion, AvisoUnion } from './avisoUnion';
 import { useCarritoNavegador } from './carritoNavegador';
 import { CarritoVacio } from './carritoVacio';
 import {
@@ -63,6 +63,7 @@ export function PantallaCarrito() {
     // Si al unir se quitó todo, el aviso explica por qué quedó vacío
     return (
       <DisenoCarrito>
+        <AvisoErrorUnion />
         <AvisoUnion ajustes={ajustes} />
         <CarritoVacio />
       </DisenoCarrito>
@@ -73,7 +74,12 @@ export function PantallaCarrito() {
     <CarritoConArticulos
       carrito={consulta.data}
       unidades={contarUnidades(consulta.data)}
-      aviso={<AvisoUnion ajustes={ajustes} />}
+      aviso={
+        <>
+          <AvisoErrorUnion />
+          <AvisoUnion ajustes={ajustes} />
+        </>
+      }
     >
       {consulta.data.items.map((linea) => (
         <LineaCuenta

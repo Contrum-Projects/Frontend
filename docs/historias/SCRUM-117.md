@@ -64,8 +64,11 @@ con cantidades de 1 a 999. El Swagger no declara las respuestas: `CarritoUnido` 
   ingresar o al abrir con la sesión viva), no cuando otra pestaña cambia el carrito: así lo que
   agrega un visitante en otra pestaña no va a la cuenta abierta en esta (auditoría de seguridad).
   Web Locks evita unir dos veces entre pestañas; se descuenta del navegador solo lo enviado.
-- Si `unir` falla, no se borra nada y se vuelve a intentar en el próximo ingreso o al recargar.
-  Hoy no se avisa a la persona. **Por confirmar con el equipo** si debe verse un aviso.
+- Si `unir` falla, no se borra nada: los productos siguen en el navegador. Se avisa (decidido
+  con el usuario el 02-11-2026) con un toast con «Reintentar» donde esté la persona y un aviso
+  con «Reintentar» arriba de `/carrito` hasta que se unan. Con un 4xx, el mensaje del backend;
+  con un 5xx o sin conexión, «No pudimos sumar a tu carrito los productos que agregaste sin
+  sesión.». Si no reintenta, se vuelve a intentar en el próximo ingreso o al recargar.
 - En el carrito del visitante los controles esperan mientras se cotiza el último cambio (frena
   los clics de más contra el límite de 60 por minuto); un 429 muestra el error con «Reintentar».
 - El contador del header, sin sesión, suma las unidades del navegador sin llamar a la API.

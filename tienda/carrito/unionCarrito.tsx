@@ -3,7 +3,8 @@
 import { type QueryClient, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { api } from '@/compartido/api/cliente';
-import { exigir } from '@/compartido/api/errores';
+import { toast } from 'sonner';
+import { ErrorDeApi, exigir } from '@/compartido/api/errores';
 import type { CarritoUnido } from '@/compartido/api/respuestas';
 import { leerEstado } from '@/compartido/sesion/almacen';
 import {
@@ -36,8 +37,15 @@ export const UnionCarrito = () => {
 
 let unionEnCurso: Promise<void> | null = null;
 
-/** Una unión a la vez en la pestaña, y entre pestañas con Web Locks: no se suma dos veces. */
-const unirUnaVez = (cuenta: string, clienteConsultas: QueryClient) => {
+/** Texto cuando la unión falla por el servidor o la conexión (decidido el 02-11-2026). */
+export const MENSAJE_ERROR_UNION =
+  'No pudimos sumar a tu carrito los productos que agregaste sin sesión.';
+
+/**
+ * Una unión a la vez en la pestaña, y entre pestañas con Web Locks: no se suma dos veces.
+ * También la usa «Reintentar» del aviso de error.
+ */
+export const unirUnaVez = (cuenta: string, clienteConsultas: QueryClient) => {
   unionEnCurso ??= conCandado(() => unir(cuenta, clienteConsultas)).finally(
     () => {
       unionEnCurso = null;
@@ -68,11 +76,17 @@ const unir = async (cuenta: string, clienteConsultas: QueryClient) => {
         body: { articulos: [...articulos] },
       }),
     );
-  } catch {
-    // No se pierde nada: sigue en el navegador y se vuelve a intentar en el próximo ingreso
+  } catch (error) {
+    // No se pierde nada: sigue en el navegador. Se avisa con «Reintentar», y si no, se vuelve
+    // a intentar en el próximo ingreso o al recargar
+    if (sigueLaCuenta(cuenta)) avisarError(cuenta, clienteConsultas, error);
     return;
   }
   descontarDelCarritoNavegador(articulos);
+  clienteConsultas.removeQueries({
+    queryKey: CLAVES_CARRITO.errorUnion(cuenta),
+  });
+  toast.dismiss(ID_TOAST_ERROR);
 
   // Si la sesión se cerró o cambió mientras tanto, el carrito no queda en la caché (RNF-30)
   if (!sigueLaCuenta(cuenta)) return;
@@ -85,10 +99,41 @@ const unir = async (cuenta: string, clienteConsultas: QueryClient) => {
   if (!sigueLaCuenta(cuenta)) return;
   clienteConsultas.setQueryData(CLAVES_CARRITO.carrito(cuenta), carrito);
   if (ajustes.length > 0) {
-    // Hasta que la persona cambie su carrito o cierre sesión, aunque tarde en abrir /carrito
-    clienteConsultas.setQueryDefaults(CLAVES_CARRITO.ajustes(cuenta), {
-      gcTime: Infinity,
-    });
-    clienteConsultas.setQueryData(CLAVES_CARRITO.ajustes(cuenta), ajustes);
+    guardarAviso(clienteConsultas, CLAVES_CARRITO.ajustes(cuenta), ajustes);
   }
+};
+
+const ID_TOAST_ERROR = 'union-carrito';
+
+/**
+ * Un 4xx trae el mensaje del backend; un 5xx o sin conexión, el texto propio (decidido el
+ * 02-11-2026). Toast donde esté la persona y aviso en /carrito hasta que se una.
+ */
+const avisarError = (
+  cuenta: string,
+  clienteConsultas: QueryClient,
+  error: unknown,
+) => {
+  const mensaje =
+    error instanceof ErrorDeApi && error.estado >= 400 && error.estado < 500
+      ? error.message
+      : MENSAJE_ERROR_UNION;
+  guardarAviso(clienteConsultas, CLAVES_CARRITO.errorUnion(cuenta), mensaje);
+  toast.error(mensaje, {
+    id: ID_TOAST_ERROR,
+    action: {
+      label: 'Reintentar',
+      onClick: () => void unirUnaVez(cuenta, clienteConsultas),
+    },
+  });
+};
+
+/** Hasta que se reemplace o se cierre sesión, aunque la persona tarde en abrir /carrito. */
+const guardarAviso = (
+  clienteConsultas: QueryClient,
+  clave: readonly unknown[],
+  valor: unknown,
+) => {
+  clienteConsultas.setQueryDefaults(clave, { gcTime: Infinity });
+  clienteConsultas.setQueryData(clave, valor);
 };

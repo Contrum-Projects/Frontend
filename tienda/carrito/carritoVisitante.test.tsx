@@ -41,7 +41,11 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push }),
   usePathname: () => '/productos/10',
 }));
-const toast = vi.hoisted(() => ({ success: vi.fn() }));
+const toast = vi.hoisted(() => ({
+  success: vi.fn(),
+  error: vi.fn(),
+  dismiss: vi.fn(),
+}));
 vi.mock('sonner', () => ({ toast }));
 
 const CLAVE = 'cp:carrito';
@@ -465,17 +469,72 @@ describe('SCRUM-117 · Unir al iniciar sesión', () => {
     ).toBeInTheDocument();
   });
 
-  it('E5-H2 FE · al iniciar sesión: si la unión falla, los artículos siguen en el navegador', async () => {
+  it('E5-H2 FE · al iniciar sesión: si la unión falla, avisa con «Reintentar» y los artículos siguen en el navegador', async () => {
     guardarEnNavegador([{ articuloId: 11, cantidad: 2 }]);
     iniciarSesion();
+    let falla = true;
     const escrituras = simularBackend({
       'GET /api/carrito': () => responder(carrito([])),
       'POST /api/carrito/unir': () =>
-        responder({ statusCode: 500, message: 'Error' }, 500),
+        falla
+          ? responder({ statusCode: 500, message: 'PrismaClientError' }, 500)
+          : responder(unido()),
     });
-    mostrar(<UnionCarrito />);
+    const persona = userEvent.setup();
+    mostrar(
+      <>
+        <UnionCarrito />
+        <PantallaCarrito />
+      </>,
+    );
 
-    await waitFor(() => expect(escrituras).toHaveLength(1));
+    const mensaje =
+      'No pudimos sumar a tu carrito los productos que agregaste sin sesión.';
+    expect(await screen.findByText(mensaje)).toBeInTheDocument();
+    expect(screen.queryByText(/Prisma/)).not.toBeInTheDocument();
+    expect(leerNavegador()).toEqual([{ articuloId: 11, cantidad: 2 }]);
+    const [textoToast, opciones] = toast.error.mock.calls[0];
+    expect(textoToast).toBe(mensaje);
+    expect(opciones.action.label).toBe('Reintentar');
+
+    falla = false;
+    await persona.click(screen.getByRole('button', { name: 'Reintentar' }));
+
+    expect(
+      await screen.findByRole('heading', { name: 'Acondicionador' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(mensaje)).not.toBeInTheDocument();
+    expect(leerNavegador()).toEqual([]);
+    expect(escrituras).toHaveLength(2);
+  });
+
+  it('E5-H2 FE · al iniciar sesión: si el backend rechaza la unión (4xx), muestra su mensaje', async () => {
+    guardarEnNavegador([{ articuloId: 11, cantidad: 2 }]);
+    iniciarSesion();
+    simularBackend({
+      'GET /api/carrito': () => responder(carrito([])),
+      'POST /api/carrito/unir': () =>
+        responder(
+          {
+            statusCode: 400,
+            message:
+              'Cada artículo debe aparecer una sola vez: indica su cantidad.',
+          },
+          400,
+        ),
+    });
+    mostrar(
+      <>
+        <UnionCarrito />
+        <PantallaCarrito />
+      </>,
+    );
+
+    expect(
+      await screen.findByText(
+        'Cada artículo debe aparecer una sola vez: indica su cantidad.',
+      ),
+    ).toBeInTheDocument();
     expect(leerNavegador()).toEqual([{ articuloId: 11, cantidad: 2 }]);
   });
 

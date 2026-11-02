@@ -32,6 +32,8 @@ export const CLAVES_CARRITO = {
   carrito: (cuenta: string) => ['carrito', cuenta] as const,
   /** Lo que se ajustó al unir el carrito del navegador (E5-H2), hasta que cambie el carrito. */
   ajustes: (cuenta: string) => ['carrito', cuenta, 'ajustes'] as const,
+  /** El mensaje de la última unión fallida (E5-H2), hasta que se una. */
+  errorUnion: (cuenta: string) => ['carrito', cuenta, 'errorUnion'] as const,
   visitante: (articulos: readonly ArticuloNavegador[]) =>
     ['carrito', 'visitante', articulos] as const,
 };
@@ -157,4 +159,16 @@ export const useAjustesUnion = (): AjusteUnionCarrito[] => {
     staleTime: Infinity,
   });
   return data ?? [];
+};
+
+/** E5-H2 · El mensaje de la unión que falló, o `null`; lo deja <UnionCarrito>. */
+export const useErrorUnion = (): string | null => {
+  const cuenta = useCuentaCompradora();
+  const { data } = useQuery<string | null>({
+    queryKey: CLAVES_CARRITO.errorUnion(cuenta),
+    queryFn: () => null,
+    enabled: false,
+    staleTime: Infinity,
+  });
+  return data ?? null;
 };
