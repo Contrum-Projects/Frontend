@@ -820,3 +820,18 @@ export interface CarritoUnido extends CarritoCuenta {
   /** Vacío si todo entró tal cual. */
   ajustes: AjusteUnionCarrito[];
 }
+
+/**
+ * backend: src/modulos/cuentas/datos-facturacion.service.ts › DatosFacturacionCuenta (E9-H2).
+ * El Swagger no declara la respuesta de GET, POST ni PATCH: se pidió documentarla.
+ */
+export interface DatosFacturacionCuenta {
+  id: number;
+  /** Formato único: `76086429-3`. */
+  rut: string;
+  razonSocial: string;
+  giro: string;
+  direccion: string;
+  correoFacturacion: string | null;
+  comuna: UbicacionOficial & { region: UbicacionOficial };
+}

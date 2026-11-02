@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
-import { act } from 'react';
+import { act, type ReactNode } from 'react';
 import { vi } from 'vitest';
 import type {
   DatosPersonales,
@@ -99,8 +99,8 @@ export const RUTAS_UBICACIONES: Record<string, () => Response> = {
   ),
 };
 
-/** Abre Mis datos con la sesión iniciada. */
-export const mostrarMisDatos = () => {
+/** Abre una pantalla de «Mi cuenta» con la sesión iniciada. */
+export const mostrarPantallaCuenta = (pantalla: ReactNode) => {
   act(() =>
     guardarSesion({
       tokenAcceso: 'token',
@@ -119,9 +119,11 @@ export const mostrarMisDatos = () => {
         new QueryClient({ defaultOptions: { queries: { retry: false } } })
       }
     >
-      <DisenoCuenta>
-        <PantallaMisDatos />
-      </DisenoCuenta>
+      <DisenoCuenta>{pantalla}</DisenoCuenta>
     </QueryClientProvider>,
   );
 };
+
+/** Abre Mis datos con la sesión iniciada. */
+export const mostrarMisDatos = () =>
+  mostrarPantallaCuenta(<PantallaMisDatos />);

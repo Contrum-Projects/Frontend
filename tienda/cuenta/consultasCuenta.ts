@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/compartido/api/cliente';
 import { ErrorDeApi, errorDeApi, exigir } from '@/compartido/api/errores';
 import type {
+  DatosFacturacionCuenta,
   DatosPersonales,
   DireccionCuenta,
 } from '@/compartido/api/respuestas';
@@ -15,6 +16,7 @@ import type {
 export const CLAVES_CUENTA = {
   datos: ['cuenta', 'datos'] as const,
   direcciones: ['cuenta', 'direcciones'] as const,
+  facturacion: ['cuenta', 'facturacion'] as const,
   regiones: ['ubicaciones', 'regiones'] as const,
   comunas: (region: string) => ['ubicaciones', 'comunas', region] as const,
 };
@@ -46,6 +48,18 @@ export const useDirecciones = () =>
     queryFn: () =>
       conErrorDeApi(async () =>
         exigir<DireccionCuenta[]>(await api.GET('/api/cuentas/yo/direcciones')),
+      ),
+  });
+
+/** E9-H2 · Los registros activos, del más antiguo al más reciente (orden del backend). */
+export const useDatosFacturacion = () =>
+  useQuery({
+    queryKey: CLAVES_CUENTA.facturacion,
+    queryFn: () =>
+      conErrorDeApi(async () =>
+        exigir<DatosFacturacionCuenta[]>(
+          await api.GET('/api/cuentas/yo/facturacion'),
+        ),
       ),
   });
 
