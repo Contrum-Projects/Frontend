@@ -1,4 +1,5 @@
 import { ArrowRight } from 'lucide-react';
+import type { Route } from 'next';
 import Link from 'next/link';
 import { useId } from 'react';
 import type { CarritoCuenta } from '@/compartido/api/respuestas';
@@ -11,6 +12,8 @@ import { textoUnidades } from './textos';
 interface ResumenCarritoProps {
   carrito: CarritoCuenta;
   unidades: number;
+  /** A dónde lleva «Continuar con la compra»: el checkout, o ingresar si es un visitante. */
+  destino?: Route;
 }
 
 /**
@@ -18,7 +21,12 @@ interface ResumenCarritoProps {
  * backend y «Continuar con la compra». Si el backend dice que el pedido no se puede crear
  * (`puedeCrearPedido`), el botón queda deshabilitado con el motivo debajo (criterio 2).
  */
-export function ResumenCarrito({ carrito, unidades }: ResumenCarritoProps) {
+export function ResumenCarrito({
+  carrito,
+  unidades,
+  // TODO(SCRUM-118): la pantalla de checkout
+  destino = RUTAS.checkout,
+}: ResumenCarritoProps) {
   const idMotivo = useId();
   const idTitulo = useId();
   return (
@@ -65,8 +73,7 @@ export function ResumenCarrito({ carrito, unidades }: ResumenCarritoProps) {
       <p className="texto-leyenda text-texto-secundario">IVA incluido</p>
       {carrito.puedeCrearPedido ? (
         <Button asChild size="grande" className="mt-1 w-full md:mt-2">
-          {/* TODO(SCRUM-118): la pantalla de checkout */}
-          <Link href={RUTAS.checkout}>
+          <Link href={destino}>
             Continuar con la compra
             <ArrowRight aria-hidden />
           </Link>

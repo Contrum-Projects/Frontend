@@ -1,13 +1,24 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { api } from '@/compartido/api/cliente';
 import { exigir } from '@/compartido/api/errores';
-import type { CarritoCuenta } from '@/compartido/api/respuestas';
+import type {
+  AjusteUnionCarrito,
+  CarritoCuenta,
+} from '@/compartido/api/respuestas';
 import { leerEstado } from '@/compartido/sesion/almacen';
 import { esPersonal } from '@/compartido/sesion/roles';
 import { useSesion } from '@/compartido/sesion/sesion';
 import { conErrorDeApi } from '@/tienda/cuenta/consultasCuenta';
+import type { ArticuloNavegador } from './carritoNavegador';
+
+export { MAXIMO_UNIDADES_LINEA } from './carritoNavegador';
 
 /**
  * Carrito de la cuenta (E5-H1). Es de la cuenta: solo se pide en el navegador, con la sesión
@@ -19,13 +30,14 @@ import { conErrorDeApi } from '@/tienda/cuenta/consultasCuenta';
  */
 export const CLAVES_CARRITO = {
   carrito: (cuenta: string) => ['carrito', cuenta] as const,
+  /** Lo que se ajustó al unir el carrito del navegador (E5-H2), hasta que cambie el carrito. */
+  ajustes: (cuenta: string) => ['carrito', cuenta, 'ajustes'] as const,
+  visitante: (articulos: readonly ArticuloNavegador[]) =>
+    ['carrito', 'visitante', articulos] as const,
 };
 
-/** Tope técnico del backend por artículo (`MAXIMO_UNIDADES_LINEA`); el stock lo revisa él. */
-export const MAXIMO_UNIDADES_LINEA = 999;
-
 /** La cuenta compradora con sesión, o `''` (visitante o personal de tienda: no tienen carrito). */
-const useCuentaCompradora = (): string => {
+export const useCuentaCompradora = (): string => {
   const { usuario } = useSesion();
   if (!usuario || esPersonal(usuario.rol)) return '';
   return usuario.codigoPublico;
@@ -56,6 +68,10 @@ const useGuardarCarrito = () => {
       return;
     }
     clienteConsultas.setQueryData(CLAVES_CARRITO.carrito(cuenta), carrito);
+    // El aviso de la unión deja de valer cuando la persona ajusta su carrito
+    clienteConsultas.removeQueries({
+      queryKey: CLAVES_CARRITO.ajustes(cuenta),
+    });
   };
 };
 
@@ -107,3 +123,38 @@ export const useQuitarDelCarrito = (articuloId: number) => {
 /** Unidades del carrito (suma de cantidades), para el título y el contador del header. */
 export const contarUnidades = (carrito: CarritoCuenta): number =>
   carrito.items.reduce((suma, linea) => suma + linea.cantidad, 0);
+
+/**
+ * E5-H2 · El carrito del navegador con precios minoristas y si el stock cubre cada cantidad,
+ * calculados por el backend sin guardar nada (`POST /api/carrito/cotizar`, pública). Mientras
+ * cotiza un cambio, se sigue viendo la cotización anterior.
+ */
+export const useCotizacionVisitante = (
+  articulos: readonly ArticuloNavegador[],
+) =>
+  useQuery({
+    queryKey: CLAVES_CARRITO.visitante(articulos),
+    enabled: articulos.length > 0,
+    placeholderData: keepPreviousData,
+    queryFn: () =>
+      conErrorDeApi(async () =>
+        // TODO(SCRUM-117): el Swagger no declara la respuesta (misma forma que GET /api/carrito)
+        exigir<CarritoCuenta>(
+          await api.POST('/api/carrito/cotizar', {
+            body: { articulos: [...articulos] },
+          }),
+        ),
+      ),
+  });
+
+/** E5-H2 · Lo que se quitó o ajustó al unir; lo deja <UnionCarrito> y no se pide a la API. */
+export const useAjustesUnion = (): AjusteUnionCarrito[] => {
+  const cuenta = useCuentaCompradora();
+  const { data } = useQuery<AjusteUnionCarrito[]>({
+    queryKey: CLAVES_CARRITO.ajustes(cuenta),
+    queryFn: () => [],
+    enabled: false,
+    staleTime: Infinity,
+  });
+  return data ?? [];
+};

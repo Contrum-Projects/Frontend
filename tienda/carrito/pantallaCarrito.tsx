@@ -8,47 +8,34 @@ import type { CarritoCuenta } from '@/compartido/api/respuestas';
 import { ROLES, esPersonal } from '@/compartido/sesion/roles';
 import { useSesion } from '@/compartido/sesion/sesion';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
-import { Button } from '@/compartido/ui/button';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { RUTAS } from '@/tienda/diseno/enlaces';
 import { ErrorProfesional } from '@/tienda/profesional/errorProfesional';
-import { AvisoCarrito, CarritoVacio } from './carritoVacio';
-import { contarUnidades, useCarrito } from './consultasCarrito';
-import { LineaCarrito } from './lineaCarrito';
+import { AvisoUnion } from './avisoUnion';
+import { useCarritoNavegador } from './carritoNavegador';
+import { CarritoVacio } from './carritoVacio';
+import {
+  contarUnidades,
+  useAjustesUnion,
+  useCarrito,
+  useCotizacionVisitante,
+} from './consultasCarrito';
+import { LineaCuenta, LineaVisitante } from './lineasCarrito';
 import { ResumenCarrito } from './resumenCarrito';
 import { textoProductos, textoUnidades } from './textos';
 
 /**
  * Pantalla del carrito (SCRUM-116, Figma › 04 Carrito: escritorio 2008:872 y 2035:2364,
- * celular 2008:1927 y 2035:4957, vacío 2060:2231). El carrito es de la cuenta: el visitante
- * ve una invitación a ingresar hasta que exista el carrito del navegador (SCRUM-117).
+ * celular 2008:1927 y 2035:4957, vacío 2060:2231). Con sesión, el carrito de la cuenta; sin
+ * sesión, el del navegador cotizado por el backend (SCRUM-117).
  */
 export function PantallaCarrito() {
   const { estado, usuario } = useSesion();
   const consulta = useCarrito();
+  const ajustes = useAjustesUnion();
 
   if (estado === 'desconocida') return <EsqueletoCarrito />;
-  // TODO(SCRUM-117): el carrito del visitante, guardado en el navegador
-  if (estado === 'anonima') {
-    return (
-      <DisenoCarrito>
-        <AvisoCarrito
-          titulo="Ingresa para ver tu carrito"
-          accion={
-            <Button asChild>
-              <Link
-                href={
-                  `${RUTAS.ingresar}?volver=${encodeURIComponent(RUTAS.carrito)}` as Route
-                }
-              >
-                Ingresar
-              </Link>
-            </Button>
-          }
-        />
-      </DisenoCarrito>
-    );
-  }
+  if (estado === 'anonima') return <CarritoVisitante />;
   // El personal de tienda no compra: el backend le responde 403 y no se le pide el carrito
   if (esPersonal(usuario?.rol)) {
     return (
@@ -73,28 +60,102 @@ export function PantallaCarrito() {
     );
   }
   if (consulta.data.items.length === 0) {
+    // Si al unir se quitó todo, el aviso explica por qué quedó vacío
+    return (
+      <DisenoCarrito>
+        <AvisoUnion ajustes={ajustes} />
+        <CarritoVacio />
+      </DisenoCarrito>
+    );
+  }
+  const profesional = usuario?.rol === ROLES.PROFESIONAL;
+  return (
+    <CarritoConArticulos
+      carrito={consulta.data}
+      unidades={contarUnidades(consulta.data)}
+      aviso={<AvisoUnion ajustes={ajustes} />}
+    >
+      {consulta.data.items.map((linea) => (
+        <LineaCuenta
+          key={linea.articuloId}
+          linea={linea}
+          profesional={profesional}
+        />
+      ))}
+    </CarritoConArticulos>
+  );
+}
+
+/**
+ * E5-H2, criterio 1 · El carrito que el visitante guarda en el navegador, con los precios y el
+ * stock que calcula el backend al cotizarlo. Para continuar hay que ingresar: al volver, se une
+ * al de la cuenta.
+ */
+function CarritoVisitante() {
+  const articulos = useCarritoNavegador();
+  const consulta = useCotizacionVisitante(articulos);
+
+  if (articulos.length === 0) {
     return (
       <DisenoCarrito>
         <CarritoVacio />
       </DisenoCarrito>
     );
   }
+  if (consulta.isPending) return <EsqueletoCarrito />;
+  if (consulta.isError) {
+    return (
+      <DisenoCarrito>
+        <ErrorProfesional
+          mensaje={consulta.error.message}
+          onReintentar={() => void consulta.refetch()}
+        />
+      </DisenoCarrito>
+    );
+  }
+  // Mientras se cotiza un cambio se ve la cotización anterior: las líneas y el conteo son los
+  // de lo guardado, y los controles esperan a la nueva cotización
+  const guardadas = new Map(articulos.map((a) => [a.articuloId, a.cantidad]));
+  const carrito = {
+    ...consulta.data,
+    items: consulta.data.items.filter((linea) =>
+      guardadas.has(linea.articuloId),
+    ),
+  };
   return (
     <CarritoConArticulos
-      carrito={consulta.data}
-      profesional={usuario?.rol === ROLES.PROFESIONAL}
-    />
+      carrito={carrito}
+      unidades={articulos.reduce((suma, a) => suma + a.cantidad, 0)}
+      destino={
+        `${RUTAS.ingresar}?volver=${encodeURIComponent(RUTAS.carrito)}` as Route
+      }
+    >
+      {carrito.items.map((linea) => (
+        <LineaVisitante
+          key={linea.articuloId}
+          linea={linea}
+          cantidad={guardadas.get(linea.articuloId) ?? linea.cantidad}
+          ocupada={consulta.isFetching}
+        />
+      ))}
+    </CarritoConArticulos>
   );
 }
 
 function CarritoConArticulos({
   carrito,
-  profesional,
+  unidades,
+  aviso,
+  destino,
+  children,
 }: {
   carrito: CarritoCuenta;
-  profesional: boolean;
+  unidades: number;
+  aviso?: ReactNode;
+  destino?: Route;
+  /** Las líneas (<LineaCuenta> o <LineaVisitante>). */
+  children: ReactNode;
 }) {
-  const unidades = contarUnidades(carrito);
   const conProblemas = carrito.items.some((linea) => linea.impideCrearPedido);
   return (
     <DisenoCarrito
@@ -109,6 +170,7 @@ function CarritoConArticulos({
     >
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:items-start lg:gap-12">
         <div className="flex flex-col gap-4">
+          {aviso}
           {conProblemas && (
             <Alert variant="aviso">
               <Clock aria-hidden />
@@ -121,13 +183,7 @@ function CarritoConArticulos({
             aria-label="Productos del carrito"
             className="flex flex-col gap-4"
           >
-            {carrito.items.map((linea) => (
-              <LineaCarrito
-                key={linea.articuloId}
-                linea={linea}
-                profesional={profesional}
-              />
-            ))}
+            {children}
           </ul>
           <Link
             href={RUTAS.catalogo}
@@ -137,7 +193,11 @@ function CarritoConArticulos({
             Seguir comprando
           </Link>
         </div>
-        <ResumenCarrito carrito={carrito} unidades={unidades} />
+        <ResumenCarrito
+          carrito={carrito}
+          unidades={unidades}
+          destino={destino}
+        />
       </div>
     </DisenoCarrito>
   );

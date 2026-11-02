@@ -1,14 +1,14 @@
 'use client';
 
 import { ArrowRight } from 'lucide-react';
-import type { Route } from 'next';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import type { Disponibilidad } from '@/compartido/api/respuestas';
 import { esperarRenovacion, leerEstado } from '@/compartido/sesion/almacen';
 import { Button } from '@/compartido/ui/button';
 import { Cantidad } from '@/compartido/ui/cantidad';
+import { agregarAlCarritoNavegador } from '@/tienda/carrito/carritoNavegador';
 import { useAgregarAlCarrito } from '@/tienda/carrito/consultasCarrito';
 import { RUTAS } from '@/tienda/diseno/enlaces';
 
@@ -28,8 +28,8 @@ interface CompraProps {
 /**
  * Cantidad y «Agregar al carrito» (Figma › 03 Ficha 2007:754; peluquero 2007:1779). Agotado:
  * sin cantidad y el botón deshabilitado. Al agregar (SCRUM-116), el backend vuelve a comprobar
- * el stock y el mínimo; si lo rechaza, su mensaje queda bajo el botón. Sin sesión, lleva a
- * ingresar y de vuelta a la ficha hasta que exista el carrito del visitante (SCRUM-117).
+ * el stock y el mínimo; si lo rechaza, su mensaje queda bajo el botón. Sin sesión, se guarda en
+ * el carrito del navegador sin revisar el stock (SCRUM-117): el carrito lo marca al cotizar.
  */
 export const Compra = ({
   articuloId,
@@ -40,9 +40,9 @@ export const Compra = ({
   const [cantidad, setCantidad] = useState(minimo ?? 1);
   // Cubre también la espera de la sesión, antes de que empiece la mutación (sin doble clic)
   const [esperando, setEsperando] = useState(false);
+  const [errorNavegador, setErrorNavegador] = useState<string | null>(null);
   const idMinimo = useId();
   const router = useRouter();
-  const ruta = usePathname();
   const agregarAlCarrito = useAgregarAlCarrito();
 
   if (disponibilidad === 'agotado') {
@@ -58,26 +58,26 @@ export const Compra = ({
     setEsperando(true);
     await esperarRenovacion();
     setEsperando(false);
-    // TODO(SCRUM-117): el visitante agrega al carrito del navegador
+    setErrorNavegador(null);
     if (leerEstado().tipo !== 'activa') {
-      router.push(
-        `${RUTAS.ingresar}?volver=${encodeURIComponent(ruta)}` as Route,
-      );
+      const error = agregarAlCarritoNavegador({ articuloId, cantidad });
+      if (error) setErrorNavegador(error);
+      else avisarAgregado();
       return;
     }
     agregarAlCarrito.mutate(
       { articuloId, cantidad },
-      {
-        onSuccess: () =>
-          toast.success('Agregado al carrito', {
-            action: {
-              label: 'Ver carrito',
-              onClick: () => router.push(RUTAS.carrito),
-            },
-          }),
-      },
+      { onSuccess: avisarAgregado },
     );
   };
+
+  const avisarAgregado = () =>
+    toast.success('Agregado al carrito', {
+      action: {
+        label: 'Ver carrito',
+        onClick: () => router.push(RUTAS.carrito),
+      },
+    });
 
   const selector = (
     <Cantidad
@@ -101,9 +101,10 @@ export const Compra = ({
       <ArrowRight aria-hidden />
     </Button>
   );
-  const error = agregarAlCarrito.error && (
+  const mensajeError = errorNavegador ?? agregarAlCarrito.error?.message;
+  const error = mensajeError && (
     <p role="alert" className="texto-pequeno text-estado-error">
-      {agregarAlCarrito.error.message}
+      {mensajeError}
     </p>
   );
 
