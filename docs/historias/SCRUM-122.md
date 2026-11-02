@@ -38,6 +38,8 @@ El Swagger no declara la respuesta de la cotización: el tipo `CotizacionDespach
 
 ## Notas de trabajo
 
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/44 (En revisión desde el 02-11-2026).
+
 **Alcance (acordado el 02-11-2026):** la cotización entra aquí, porque el criterio 2 pide mostrar el
 costo. SCRUM-123 queda con el aviso «sin respuesta» que ofrece el retiro (409/503) y la dirección
 nueva con la lista oficial.
