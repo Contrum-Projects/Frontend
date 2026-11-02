@@ -42,7 +42,7 @@ Total: 53 historias, 185 puntos.
 | 24  | [SCRUM-116](SCRUM-116.md) · E5-H1 · Pantalla del carrito                                 | 5   | En revisión | Sí      | SCRUM-43 | SCRUM-108            |
 | 25  | [SCRUM-117](SCRUM-117.md) · E5-H2 · Carrito del visitante en el navegador                | 3   | En revisión | Sí      | SCRUM-44 | SCRUM-116            |
 | 26  | [SCRUM-119](SCRUM-119.md) · E5-H4 · Aviso del mínimo de 3 unidades del peluquero         | 2   | En revisión | Sí      | SCRUM-46 | SCRUM-109, SCRUM-116 |
-| 27  | [SCRUM-126](SCRUM-126.md) · E9-H2 · Pantalla Datos de facturación                        | 3   | Por hacer   | No      | SCRUM-54 | SCRUM-97             |
+| 27  | [SCRUM-126](SCRUM-126.md) · E9-H2 · Pantalla Datos de facturación                        | 3   | En revisión | Sí      | SCRUM-54 | SCRUM-97             |
 | 28  | [SCRUM-118](SCRUM-118.md) · E5-H3 · Pantalla de checkout                                 | 5   | Por hacer   | No      | SCRUM-45 | SCRUM-97, SCRUM-116  |
 | 29  | [SCRUM-122](SCRUM-122.md) · E7-H1 · Elegir despacho o retiro en el checkout              | 2   | Por hacer   | No      | SCRUM-50 | SCRUM-118            |
 | 30  | [SCRUM-123](SCRUM-123.md) · E7-H2 · Cotización del despacho y dirección                  | 3   | Por hacer   | No      | SCRUM-51 | SCRUM-122            |

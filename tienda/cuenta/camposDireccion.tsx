@@ -164,9 +164,10 @@ export const CamposDireccion = ({
 
 /**
  * Región o comuna con el Select de shadcn, como el de Género. Queda deshabilitado mientras no
- * hay opciones (cargando, o la comuna antes de elegir región).
+ * hay opciones (cargando, o la comuna antes de elegir región). También lo usan los datos de
+ * facturación (E9-H2).
  */
-const SelectorUbicacion = ({
+export const SelectorUbicacion = ({
   control,
   ref,
   valor,
