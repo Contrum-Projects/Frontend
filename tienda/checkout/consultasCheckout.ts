@@ -1,11 +1,12 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api } from '@/compartido/api/cliente';
 import { ErrorDeApi, exigir } from '@/compartido/api/errores';
 import type {
   CobroIniciado,
+  CotizacionDespacho,
   DetallePedidoCuenta,
 } from '@/compartido/api/respuestas';
 import {
@@ -15,11 +16,36 @@ import {
 import { conErrorDeApi } from '@/tienda/cuenta/consultasCuenta';
 import { irAUrlExterna } from './navegacion';
 
-/** Lo que el comprador eligió en el checkout. Hoy, retiro y comprobante (SCRUM-122 y 125). */
-export interface EleccionCheckout {
-  tipoEntrega: 'retiro';
-  tipoDocumento: 'boleta';
-}
+/**
+ * Lo que el comprador eligió en el checkout: retiro, o despacho a una dirección de su cuenta
+ * (E7-H1). El documento hoy es el comprobante; la factura la agrega SCRUM-125.
+ */
+export type EleccionCheckout = (
+  { tipoEntrega: 'retiro' } | { tipoEntrega: 'despacho'; direccionId: number }
+) & { tipoDocumento: 'boleta' };
+
+/**
+ * E7-H1, criterio 2 · El costo del despacho del carrito a una dirección de la cuenta
+ * (`GET /api/despacho/cotizacion`), con IVA, y el total a pagar: los calcula el backend con
+ * Chilexpress (RNF-03). Cuelga de la clave del carrito: si el carrito cambia, se vuelve a
+ * cotizar. Sin reintentos automáticos: el backend limita a 10 cotizaciones por minuto.
+ */
+export const useCotizacionDespacho = (direccionId: number | null) => {
+  const cuenta = useCuentaCompradora();
+  return useQuery({
+    queryKey: [...CLAVES_CARRITO.carrito(cuenta), 'despacho', direccionId],
+    enabled: cuenta !== '' && direccionId !== null,
+    retry: false,
+    queryFn: () =>
+      conErrorDeApi(async () =>
+        exigir<CotizacionDespacho>(
+          await api.GET('/api/despacho/cotizacion', {
+            params: { query: { direccionId: direccionId ?? 0 } },
+          }),
+        ),
+      ),
+  });
+};
 
 /** Dominios desde donde Mercado Pago sirve el pago (también el de prueba, `sandbox.`). */
 const DOMINIOS_PAGO = ['mercadopago.cl', 'mercadopago.com'] as const;

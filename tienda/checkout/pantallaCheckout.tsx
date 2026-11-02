@@ -17,7 +17,9 @@ import { ErrorProfesional } from '@/tienda/profesional/errorProfesional';
 import { useConfirmarPedido } from './consultasCheckout';
 import { PasosCheckout } from './pasosCheckout';
 import { ResumenCheckout } from './resumenCheckout';
-import { SeccionDocumento, SeccionEntrega } from './seccionesCheckout';
+import { SeccionEntrega } from './seccionEntrega';
+import { SeccionDocumento } from './seccionesCheckout';
+import { useEntrega, type Entrega } from './useEntrega';
 
 /**
  * Pantalla de checkout (SCRUM-118, Figma › 05 Checkout: escritorio 2010:1024, celular
@@ -35,6 +37,7 @@ function Checkout() {
   const { usuario } = useSesion();
   const consulta = useCarrito();
   const confirmar = useConfirmarPedido();
+  const entrega = useEntrega();
   // El resumen que se confirmó: si el pedido ya se creó, el carrito del backend viene vacío
   const [confirmado, setConfirmado] = useState<CarritoCuenta | null>(null);
 
@@ -92,7 +95,7 @@ function Checkout() {
     <DisenoCheckout conPasos>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:items-start lg:gap-12">
         <div className="flex flex-col gap-8 md:gap-12">
-          <SeccionEntrega />
+          <SeccionEntrega entrega={entrega} />
           <SeccionDocumento />
         </div>
         <div className="flex flex-col gap-4">
@@ -100,14 +103,14 @@ function Checkout() {
           <ResumenCheckout
             carrito={carrito}
             unidades={contarUnidades(carrito)}
+            despacho={despachoDelResumen(entrega)}
+            bloqueado={!entrega.listaParaPagar}
             // Tras el éxito el navegador ya va hacia Mercado Pago: no se vuelve a habilitar
             enviando={confirmar.isPending || confirmar.isSuccess}
             onPagar={() => {
+              if (!entrega.eleccion) return;
               setConfirmado(carrito);
-              confirmar.mutate({
-                tipoEntrega: 'retiro',
-                tipoDocumento: 'boleta',
-              });
+              confirmar.mutate(entrega.eleccion);
             }}
           />
         </div>
@@ -115,6 +118,16 @@ function Checkout() {
     </DisenoCheckout>
   );
 }
+
+/** Lo que el resumen muestra del despacho; sin despacho, nada (retiro en tienda). */
+const despachoDelResumen = (entrega: Entrega) => {
+  if (entrega.tipo !== 'despacho') return undefined;
+  const { cotizacion } = entrega;
+  if (cotizacion.isSuccess) return cotizacion.data;
+  // Sin dirección no hay qué cotizar; con error, tampoco: no se deja como si cargara
+  if (cotizacion.isError || !entrega.direccion) return 'sin-cotizar';
+  return 'cotizando';
+};
 
 /**
  * E5-H3, criterio 3 · El rechazo del backend con su mensaje, que ya nombra el artículo sin stock
