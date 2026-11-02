@@ -75,3 +75,4 @@ con cantidades de 1 a 999. El Swagger no declara las respuestas: `CarritoUnido` 
   (hoy sin esquema; tipos en `respuestas.ts`).
 - Pendiente: comparar con Figma a 360/390 y 1440 px (los revisores no tuvieron el MCP de Figma)
   y probar en el navegador con una cuenta de cliente del backend local.
+- PR: https://github.com/Contrum-Projects/Frontend/pull/40 (En revisión desde el 02-11-2026; sin capturas, falta probar en el navegador con una cuenta de cliente).
