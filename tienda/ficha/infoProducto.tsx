@@ -9,7 +9,7 @@ import { Migas } from '@/tienda/catalogo/migas';
 import { RUTAS, urlCatalogo, urlProducto } from '@/tienda/diseno/enlaces';
 import { AvisoPeluquero } from '@/tienda/profesional/avisoPeluquero';
 import { InsigniaPrecioProfesional } from '@/tienda/profesional/insignias';
-import { MINIMO_PROFESIONAL, precioVisible } from '@/tienda/profesional/precio';
+import { precioVisible } from '@/tienda/profesional/precio';
 import { Compra } from './compra';
 import { EstadoDisponibilidad } from './disponibilidad';
 import { Galeria } from './galeria';
@@ -24,7 +24,7 @@ interface InfoProductoProps {
 /**
  * Ficha de producto en el navegador: el formato elegido cambia la galería, el precio con IVA y
  * la disponibilidad (criterio 1). Empieza en el predeterminado, que el backend envía primero.
- * El profesional ve el mayorista, la cantidad desde 3 y su aviso (Figma 2007:1759); el resto,
+ * El profesional ve el mayorista (Figma 2007:1759; sin mínimo de unidades, SCRUM-146); el resto,
  * el minorista y el aviso para verificarse (2007:767).
  */
 export function InfoProducto({ producto }: InfoProductoProps) {
@@ -91,7 +91,6 @@ export function InfoProducto({ producto }: InfoProductoProps) {
         articuloId={elegido.id}
         disponibilidad={elegido.disponibilidad}
         articulo={`${producto.nombre} ${elegido.nombre}`}
-        minimo={profesional ? MINIMO_PROFESIONAL : undefined}
       />
       {!profesional && <AvisoPeluquero />}
     </DisenoFicha>

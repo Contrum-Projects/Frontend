@@ -16,7 +16,7 @@ import { DisenoFicha, PrecioFicha, TituloFicha } from './partesFicha';
  * Ficha de pack (SCRUM-108 criterio 3, Figma › 03c Ficha de pack 2058:3302): sus fotos, los
  * formatos que incluye con cantidades, el precio con IVA y la disponibilidad de su componente
  * más escaso (la calcula el backend). Con `exclusivo`, es lo que recibe el profesional
- * (SCRUM-109): el mayorista. El mínimo de 3 es por formato, así que el pack no lo lleva.
+ * (SCRUM-109): el mayorista.
  *
  * Falta el precio por separado de Figma: la API no lo entrega (pedido a SCRUM-34, ver
  * docs/historias/SCRUM-108.md).

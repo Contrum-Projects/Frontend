@@ -7,12 +7,12 @@ import { Button } from '@/compartido/ui/button';
 interface CantidadProps {
   valor: number;
   onCambiar: (valor: number) => void;
-  /** 1 por defecto; para el peluquero verificado es 3 (RF-05.10, lo decide el backend). */
+  /** 1 por defecto. */
   minimo?: number;
   maximo?: number;
   /** Para lectores de pantalla: qué se está contando («Cantidad de Shampoo reparador»). */
   etiqueta?: string;
-  /** Id del texto que explica un límite (el mínimo del peluquero), para lectores de pantalla. */
+  /** Id del texto que explica un límite o un aviso, para lectores de pantalla. */
   descripcion?: string;
   className?: string;
 }

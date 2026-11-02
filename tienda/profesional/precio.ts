@@ -6,6 +6,3 @@ export const precioVisible = (
   articulo: { precio: number } | { precioMayorista: number },
 ): number =>
   'precioMayorista' in articulo ? articulo.precioMayorista : articulo.precio;
-
-/** Mínimo de unidades por formato para el precio profesional (RF-05.10). Lo exige el backend. */
-export const MINIMO_PROFESIONAL = 3;
