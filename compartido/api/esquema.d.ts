@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 56.
+ * Versión de la API: 0.1.0. Rutas: 61.
  */
 
 export interface paths {
@@ -923,6 +923,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/pedidos/{codigoPedido}/factura": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Descargar la factura registrada de un pedido (E9-H4)
+         * @description Entrega el PDF de la factura registrada con `POST /api/pedidos/:codigoPedido/factura`, como descarga, para verificar lo que se subió. Sirve para cualquier pedido. Mientras la factura no se registre responde 404 sin archivo.
+         */
+        get: operations["DescargarFacturaPersonalController_descargar"];
+        put?: never;
+        /**
+         * Registrar la factura emitida en el SII (E9-H3)
+         * @description Recibe el PDF de la factura en el campo `archivo` (hasta 5 MB, reconocido por su contenido), el `folio` y, opcionalmente, la `fechaEmision` (AAAA-MM-DD, no futura; por defecto hoy). Guarda el documento con los datos del receptor y los montos del pedido tal como están al registrarlo. El pedido debe estar pagado y haber pedido factura; tiene una sola factura y el folio no puede repetirse. El archivo es privado: no se devuelve en la respuesta.
+         */
+        post: operations["RegistrarFacturaController_registrar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pedidos/{codigoPedido}/documento": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Descargar el documento tributario de mi pedido (E9-H4)
+         * @description Entrega el PDF de la factura registrada del pedido, como descarga. Un pedido de otra cuenta responde 404, igual que uno que no existe. Mientras la factura no se registre responde 404 sin archivo: el detalle del pedido (`GET /api/pedidos/:codigoPedido`) indica entonces que el documento está pendiente.
+         */
+        get: operations["DescargarDocumentoController_descargar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/carrito": {
         parameters: {
             query?: never;
@@ -932,7 +976,7 @@ export interface paths {
         };
         /**
          * Ver mi carrito con totales (E5-H1, E5-H4)
-         * @description Líneas con precio unitario y subtotal con IVA, calculados al consultar según el rol (el profesional ve el mayorista), y el total. Cada línea indica si el artículo sigue a la venta, si el stock cubre la cantidad (sin informar cuántas unidades hay) y, para el profesional, si un formato está bajo el mínimo (`bajoMinimo`); en esos casos `impideCrearPedido` es `true` hasta que se quite o se ajuste la cantidad.
+         * @description Líneas con precio unitario y subtotal con IVA, calculados al consultar según el rol (el profesional ve el mayorista), y el total. Cada línea indica si el artículo sigue a la venta, si el stock cubre la cantidad (sin informar cuántas unidades hay); si no, `impideCrearPedido` es `true` hasta que se quite o se ajuste la cantidad. No hay mínimo de unidades por formato (E5-H4, SCRUM-146).
          */
         get: operations["CarritoController_obtener"];
         put?: never;
@@ -1027,6 +1071,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/despacho/cotizacion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cotizar el despacho de mi carrito a una dirección (E7-H2)
+         * @description Cotiza con Chilexpress según la comuna, el peso y las medidas, y devuelve el costo con IVA y el total a pagar. Se cobra el servicio más barato. La misma cotización se reutiliza durante 15 minutos.
+         */
+        get: operations["DespachoController_cotizar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pedidos/{codigoPedido}/estado": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cambiar el estado de un pedido (E8-H2)
+         * @description Avanza el pedido por su secuencia (pagado → en preparación → despachado → entregado, o en preparación → listo para retiro → retirado si es retiro en tienda) o lo devuelve un paso con un comentario obligatorio. Al pasar a despachado exige el código de seguimiento de Chilexpress (E7-H3). Guarda el cambio en el historial con fecha, quién lo hizo y el comentario, y en los cambios clave (despachado, listo para retiro, entregado) deja encolado el correo al cliente. La cancelación tiene su propia ruta.
+         */
+        post: operations["CambiarEstadoPedidoController_cambiar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/pedidos": {
         parameters: {
             query?: never;
@@ -1041,8 +1125,8 @@ export interface paths {
         get: operations["MisPedidosController_listar"];
         put?: never;
         /**
-         * Crear mi pedido desde el carrito (E5-H3, E5-H4)
-         * @description Recalcula precios, IVA y total, crea el pedido, reserva el stock, vacía el carrito y da el plazo para pagar. Repetir la misma `claveIdempotencia` devuelve el mismo pedido. El profesional debe llevar el mínimo de unidades de cada formato (los packs no tienen mínimo). El despacho a domicilio se guarda con costo 0 hasta que exista la cotización (E7-H2).
+         * Crear mi pedido desde el carrito (E5-H3, E5-H4, E9-H1)
+         * @description Recalcula precios, IVA y total, crea el pedido, reserva el stock, vacía el carrito y da el plazo para pagar. Repetir la misma `claveIdempotencia` devuelve el mismo pedido. El profesional compra al precio mayorista desde una unidad, sin mínimo por formato. El despacho a domicilio se cotiza con Chilexpress y su costo se suma al total (E7-H2).
          */
         post: operations["CrearPedidoController_crear"];
         delete?: never;
@@ -1059,8 +1143,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Ver el detalle de un pedido mío (E8-H1)
-         * @description Artículos con su precio con IVA, montos, forma de entrega (con la dirección y el seguimiento si es despacho) y cambios de estado con su fecha. Un pedido de otra cuenta responde 404, igual que uno que no existe.
+         * Ver el detalle de un pedido mío (E8-H1, E9-H1)
+         * @description Artículos con su precio con IVA, montos, forma de entrega (con la dirección y el seguimiento si es despacho) y cambios de estado con su fecha. Con boleta y pago aprobado, `idTransaccionPago` es la referencia del comprobante de Mercado Pago. Un pedido de otra cuenta responde 404, igual que uno que no existe.
          */
         get: operations["MisPedidosController_obtener"];
         put?: never;
@@ -1125,6 +1209,26 @@ export interface paths {
          * @description Consulta el pago a Mercado Pago y lo registra. Aprobado y por el total: el pedido queda pagado. Rechazado: el pedido sigue pendiente de pago y se puede reintentar dentro del plazo. Confirmar dos veces el mismo pago no cambia nada; un segundo pago aprobado no se acepta.
          */
         post: operations["PagarPedidoController_confirmar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pagos/notificaciones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Recibir una notificación de Mercado Pago (E6-H2)
+         * @description Valida la firma (`x-signature`), guarda el evento y responde de inmediato; el pago se consulta a Mercado Pago y se aplica en segundo plano. La misma notificación otra vez no repite cambios ni correos.
+         */
+        post: operations["NotificacionPagoController_recibir"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1725,6 +1829,24 @@ export interface components {
             /** @description Artículos del carrito del navegador, cada uno una sola vez con su cantidad. */
             articulos: components["schemas"]["ArticuloNavegadorDto"][];
         };
+        CambiarEstadoPedidoDto: {
+            /**
+             * @description Estado al que pasa el pedido.
+             * @example en_preparacion
+             * @enum {string}
+             */
+            estado: "pendiente_pago" | "pagado" | "en_preparacion" | "despachado" | "entregado" | "listo_para_retiro" | "retirado" | "cancelado";
+            /**
+             * @description Nota interna que queda en el historial. Es obligatoria al volver a un estado anterior.
+             * @example Pedido armado y revisado.
+             */
+            comentario?: string;
+            /**
+             * @description Número de la orden de transporte de Chilexpress, única por pedido. La OT debe crearse con el código público del pedido como referencia. Es obligatorio al pasar a despachado y no se admite en otro cambio.
+             * @example 990000000001
+             */
+            codigoSeguimiento?: string;
+        };
         CrearPedidoDto: {
             /**
              * @description UUID que el navegador genera para esta confirmación y repite si reintenta.
@@ -1747,7 +1869,7 @@ export interface components {
              */
             tipoDocumento: "boleta" | "factura";
             /**
-             * @description Id de los datos de facturación de la cuenta; solo con factura.
+             * @description Id de los datos de facturación de la cuenta; obligatorio con factura si la cuenta tiene datos, y solo se indica con factura.
              * @example 3
              */
             datosFacturacionId?: number;
@@ -3880,7 +4002,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description El almacenamiento de imágenes no está configurado. */
+            /** @description El almacenamiento de archivos no está configurado. */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -4410,6 +4532,182 @@ export interface operations {
             };
         };
     };
+    DescargarFacturaPersonalController_descargar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codigoPedido: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description El PDF de la factura. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar la facturación (solo vendedor y administrador). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pedido no existe o su factura aún no está registrada. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El almacén de archivos no está configurado o no responde. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RegistrarFacturaController_registrar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codigoPedido: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    archivo: string;
+                    /** @example 4521 */
+                    folio: number;
+                    /** @example 2026-10-30 */
+                    fechaEmision?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Factura registrada. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin PDF, el archivo no es un PDF, o el folio o la fecha no son válidos. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar la facturación (solo vendedor y administrador). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pedido no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pedido no pidió factura, no está pagado, ya tiene factura, o el folio ya existe. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El PDF supera los 5 MB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El almacén de archivos no está configurado o no responde. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    DescargarDocumentoController_descargar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codigoPedido: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description El PDF de la factura. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pedido no existe o no es de esta cuenta, o su factura aún no está registrada. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El almacén de archivos no está configurado o no responde. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     CarritoController_obtener: {
         parameters: {
             query?: never;
@@ -4657,6 +4955,135 @@ export interface operations {
             };
         };
     };
+    DespachoController_cotizar: {
+        parameters: {
+            query: {
+                /** @description Id de una dirección de la cuenta. */
+                direccionId: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Costo del despacho y total a pagar. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Dirección inválida. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La dirección no es de la cuenta. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Carrito vacío, o Chilexpress no tiene servicio para esa comuna y bulto: se ofrece retiro en tienda. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 10 solicitudes por minuto de la misma cuenta. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Chilexpress no responde: no se puede cotizar en este momento y se ofrece retiro en tienda. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CambiarEstadoPedidoController_cambiar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codigoPedido: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CambiarEstadoPedidoDto"];
+            };
+        };
+        responses: {
+            /** @description Pedido con su nuevo estado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Estado inválido, comentario demasiado largo, falta el comentario al volver a un estado anterior, o el código de seguimiento falta al despachar, es inválido o se envía en otro cambio. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar pedidos (los clientes no pueden cambiar el estado). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pedido no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El cambio no está permitido desde el estado actual del pedido, o el pedido no tiene los datos del envío. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     MisPedidosController_listar: {
         parameters: {
             query?: {
@@ -4719,7 +5146,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Datos del pedido inválidos. */
+            /** @description Datos del pedido inválidos, o factura sin indicar cuáles datos de facturación usar. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -4740,14 +5167,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description La dirección o los datos de facturación no son de la cuenta. */
+            /** @description La dirección no es de la cuenta, o los datos de facturación no son de la cuenta o están desactivados. */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description Ya hay un pedido pendiente de pago, carrito vacío, artículo que ya no se vende, sin stock o formatos bajo el mínimo del profesional. */
+            /** @description Ya hay un pedido pendiente de pago, carrito vacío o cambiado mientras se cotizaba, artículo que ya no se vende, sin stock, despacho sin cobertura de Chilexpress, o factura sin datos de facturación registrados (E9-H1). */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -4756,6 +5183,13 @@ export interface operations {
             };
             /** @description Más de 5 solicitudes por minuto de la misma cuenta. */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Chilexpress no responde: no se crea el pedido y se ofrece retiro en tienda. */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4990,6 +5424,45 @@ export interface operations {
                 content?: never;
             };
             /** @description Mercado Pago no responde o no está configurado. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificacionPagoController_recibir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Notificación recibida o ya registrada. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Notificación de pago firmada, pero sin sus identificadores. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin una firma válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta configurar el secreto de la firma. */
             503: {
                 headers: {
                     [name: string]: unknown;
