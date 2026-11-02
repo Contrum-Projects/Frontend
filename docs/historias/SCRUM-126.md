@@ -44,6 +44,7 @@ falta la API simulada.
 
 ## Notas de trabajo
 
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/42 (En revisión desde el 02-11-2026).
 - **Pantalla:** `/cuenta/facturacion` (`tienda/cuenta/pantallaFacturacion.tsx`), dentro del marco
   de «Mi cuenta» con el menú lateral. Lista en `listaFacturacion.tsx`, formulario en
   `formularioFacturacion.tsx` y `camposFacturacion.tsx`, reglas en `esquemaFacturacion.ts`.
