@@ -42,9 +42,11 @@ export const useMisDatos = () =>
       ),
   });
 
-export const useDirecciones = () =>
+/** `activa: false` no pide la lista (por ejemplo, el personal de tienda en el checkout). */
+export const useDirecciones = ({ activa = true }: { activa?: boolean } = {}) =>
   useQuery({
     queryKey: CLAVES_CUENTA.direcciones,
+    enabled: activa,
     queryFn: () =>
       conErrorDeApi(async () =>
         exigir<DireccionCuenta[]>(await api.GET('/api/cuentas/yo/direcciones')),

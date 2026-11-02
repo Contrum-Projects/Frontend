@@ -1,11 +1,10 @@
 'use client';
 
-import { Receipt, Store } from 'lucide-react';
+import { Receipt } from 'lucide-react';
 import { useId, type ReactNode } from 'react';
-import { RadioGroup, RadioGroupItem } from '@/compartido/ui/radio-group';
 
 /** Una sección numerada del formulario: «1. Entrega», «2. Documento». */
-const SeccionCheckout = ({
+export const SeccionCheckout = ({
   titulo,
   children,
 }: {
@@ -23,41 +22,6 @@ const SeccionCheckout = ({
       </h2>
       {children(idTitulo)}
     </section>
-  );
-};
-
-/**
- * E5-H3, criterio 1 · La entrega (Figma › 05 Checkout 2010:1088). Hoy solo retiro en tienda,
- * ya elegido; el despacho a domicilio con su dirección y costo lo agrega SCRUM-122.
- */
-export const SeccionEntrega = () => {
-  const idRetiro = useId();
-  return (
-    <SeccionCheckout titulo="1. ¿Cómo quieres recibirlo?">
-      {(idTitulo) => (
-        <RadioGroup aria-labelledby={idTitulo} value="retiro">
-          <label
-            htmlFor={idRetiro}
-            className="flex cursor-pointer items-center gap-4 rounded-lg border-2 border-marca-profundo bg-marca-acento-suave px-4 py-4 md:px-6"
-          >
-            <RadioGroupItem id={idRetiro} value="retiro" />
-            <Store
-              className="hidden size-6 shrink-0 text-texto-principal md:block"
-              strokeWidth={1.75}
-              aria-hidden
-            />
-            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span className="texto-cuerpo-fuerte text-texto-principal">
-                Retiro en tienda
-              </span>
-              <span className="texto-pequeno text-texto-secundario">
-                Te avisamos por correo cuando tu pedido esté listo para retiro.
-              </span>
-            </span>
-          </label>
-        </RadioGroup>
-      )}
-    </SeccionCheckout>
   );
 };
 

@@ -907,3 +907,17 @@ export interface CobroIniciado {
   /** ISO 8601. */
   pagarHasta: string;
 }
+
+/**
+ * GET /api/despacho/cotizacion?direccionId= (E7-H2, SCRUM-51). Backend
+ * `src/modulos/despacho/cotizar-envio.service.ts` › `CotizacionDespacho`. TODO(SCRUM-122): el
+ * Swagger no declara la respuesta; pedido a SCRUM-51.
+ */
+export interface CotizacionDespacho {
+  /** Costo del despacho con IVA, en pesos. */
+  costo: number;
+  /** Total del carrito con IVA, sin el despacho. */
+  totalCarrito: number;
+  /** Lo que pagaría: carrito más despacho. */
+  total: number;
+}
