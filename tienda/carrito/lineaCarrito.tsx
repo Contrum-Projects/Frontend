@@ -8,7 +8,6 @@ import { formatearPesos } from '@/compartido/formato/moneda';
 import { cn } from '@/compartido/lib/utils';
 import { Button } from '@/compartido/ui/button';
 import { Cantidad } from '@/compartido/ui/cantidad';
-import { MINIMO_PROFESIONAL } from '@/tienda/profesional/precio';
 import { MAXIMO_UNIDADES_LINEA } from './carritoNavegador';
 
 /** Qué hacer con la línea: en el carrito de la cuenta o en el del navegador. */
@@ -119,7 +118,7 @@ export function LineaCarrito({
 
 /**
  * Qué ajustar en una línea que impide el pedido (textos decididos el 01-11-2026). El backend no
- * dice cuántas unidades hay. El aviso del mínimo con «Subir a 3» es de SCRUM-119.
+ * dice cuántas unidades hay. El peluquero no tiene mínimo de unidades (SCRUM-146).
  */
 const avisoDeLinea = (linea: Linea): string | null => {
   if (!linea.aLaVenta) {
@@ -127,10 +126,6 @@ const avisoDeLinea = (linea: Linea): string | null => {
   }
   if (linea.stockSuficiente === false) {
     return 'No hay stock para esta cantidad. Baja la cantidad o quítalo del carrito.';
-  }
-  // TODO(SCRUM-119): aviso del mínimo con «Agrega N más» y «Subir a 3»
-  if (linea.bajoMinimo) {
-    return `Para tu precio profesional, el mínimo es ${MINIMO_PROFESIONAL} unidades de este formato.`;
   }
   return null;
 };

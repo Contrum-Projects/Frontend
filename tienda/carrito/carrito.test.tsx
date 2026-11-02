@@ -78,7 +78,6 @@ const linea = (extra: Partial<LineaCarrito> = {}): LineaCarrito => ({
   subtotal: 25980,
   aLaVenta: true,
   stockSuficiente: true,
-  bajoMinimo: false,
   impideCrearPedido: false,
   ...extra,
 });
@@ -420,5 +419,64 @@ describe('SCRUM-116 · Contador del header', () => {
       expect(screen.getByRole('link', { name: 'Carrito' })).toBeInTheDocument(),
     );
     expect(screen.queryByText('0')).not.toBeInTheDocument();
+  });
+});
+
+describe('SCRUM-119 · Sin mínimo de unidades para el peluquero (SCRUM-146)', () => {
+  it('E5-H4 FE · sin mínimo: el peluquero agrega 1 unidad desde la ficha', async () => {
+    iniciarSesion('profesional');
+    const escrituras = simularBackend({
+      'GET /api/carrito': () => responder(carrito([])),
+      'POST /api/carrito/items': () =>
+        responder(carrito([linea({ cantidad: 1 })]), 201),
+    });
+    const persona = userEvent.setup();
+    mostrar(
+      <Compra
+        articuloId={11}
+        disponibilidad="disponible"
+        articulo="Shampoo reparador 300 ml"
+      />,
+    );
+
+    expect(screen.queryByText(/mínimo/)).not.toBeInTheDocument();
+    await persona.click(
+      screen.getByRole('button', { name: 'Agregar al carrito' }),
+    );
+
+    await waitFor(() => expect(toast.success).toHaveBeenCalled());
+    expect(escrituras).toEqual([
+      {
+        peticion: 'POST /api/carrito/items',
+        cuerpo: { articuloId: 11, cantidad: 1 },
+      },
+    ]);
+  });
+
+  it('E5-H4 FE · sin mínimo: con 1 unidad, la línea del peluquero no lleva aviso y «Continuar con la compra» está habilitado', async () => {
+    iniciarSesion('profesional');
+    simularBackend({
+      'GET /api/carrito': () =>
+        responder(
+          carrito([
+            linea({ cantidad: 1, precioUnitario: 8490, subtotal: 8490 }),
+          ]),
+        ),
+    });
+    mostrar(<PantallaCarrito />);
+
+    const [unica] = within(
+      await screen.findByRole('list', { name: 'Productos del carrito' }),
+    ).getAllByRole('listitem');
+    expect(
+      within(unica).getByRole('group', { name: /Cantidad de/ }),
+    ).not.toHaveAccessibleDescription();
+    expect(within(unica).getByText(/precio profesional/)).toBeInTheDocument();
+    expect(
+      screen.queryByText('Hay productos que debes ajustar para continuar.'),
+    ).not.toBeInTheDocument();
+    expect(
+      within(resumen()).getByRole('link', { name: /Continuar con la compra/ }),
+    ).toBeInTheDocument();
   });
 });

@@ -2,7 +2,7 @@
 
 import { ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import type { Disponibilidad } from '@/compartido/api/respuestas';
 import { esperarRenovacion, leerEstado } from '@/compartido/sesion/almacen';
@@ -18,30 +18,23 @@ interface CompraProps {
   disponibilidad: Disponibilidad;
   /** Lo que se agrega («Shampoo reparador 300 ml»), para la etiqueta de la cantidad. */
   articulo: string;
-  /**
-   * Mínimo de unidades del precio profesional (SCRUM-109): la cantidad empieza y no baja de ahí,
-   * y se avisa bajo el selector. Sin él, desde 1.
-   */
-  minimo?: number;
 }
 
 /**
- * Cantidad y «Agregar al carrito» (Figma › 03 Ficha 2007:754; peluquero 2007:1779). Agotado:
- * sin cantidad y el botón deshabilitado. Al agregar (SCRUM-116), el backend vuelve a comprobar
- * el stock y el mínimo; si lo rechaza, su mensaje queda bajo el botón. Sin sesión, se guarda en
+ * Cantidad y «Agregar al carrito» (Figma › 03 Ficha 2007:754), desde 1 unidad para todos: el
+ * peluquero no tiene mínimo (SCRUM-146). Agotado: sin cantidad y el botón deshabilitado. Al
+ * agregar (SCRUM-116), el backend vuelve a comprobar el stock; si lo rechaza, su mensaje queda bajo el botón. Sin sesión, se guarda en
  * el carrito del navegador sin revisar el stock (SCRUM-117): el carrito lo marca al cotizar.
  */
 export const Compra = ({
   articuloId,
   disponibilidad,
   articulo,
-  minimo,
 }: CompraProps) => {
-  const [cantidad, setCantidad] = useState(minimo ?? 1);
+  const [cantidad, setCantidad] = useState(1);
   // Cubre también la espera de la sesión, antes de que empiece la mutación (sin doble clic)
   const [esperando, setEsperando] = useState(false);
   const [errorNavegador, setErrorNavegador] = useState<string | null>(null);
-  const idMinimo = useId();
   const router = useRouter();
   const agregarAlCarrito = useAgregarAlCarrito();
 
@@ -83,8 +76,6 @@ export const Compra = ({
     <Cantidad
       valor={cantidad}
       onCambiar={setCantidad}
-      minimo={minimo}
-      descripcion={minimo ? idMinimo : undefined}
       etiqueta={`Cantidad de ${articulo}`}
       className="h-14 self-start"
     />
@@ -97,7 +88,7 @@ export const Compra = ({
       disabled={esperando || agregarAlCarrito.isPending}
       onClick={() => void agregar()}
     >
-      {minimo ? `Agregar ${cantidad} al carrito` : 'Agregar al carrito'}
+      Agregar al carrito
       <ArrowRight aria-hidden />
     </Button>
   );
@@ -107,23 +98,6 @@ export const Compra = ({
       {mensajeError}
     </p>
   );
-
-  if (minimo) {
-    // Peluquero (Figma 2007:1779): la cantidad con el aviso del mínimo y el botón debajo
-    return (
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2">
-          {selector}
-          <p id={idMinimo} className="texto-pequeno text-texto-secundario">
-            Para tu precio profesional, el mínimo es {minimo} unidades de este
-            formato.
-          </p>
-        </div>
-        {boton}
-        {error}
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col gap-3">

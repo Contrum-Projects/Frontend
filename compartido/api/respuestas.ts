@@ -783,8 +783,6 @@ export interface LineaCarrito {
   aLaVenta: boolean;
   /** Si el stock cubre la cantidad (no dice cuántas hay); `null` si ya no se vende. */
   stockSuficiente: boolean | null;
-  /** E5-H4 · Solo el profesional: un formato bajo el mínimo de unidades. */
-  bajoMinimo: boolean;
   /** Mientras sea `true` no se puede crear el pedido: hay que quitarlo o ajustarlo. */
   impideCrearPedido: boolean;
 }

@@ -10,7 +10,6 @@ import { Button } from '@/compartido/ui/button';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { urlProducto } from '@/tienda/diseno/enlaces';
 import { InsigniaExclusivo } from '@/tienda/profesional/insignias';
-import { MINIMO_PROFESIONAL } from '@/tienda/profesional/precio';
 
 /** Ancho de la foto según dónde va la tarjeta, para que next/image baje el tamaño justo. */
 export const TAMANOS_FOTO = {
@@ -98,8 +97,8 @@ export const TarjetaProducto = ({
 
 /**
  * Precio mayorista con IVA (Figma 5:127; en celular, la tarjeta compacta 9:776 dice solo
- * «Profesional»). Puede encogerse: a 360 px la columna mide unos 70 px. El mínimo lo exige el
- * backend al comprar.
+ * «Profesional»). Puede encogerse: a 360 px la columna mide unos 70 px. Sin mínimo de unidades
+ * (SCRUM-146).
  */
 const PrecioProfesional = ({ precio }: { precio: number }) => (
   <div className="flex min-w-0 flex-1 flex-col">
@@ -113,15 +112,12 @@ const PrecioProfesional = ({ precio }: { precio: number }) => (
       <span className="hidden md:inline">Precio profesional</span>
     </p>
     <p className="texto-precio text-marca-profundo">{formatearPesos(precio)}</p>
-    <p className="texto-leyenda text-texto-secundario">
-      Mín. {MINIMO_PROFESIONAL} unidades
-    </p>
   </div>
 );
 
 /**
  * Misma estructura y altura que la tarjeta, para que no salte al cargar. `profesional`: con las
- * tres líneas del precio profesional.
+ * dos líneas del precio profesional.
  */
 export const TarjetaProductoEsqueleto = ({
   profesional = false,
@@ -142,7 +138,6 @@ export const TarjetaProductoEsqueleto = ({
         <div className="flex flex-col gap-1">
           <Skeleton className="h-4 w-20" />
           <Skeleton className="h-6 w-20" />
-          <Skeleton className="h-4 w-24" />
         </div>
       ) : (
         <Skeleton className="h-6 w-20" />

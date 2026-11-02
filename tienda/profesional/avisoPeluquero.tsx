@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { ROLES } from '@/compartido/sesion/roles';
 import { useSesion } from '@/compartido/sesion/sesion';
 import { RUTAS } from '@/tienda/diseno/enlaces';
-import { MINIMO_PROFESIONAL } from './precio';
 
 /**
  * «¿Eres peluquero?» bajo la compra (Figma › 03 Ficha 2007:767): lleva a solicitar la
@@ -37,8 +36,7 @@ export const AvisoPeluquero = () => {
           ¿Eres peluquero?
         </h2>
         <p className="texto-pequeno text-texto-principal">
-          Verifica tu cuenta y compra este producto a precio profesional, desde{' '}
-          {MINIMO_PROFESIONAL} unidades.
+          Verifica tu cuenta y compra este producto a precio profesional.
         </p>
       </div>
       <Link

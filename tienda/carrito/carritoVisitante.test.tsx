@@ -110,7 +110,6 @@ const linea = (extra: Partial<LineaCarrito> = {}): LineaCarrito => ({
   subtotal: 25980,
   aLaVenta: true,
   stockSuficiente: true,
-  bajoMinimo: false,
   impideCrearPedido: false,
   ...extra,
 });

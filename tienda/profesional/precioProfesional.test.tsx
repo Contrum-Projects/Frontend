@@ -164,7 +164,7 @@ const OXIDANTE_EXCLUSIVO: ProductoDetalleProfesional = {
 };
 
 describe('SCRUM-109 · Precio profesional en la ficha', () => {
-  it('E2-H4 FE · precio profesional: el peluquero ve el mayorista, «c/u · IVA incluido» y la cantidad desde 3', async () => {
+  it('E2-H4 FE · precio profesional: el peluquero ve el mayorista, «c/u · IVA incluido» y la cantidad desde 1', async () => {
     const api = simular({
       '/api/tienda/productos/10': {
         visitante: () => json(SHAMPOO),
@@ -182,45 +182,19 @@ describe('SCRUM-109 · Precio profesional en la ficha', () => {
     expect(screen.queryByText('$12.990')).not.toBeInTheDocument();
     // Los formatos también con el mayorista
     expect(screen.getByRole('radio', { name: '1 L, $19.490' })).toBeVisible();
-    // La cantidad empieza en 3 y no baja de ahí
+    // Sin mínimo de unidades (SCRUM-146): la cantidad empieza en 1, como para todos
     const cantidad = screen.getByRole('group', {
       name: 'Cantidad de Shampoo reparador 300 ml',
     });
-    expect(within(cantidad).getByText('3')).toBeInTheDocument();
+    expect(within(cantidad).getByText('1')).toBeInTheDocument();
+    expect(screen.queryByText(/mínimo/)).not.toBeInTheDocument();
     expect(
-      within(cantidad).getByRole('button', { name: 'Quitar una unidad' }),
-    ).toBeDisabled();
-    expect(
-      screen.getByText(
-        'Para tu precio profesional, el mínimo es 3 unidades de este formato.',
-      ),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'Agregar 3 al carrito' }),
+      screen.getByRole('button', { name: 'Agregar al carrito' }),
     ).toBeInTheDocument();
     // Sin subtotal: el frontend no calcula montos (decisión del 30-10-2026)
     expect(screen.queryByText('Subtotal')).not.toBeInTheDocument();
     expect(screen.queryByText('¿Eres peluquero?')).not.toBeInTheDocument();
     expect(conToken(api)).toEqual(['/api/tienda/productos/10']);
-  });
-
-  it('E2-H4 FE · precio profesional: al subir la cantidad, el botón dice cuántas agrega', async () => {
-    simular({
-      '/api/tienda/productos/10': {
-        visitante: () => json(SHAMPOO),
-        profesional: () => json(SHAMPOO_PROFESIONAL),
-      },
-    });
-    iniciarComo('profesional');
-    renderizar(await FichaProducto({ id: '10' }));
-
-    await userEvent.click(
-      await screen.findByRole('button', { name: 'Agregar una unidad' }),
-    );
-
-    expect(
-      screen.getByRole('button', { name: 'Agregar 4 al carrito' }),
-    ).toBeInTheDocument();
   });
 
   it('E2-H4 FE · exclusivos: el peluquero abre un exclusivo por su enlace (el servidor, como visitante, recibe 404)', async () => {
@@ -373,7 +347,7 @@ describe('SCRUM-109 · Exclusivos y mayorista en los listados', () => {
     const [general, exclusivo] = screen.getAllByRole('article');
     expect(within(general).getByText('$8.490')).toBeInTheDocument();
     expect(within(general).getByText('Precio profesional')).toBeInTheDocument();
-    expect(within(general).getByText('Mín. 3 unidades')).toBeInTheDocument();
+    expect(within(general).queryByText(/Mín\./)).not.toBeInTheDocument();
     expect(
       within(general).queryByText('Exclusivo profesional'),
     ).not.toBeInTheDocument();
@@ -456,7 +430,7 @@ describe('SCRUM-109 · Visitante o cliente', () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Verifica tu cuenta y compra este producto a precio profesional, desde 3 unidades.',
+        'Verifica tu cuenta y compra este producto a precio profesional.',
       ),
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Verificar' })).toHaveAttribute(

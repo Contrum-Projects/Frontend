@@ -81,3 +81,4 @@ consultasProfesional.ts`). Mientras la sesión es «desconocida» se ve lo del s
   profesional (la semilla solo crea la de administrador). Lo cubren las pruebas.
 - Nuevo: `compartido/ui/noEncontrado.tsx` (la página 404, compartida con `app/not-found.tsx`) y
   `tienda/catalogo/marcoFila.tsx` (la fila del inicio sin lecturas del servidor).
+- **02-11-2026:** el mínimo de 3 unidades se eliminó (backend SCRUM-146); lo quitó SCRUM-119.
