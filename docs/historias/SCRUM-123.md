@@ -34,6 +34,8 @@ Estado al 02-11-2026 (`compartido/api/esquema.d.ts` de `main`): **Sí**.
 
 ## Notas de trabajo
 
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/45 (En revisión desde el 02-11-2026).
+
 **Alcance:** la cotización y el costo en el resumen (criterio 1) se hicieron en SCRUM-122; aquí
 queda su prueba con la clave E7-H2, el aviso «sin respuesta» y la dirección nueva.
 
