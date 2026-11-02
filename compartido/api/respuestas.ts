@@ -835,3 +835,75 @@ export interface DatosFacturacionCuenta {
   correoFacturacion: string | null;
   comuna: UbicacionOficial & { region: UbicacionOficial };
 }
+
+/** Un artículo del pedido (E8-H1). Backend `src/modulos/pedidos/mis-pedidos.service.ts` › `LineaPedido`. */
+export interface LineaPedido {
+  articuloId: number;
+  tipo: 'formato' | 'pack';
+  nombre: string;
+  nombreFormato: string | null;
+  imagen: string | null;
+  cantidad: number;
+  /** Precio unitario con IVA que se cobró. */
+  precioUnitario: number;
+  subtotal: number;
+}
+
+/** El despacho del pedido (E7-H2). Backend `mis-pedidos.service.ts` › `EnvioPedido`. */
+export interface EnvioPedido {
+  servicio: string;
+  /** Costo del envío con IVA, en pesos. */
+  costo: number;
+  estado: string;
+  codigoSeguimiento: string | null;
+  /** `AAAA-MM-DD`. */
+  fechaEstimada: string | null;
+  destinatario: string;
+  telefonoContacto: string | null;
+  calle: string;
+  numero: string;
+  referencia: string | null;
+  comuna: UbicacionOficial;
+}
+
+/**
+ * POST /api/pedidos y GET /api/pedidos/{codigoPedido} (E5-H3, E8-H1, SCRUM-45 y SCRUM-57).
+ * Backend `src/modulos/pedidos/mis-pedidos.service.ts` › `DetallePedidoCuenta`. TODO(SCRUM-118):
+ * el Swagger no declara la respuesta; pedido a SCRUM-45.
+ */
+export interface DetallePedidoCuenta {
+  codigoPublico: string;
+  /** ISO 8601. */
+  fechaPedido: string;
+  estado: string;
+  /** Hasta cuándo se puede pagar (ISO 8601); solo mientras espera el pago. */
+  pagarHasta: string | null;
+  tipoEntrega: 'despacho' | 'retiro';
+  tipoDocumento: 'boleta' | 'factura';
+  porcentajeIva: number;
+  montos: { neto: number; iva: number; total: number };
+  items: LineaPedido[];
+  /** `null` si es retiro en tienda. */
+  envio: EnvioPedido | null;
+  /** La factura: `null` si pidió boleta o está cancelado (E9-H4). */
+  documento: {
+    tipo: 'factura';
+    estado: string;
+    folio: number | null;
+    fechaEmision: string | null;
+  } | null;
+  idTransaccionPago: string | null;
+  historial: { estado: string; fecha: string }[];
+}
+
+/**
+ * POST /api/pedidos/{codigoPedido}/pago (E6-H1, SCRUM-47). Backend
+ * `src/modulos/pagos/pagar-pedido.service.ts` › `CobroIniciado`. TODO(SCRUM-118): el Swagger no
+ * declara la respuesta; pedido a SCRUM-47.
+ */
+export interface CobroIniciado {
+  /** Adonde se lleva al comprador para pagar en Mercado Pago. */
+  urlPago: string;
+  /** ISO 8601. */
+  pagarHasta: string;
+}

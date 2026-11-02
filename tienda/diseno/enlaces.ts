@@ -18,8 +18,7 @@ export const RUTAS = {
   recuperarContrasena: '/recuperar-contrasena',
   panel: '/panel',
   carrito: '/carrito',
-  // TODO(SCRUM-118): checkout
-  checkout: '/checkout' as Route,
+  checkout: '/checkout',
   misDatos: '/cuenta/datos',
   direcciones: '/cuenta/datos#direcciones',
   facturacion: '/cuenta/facturacion',

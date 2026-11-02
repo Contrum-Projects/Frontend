@@ -17,7 +17,14 @@ import { RUTAS } from '@/tienda/diseno/enlaces';
  *
  * Es comodidad para la persona: los datos de la cuenta los protege el backend.
  */
-export function CuentaProtegida({ children }: { children: ReactNode }) {
+export function CuentaProtegida({
+  children,
+  esqueleto = <EsqueletoCuenta />,
+}: {
+  children: ReactNode;
+  /** Lo que se ve mientras se sabe si hay sesión; por defecto, el de «Mi cuenta». */
+  esqueleto?: ReactNode;
+}) {
   const { estado, cierre } = useSesion();
   const router = useRouter();
   const ruta = usePathname();
@@ -44,7 +51,7 @@ export function CuentaProtegida({ children }: { children: ReactNode }) {
     }
   }, [estado, cierre, ruta, router]);
 
-  if (estado !== 'activa') return <EsqueletoCuenta />;
+  if (estado !== 'activa') return esqueleto;
   return children;
 }
 
