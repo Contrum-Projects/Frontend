@@ -40,6 +40,8 @@ backend.
 
 ## Notas de trabajo
 
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/43 (En revisión desde el 02-11-2026).
+
 **Alcance (acordado el 02-11-2026):**
 
 - Esta historia hace la base del checkout: retiro en tienda ya elegido y comprobante electrónico.
