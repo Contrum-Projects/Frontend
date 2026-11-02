@@ -52,3 +52,4 @@ ya existen (E5-H1). Con SCRUM-146 (PR #49 del backend), las líneas **ya no trae
   (`bajoMinimo`)»: quedó desactualizada con SCRUM-146.
 - **Para el equipo:** Figma (03 Ficha 2007:1779, tarjeta 5:107, 04 Carrito con aviso) y RF-05.10
   siguen mostrando el mínimo; conviene actualizarlos.
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/41
