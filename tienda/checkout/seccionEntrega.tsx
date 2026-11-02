@@ -50,6 +50,7 @@ export const SeccionEntrega = ({ entrega }: { entrega: Entrega }) => {
                 {entrega.ofreceRetiro && (
                   <Button
                     variant="contorno"
+                    className="max-md:min-h-10"
                     onClick={() => {
                       entrega.cambiarTipo('retiro');
                       // El aviso desaparece: el foco pasa a la opción que quedó elegida
