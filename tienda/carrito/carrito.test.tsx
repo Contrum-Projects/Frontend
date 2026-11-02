@@ -7,7 +7,6 @@ import type { paths } from '@/compartido/api/esquema';
 import type { CarritoCuenta, LineaCarrito } from '@/compartido/api/respuestas';
 import {
   guardarSesion,
-  olvidarSesion,
   reiniciarParaPruebas,
 } from '@/compartido/sesion/almacen';
 import type { Rol } from '@/compartido/sesion/roles';
@@ -163,26 +162,6 @@ describe('SCRUM-116 · Agregar desde la ficha', () => {
       'No hay stock suficiente para esa cantidad.',
     );
     expect(toast.success).not.toHaveBeenCalled();
-  });
-
-  it('E5-H1 FE · sin sesión: «Agregar al carrito» lleva a ingresar y de vuelta a la ficha (hasta SCRUM-117)', async () => {
-    act(() => olvidarSesion());
-    const escrituras = simularBackend({});
-    const persona = userEvent.setup();
-    mostrar(
-      <Compra
-        articuloId={11}
-        disponibilidad="disponible"
-        articulo="Shampoo reparador 300 ml"
-      />,
-    );
-
-    await persona.click(
-      screen.getByRole('button', { name: /Agregar al carrito/ }),
-    );
-
-    expect(push).toHaveBeenCalledWith('/ingresar?volver=%2Fproductos%2F10');
-    expect(escrituras).toEqual([]);
   });
 });
 
@@ -384,18 +363,6 @@ describe('SCRUM-116 · Pantalla del carrito', () => {
       'href',
       '/catalogo',
     );
-  });
-
-  it('E5-H1 FE · sin sesión: invita a ingresar y volver al carrito (hasta SCRUM-117)', () => {
-    act(() => olvidarSesion());
-    const escrituras = simularBackend({});
-    mostrar(<PantallaCarrito />);
-
-    expect(screen.getByRole('link', { name: 'Ingresar' })).toHaveAttribute(
-      'href',
-      '/ingresar?volver=%2Fcarrito',
-    );
-    expect(escrituras).toEqual([]);
   });
 
   it('E5-H1 FE · un error del servidor no muestra detalles y ofrece reintentar', async () => {

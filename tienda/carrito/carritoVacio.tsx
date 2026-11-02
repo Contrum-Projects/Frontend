@@ -6,9 +6,9 @@ import { RUTAS } from '@/tienda/diseno/enlaces';
 
 /**
  * Tarjeta centrada con ícono, título, texto y un botón (Figma › 04b Carrito vacío 2060:2231, tarjeta 2060:2381).
- * Sirve para el carrito vacío y para pedir que ingrese al visitante.
+ * Hoy la usa el carrito vacío.
  */
-export const AvisoCarrito = ({
+const AvisoCarrito = ({
   titulo,
   texto,
   accion,

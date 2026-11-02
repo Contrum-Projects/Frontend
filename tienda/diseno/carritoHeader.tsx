@@ -2,19 +2,29 @@
 
 import { ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
+import { useSesion } from '@/compartido/sesion/sesion';
+import { useCarritoNavegador } from '@/tienda/carrito/carritoNavegador';
 import { contarUnidades, useCarrito } from '@/tienda/carrito/consultasCarrito';
 import { textoUnidades } from '@/tienda/carrito/textos';
 import { RUTAS } from './enlaces';
 
 /**
  * Carrito del header (Figma › Componentes › Header 6:107) con el contador de unidades del
- * carrito de la cuenta (SCRUM-116, decisión del 01-11-2026). Sin sesión, sin artículos o con
- * una cuenta del personal, solo el ícono. La píldora va sobre el ícono para que el enlace siga
+ * carrito de la cuenta (SCRUM-116, decisión del 01-11-2026) o, sin sesión, del carrito del
+ * navegador (SCRUM-117), sin pedir nada a la API. Sin artículos o con una cuenta del personal,
+ * solo el ícono. La píldora va sobre el ícono para que el enlace siga
  * midiendo 40 px y quepa en el header del celular (360 px).
  */
 export const CarritoHeader = () => {
+  const { estado } = useSesion();
   const { data } = useCarrito();
-  const unidades = data ? contarUnidades(data) : 0;
+  const navegador = useCarritoNavegador();
+  const unidades =
+    estado === 'anonima'
+      ? navegador.reduce((suma, a) => suma + a.cantidad, 0)
+      : data
+        ? contarUnidades(data)
+        : 0;
   return (
     <Link
       href={RUTAS.carrito}

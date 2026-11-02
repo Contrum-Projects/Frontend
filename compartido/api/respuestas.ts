@@ -801,3 +801,24 @@ export interface CarritoCuenta {
   /** Hay artículos y ninguno impide crear el pedido. */
   puedeCrearPedido: boolean;
 }
+
+/**
+ * Un artículo del navegador que no entró tal cual al unir (E5-H2, SCRUM-44). Backend
+ * `src/modulos/carrito/carrito.service.ts` › `AjusteUnionCarrito` (`AJUSTES_UNION_CARRITO`).
+ * No informa cuántas unidades hay.
+ */
+export interface AjusteUnionCarrito {
+  articuloId: number;
+  /** Se descartó (`no_disponible`, `agotado`) o quedó en el tope de 999 (`cantidad_ajustada`). */
+  motivo: 'no_disponible' | 'agotado' | 'cantidad_ajustada';
+}
+
+/**
+ * POST /api/carrito/unir (E5-H2, SCRUM-44): el carrito de la cuenta ya unido y lo que se ajustó.
+ * Backend `carrito.service.ts` › `CarritoUnido`. TODO(SCRUM-117): el Swagger no declara la
+ * respuesta; pedido a SCRUM-44.
+ */
+export interface CarritoUnido extends CarritoCuenta {
+  /** Vacío si todo entró tal cual. */
+  ajustes: AjusteUnionCarrito[];
+}

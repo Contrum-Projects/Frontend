@@ -9,13 +9,19 @@ import { cn } from '@/compartido/lib/utils';
 import { Button } from '@/compartido/ui/button';
 import { Cantidad } from '@/compartido/ui/cantidad';
 import { MINIMO_PROFESIONAL } from '@/tienda/profesional/precio';
-import {
-  MAXIMO_UNIDADES_LINEA,
-  useCambiarCantidad,
-  useQuitarDelCarrito,
-} from './consultasCarrito';
+import { MAXIMO_UNIDADES_LINEA } from './carritoNavegador';
 
-interface LineaCarritoProps {
+/** Qué hacer con la línea: en el carrito de la cuenta o en el del navegador. */
+export interface AccionesLinea {
+  /** La cantidad que se muestra (la que se está guardando, si hay un cambio en curso). */
+  cantidad: number;
+  ocupada: boolean;
+  error: Error | null;
+  onCambiar: (cantidad: number) => void;
+  onQuitar: () => void;
+}
+
+export interface LineaCarritoProps {
   linea: Linea;
   /** El backend ya entrega el mayorista: solo cambia la etiqueta del precio unitario. */
   profesional: boolean;
@@ -24,18 +30,20 @@ interface LineaCarritoProps {
 /**
  * Un artículo del carrito (Figma › 04 Carrito 2008:872; celular 2008:1927). Si el backend lo
  * marca con `impideCrearPedido`, la tarjeta lleva el borde de aviso y el texto que explica qué
- * ajustar (criterio 2). Mientras se guarda un cambio, sus controles esperan; si el backend lo
- * rechaza, su mensaje queda junto a la línea y la cantidad vuelve a la guardada.
+ * ajustar (criterio 2 de SCRUM-116). Mientras se guarda un cambio, sus controles esperan; si el
+ * backend lo rechaza, su mensaje queda junto a la línea y la cantidad vuelve a la guardada.
+ * Sin nombre (al cotizar sin sesión un artículo que no se vende), «Producto no disponible».
  */
-export function LineaCarrito({ linea, profesional }: LineaCarritoProps) {
-  const cambiar = useCambiarCantidad(linea.articuloId);
-  const quitar = useQuitarDelCarrito(linea.articuloId);
+export function LineaCarrito({
+  linea,
+  profesional,
+  acciones,
+}: LineaCarritoProps & { acciones: AccionesLinea }) {
   const idAviso = useId();
-  const ocupada = cambiar.isPending || quitar.isPending;
-  const cantidad = cambiar.isPending ? cambiar.variables : linea.cantidad;
+  const { cantidad, ocupada, error } = acciones;
   const aviso = avisoDeLinea(linea);
-  const error = cambiar.error ?? quitar.error;
-  const titulo = [linea.nombre, linea.nombreFormato].filter(Boolean).join(' ');
+  const nombre = linea.nombre || 'Producto no disponible';
+  const titulo = [nombre, linea.nombreFormato].filter(Boolean).join(' ');
 
   return (
     <li
@@ -50,7 +58,7 @@ export function LineaCarrito({ linea, profesional }: LineaCarritoProps) {
         <FotoLinea imagen={linea.imagen} />
         <div className="flex min-w-0 flex-col gap-1">
           <h2 className="texto-cuerpo-fuerte text-texto-principal md:titulo-h3">
-            {linea.nombre}
+            {nombre}
           </h2>
           {linea.nombreFormato && (
             <p className="texto-pequeno text-texto-secundario">
@@ -64,19 +72,24 @@ export function LineaCarrito({ linea, profesional }: LineaCarritoProps) {
             />
           )}
         </div>
-        <div className="col-span-2 col-start-1 row-start-2 md:col-span-1 md:col-start-3 md:row-start-1">
-          <ControlCantidad
-            linea={linea}
-            cantidad={cantidad}
-            titulo={titulo}
-            descripcion={aviso ? idAviso : undefined}
-            deshabilitada={ocupada}
-            onCambiar={(valor) => cambiar.mutate(valor)}
-          />
-        </div>
-        <div className="col-start-3 row-start-2 justify-self-end md:col-start-4 md:row-start-1">
-          <Subtotal subtotal={linea.subtotal} />
-        </div>
+        {/* Un artículo que ya no se vende no tiene cantidad ni subtotal: sin fila vacía */}
+        {linea.aLaVenta && (
+          <div className="col-span-2 col-start-1 row-start-2 md:col-span-1 md:col-start-3 md:row-start-1">
+            <ControlCantidad
+              linea={linea}
+              cantidad={cantidad}
+              titulo={titulo}
+              descripcion={aviso ? idAviso : undefined}
+              deshabilitada={ocupada}
+              onCambiar={acciones.onCambiar}
+            />
+          </div>
+        )}
+        {linea.subtotal !== null && (
+          <div className="col-start-3 row-start-2 justify-self-end md:col-start-4 md:row-start-1">
+            <Subtotal subtotal={linea.subtotal} />
+          </div>
+        )}
         <Button
           type="button"
           variant="ghost"
@@ -84,7 +97,7 @@ export function LineaCarrito({ linea, profesional }: LineaCarritoProps) {
           aria-label={`Quitar ${titulo} del carrito`}
           aria-describedby={aviso ? idAviso : undefined}
           disabled={ocupada}
-          onClick={() => quitar.mutate()}
+          onClick={acciones.onQuitar}
           className="col-start-3 row-start-1 -mt-2 -mr-2 justify-self-end md:col-start-5 md:m-0"
         >
           <Trash2 aria-hidden />
