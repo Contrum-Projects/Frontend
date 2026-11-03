@@ -6,11 +6,20 @@ import { Skeleton } from '@/compartido/ui/skeleton';
 import { CuentaProtegida } from '@/tienda/cuenta/cuentaProtegida';
 import { urlPedido } from '@/tienda/diseno/enlaces';
 import { ErrorProfesional } from '@/tienda/profesional/errorProfesional';
-import { leerPagoId, useRegresoPago, type RegresoPago } from './consultasPago';
+import {
+  esperaConfirmacion,
+  leerPagoId,
+  resolverResultado,
+  useRegresoPago,
+  useSeguimientoPedido,
+} from './consultasPago';
+import { PagoAprobado } from './pagoAprobado';
 import { PagoNoCompletado } from './pagoNoCompletado';
+import { PagoPendiente } from './pagoPendiente';
+import { PedidoCancelado } from './pedidoCancelado';
 
 /**
- * /pedidos/[codigo]/pago (SCRUM-120): adonde Mercado Pago devuelve al comprador, apruebe o no
+ * /pedidos/[codigo]/pago (SCRUM-120 y SCRUM-121): adonde Mercado Pago devuelve al comprador, apruebe o no
  * (lo fija el backend con `URL_TIENDA`). Solo con sesión: sin ella lleva a ingresar y vuelve
  * aquí con el mismo id de pago. Lee la consulta en el navegador: va dentro de <Suspense>.
  */
@@ -22,21 +31,15 @@ export function PantallaRegresoPago({ codigo }: { codigo: string }) {
 
   return (
     <DisenoPago>
-      <CuentaProtegida esqueleto={<EsqueletoPago />} volver={volver}>
+      <CuentaProtegida
+        esqueleto={<EsqueletoPago conResumen={pagoId !== null} />}
+        volver={volver}
+      >
         <Regreso codigo={codigo} pagoId={pagoId} />
       </CuentaProtegida>
     </DisenoPago>
   );
 }
-
-/**
- * E6-H1, criterio 3 · El pedido ya está pagado, o el pago quedó aprobado o en proceso: lleva al
- * detalle del pedido. Cancelado o vencido, también (SCRUM-121 mostrará esos resultados aquí).
- */
-const vaAlDetalle = ({ estadoPago, pedido }: RegresoPago) =>
-  estadoPago === 'aprobado' ||
-  estadoPago === 'pendiente' ||
-  pedido.estado !== 'pendiente_pago';
 
 const Regreso = ({
   codigo,
@@ -47,13 +50,22 @@ const Regreso = ({
 }) => {
   const router = useRouter();
   const consulta = useRegresoPago(codigo, pagoId);
-  const alDetalle = consulta.data ? vaAlDetalle(consulta.data) : false;
+  const regreso = consulta.data;
+  const seguimiento = useSeguimientoPedido(
+    regreso && esperaConfirmacion(regreso) ? regreso.pedido : null,
+  );
+  const pedido = seguimiento.data ?? regreso?.pedido;
+  const resultado = regreso
+    ? resolverResultado(regreso, seguimiento.data)
+    : null;
 
+  // E6-H1, criterio 3 · El pedido ya estaba pagado (sin un pago en este regreso): al detalle
   useEffect(() => {
-    if (alDetalle) router.replace(urlPedido(codigo));
-  }, [alDetalle, codigo, router]);
+    if (resultado === 'detalle') router.replace(urlPedido(codigo));
+  }, [resultado, codigo, router]);
 
-  if (consulta.isPending || alDetalle) return <EsqueletoPago />;
+  if (consulta.isPending || resultado === 'detalle')
+    return <EsqueletoPago conResumen={pagoId !== null} />;
   if (consulta.isError) {
     return (
       <div className="flex flex-col items-start gap-4">
@@ -67,35 +79,66 @@ const Regreso = ({
       </div>
     );
   }
-  return (
-    <PagoNoCompletado
-      pedido={consulta.data.pedido}
-      rechazado={consulta.data.estadoPago === 'rechazado'}
-      aviso={consulta.data.aviso}
-      onPedidoCambio={() => void consulta.refetch()}
-    />
-  );
+  if (!pedido) return <EsqueletoPago />;
+  // Cada resultado con su `key`: al cambiar, el título nuevo recibe el foco
+  switch (resultado) {
+    case 'aprobado':
+      return <PagoAprobado key={resultado} pedido={pedido} />;
+    case 'pendiente':
+      return (
+        <PagoPendiente
+          key={resultado}
+          pedido={pedido}
+          error={seguimiento.isError ? seguimiento.error.message : undefined}
+          onReintentar={() => void seguimiento.refetch()}
+        />
+      );
+    case 'cancelado':
+      return <PedidoCancelado key={resultado} pedido={pedido} />;
+    default:
+      return (
+        <PagoNoCompletado
+          key={resultado}
+          pedido={pedido}
+          rechazado={consulta.data.estadoPago === 'rechazado'}
+          aviso={consulta.data.aviso}
+          onPedidoCambio={() => void consulta.refetch()}
+        />
+      );
+  }
 };
 
-/** El contenido mide 720 px en escritorio (Figma › 09 Resultado del pago), más el gutter. */
+/** El contenido mide 720 px en escritorio (Figma › 09 Resultado del pago), más 16 px por lado. */
 export const DisenoPago = ({ children }: { children: ReactNode }) => (
-  <main className="mx-auto flex w-full max-w-184 flex-col px-4 pt-8 pb-12 md:pt-12 md:pb-16">
+  <main className="mx-auto flex w-full max-w-188 flex-col px-4 pt-8 pb-12 md:pt-12 md:pb-16">
     {children}
   </main>
 );
 
 /**
- * Con la misma estructura que «El pago no se completó»: ícono, título y mensaje juntos, la
- * reserva (dos líneas a 360 px) y los botones, para que el pie no salte al cargar.
+ * Con la estructura del resultado más probable, para que el pie no salte al cargar: ícono,
+ * título y mensaje juntos; con un id de pago, el resumen y el aviso de «Recibimos tu pago»; sin
+ * él, la reserva de «El pago no se completó» (dos líneas a 360 px). Luego los botones.
  */
-export const EsqueletoPago = () => (
+export const EsqueletoPago = ({
+  conResumen = false,
+}: {
+  conResumen?: boolean;
+}) => (
   <div aria-hidden className="flex flex-col gap-4 md:gap-6">
     <Skeleton className="size-14 rounded-full" />
     <div className="flex flex-col gap-4 md:gap-2">
       <Skeleton className="h-9 w-72 max-w-full md:h-12" />
       <Skeleton className="h-10 w-full md:h-6" />
     </div>
-    <Skeleton className="h-16 w-full rounded-md md:h-12" />
+    {conResumen ? (
+      <>
+        <Skeleton className="h-64 w-full rounded-xl" />
+        <Skeleton className="h-16 w-full rounded-lg md:h-12" />
+      </>
+    ) : (
+      <Skeleton className="h-16 w-full rounded-md md:h-12" />
+    )}
     <div className="flex flex-col gap-4 md:flex-row md:gap-3">
       <Skeleton className="h-14 w-full rounded-full md:w-48" />
       <Skeleton className="h-14 w-full rounded-full md:w-48" />

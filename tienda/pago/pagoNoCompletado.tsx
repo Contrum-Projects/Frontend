@@ -1,16 +1,16 @@
 'use client';
 
 import { ClockIcon, XIcon } from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useRef } from 'react';
 import { ErrorDeApi } from '@/compartido/api/errores';
 import type { DetallePedidoCuenta } from '@/compartido/api/respuestas';
 import { formatearHora } from '@/compartido/formato/fecha';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
-import { Button, buttonVariants } from '@/compartido/ui/button';
+import { Button } from '@/compartido/ui/button';
 import { Spinner } from '@/compartido/ui/spinner';
 import { RUTAS } from '@/tienda/diseno/enlaces';
+import { AccionesResultado, EnlaceResultado } from './accionesResultado';
 import { useReintentarPago } from './consultasPago';
+import { EncabezadoResultado } from './encabezadoResultado';
 
 /**
  * E6-H1, criterio 2 · «El pago no se completó» (Figma › 09 Resultado del pago, celular
@@ -26,20 +26,18 @@ export const PagoNoCompletado = ({
   pedido: DetallePedidoCuenta;
   /** Mercado Pago rechazó el pago (lo confirmó el backend): solo entonces no hubo cargo. */
   rechazado: boolean;
-  /** Mensaje del backend cuando el pago no corresponde al pedido (400). */
+  /**
+   * Mensaje del backend cuando el pago no corresponde al pedido o no es por su total (400): pudo
+   * haber un cargo, así que no se ofrece pagar de nuevo (SCRUM-121).
+   */
   aviso?: string;
   /** El backend dijo que el pedido ya no se puede pagar (pagado, cancelado, vencido): se relee. */
   onPedidoCambio: () => void;
 }) => {
   const reintento = useReintentarPago(pedido.codigoPublico);
-  const encabezado = useRef<HTMLHeadingElement>(null);
   const error = reintento.error;
   // Tras el cobro se sale a Mercado Pago: el botón sigue deshabilitado hasta irse
   const yendoAPagar = reintento.isPending || reintento.isSuccess;
-
-  useEffect(() => {
-    encabezado.current?.focus();
-  }, []);
 
   const reintentar = () =>
     reintento.mutate(undefined, {
@@ -51,23 +49,15 @@ export const PagoNoCompletado = ({
 
   return (
     <div className="flex flex-col items-start gap-4 md:gap-6">
-      <div className="flex size-14 items-center justify-center rounded-full bg-estado-aviso-fondo text-estado-aviso-texto">
-        <XIcon aria-hidden className="size-6.5" />
-      </div>
-      <div className="flex flex-col gap-4 md:gap-2">
-        <h1
-          ref={encabezado}
-          tabIndex={-1}
-          className="titulo-h2 text-texto-principal outline-none md:titulo-h1"
-        >
-          El pago no se completó
-        </h1>
-        <p className="texto-pequeno text-texto-secundario md:texto-cuerpo">
-          {rechazado
-            ? `Mercado Pago no aprobó el pago del pedido ${pedido.codigoPublico}. No se hizo ningún cargo.`
-            : `El pago del pedido ${pedido.codigoPublico} no se completó.`}
-        </p>
-      </div>
+      <EncabezadoResultado
+        tono="aviso"
+        icono={<XIcon aria-hidden className="size-6.5" strokeWidth={1.75} />}
+        titulo="El pago no se completó"
+      >
+        {rechazado
+          ? `Mercado Pago no aprobó el pago del pedido ${pedido.codigoPublico}. No se hizo ningún cargo.`
+          : `El pago del pedido ${pedido.codigoPublico} no se completó.`}
+      </EncabezadoResultado>
       {aviso && (
         <Alert variant="aviso">
           <AlertDescription>{aviso}</AlertDescription>
@@ -94,28 +84,28 @@ export const PagoNoCompletado = ({
           <AlertDescription>{error.message}</AlertDescription>
         </Alert>
       )}
-      <div className="flex w-full flex-col gap-4 md:w-auto md:flex-row md:gap-3">
-        <Button
-          size="grande"
-          className="w-full md:w-auto"
-          disabled={yendoAPagar}
-          aria-busy={yendoAPagar}
-          onClick={reintentar}
-        >
-          Intentar de nuevo
-          {yendoAPagar && <Spinner aria-hidden className="size-5" />}
-        </Button>
-        <Link
-          href={RUTAS.catalogo}
-          className={buttonVariants({
-            variant: 'contorno',
-            size: 'grande',
-            className: 'w-full md:w-auto',
-          })}
-        >
+      <AccionesResultado>
+        {/* Con el aviso pudo haber un cargo: pagar otra vez podría cobrar dos veces */}
+        {aviso ? (
+          <EnlaceResultado href={RUTAS.misPedidos}>
+            Ver mis pedidos
+          </EnlaceResultado>
+        ) : (
+          <Button
+            size="grande"
+            className="w-full md:w-auto"
+            disabled={yendoAPagar}
+            aria-busy={yendoAPagar}
+            onClick={reintentar}
+          >
+            Intentar de nuevo
+            {yendoAPagar && <Spinner aria-hidden className="size-5" />}
+          </Button>
+        )}
+        <EnlaceResultado href={RUTAS.catalogo} contorno>
           Seguir comprando
-        </Link>
-      </div>
+        </EnlaceResultado>
+      </AccionesResultado>
     </div>
   );
 };

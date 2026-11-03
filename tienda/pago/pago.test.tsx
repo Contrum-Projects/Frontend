@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { act } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -11,8 +11,12 @@ import {
   reiniciarParaPruebas,
 } from '@/compartido/sesion/almacen';
 import type { Rol } from '@/compartido/sesion/roles';
-import { responder, simularBackend } from '@/tienda/cuenta/cuentaDePrueba';
-import { leerPagoId } from './consultasPago';
+import {
+  DATOS,
+  responder,
+  simularBackend,
+} from '@/tienda/cuenta/cuentaDePrueba';
+import { INTERVALO_SEGUIMIENTO_MS, leerPagoId } from './consultasPago';
 import { PantallaRegresoPago } from './pantallaRegresoPago';
 
 // El cliente con una base absoluta, para que `fetch` reciba un Request (como en checkout.test)
@@ -39,6 +43,7 @@ const navegacion = vi.hoisted(() => ({ irAUrlExterna: vi.fn() }));
 vi.mock('@/tienda/checkout/navegacion', () => navegacion);
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.clearAllMocks();
   reiniciarParaPruebas();
@@ -50,6 +55,7 @@ const URL_PAGO = 'https://www.mercadopago.cl/checkout/v1/redirect?pref_id=2';
 const CONFIRMAR = `POST /api/pedidos/${CODIGO}/pago/confirmar`;
 const PAGAR = `POST /api/pedidos/${CODIGO}/pago`;
 const PEDIDO_GET = `GET /api/pedidos/${CODIGO}`;
+const MIS_DATOS = 'GET /api/cuentas/yo';
 
 const pedido = (
   extra: Partial<DetallePedidoCuenta> = {},
@@ -273,22 +279,6 @@ describe('Regreso desde Mercado Pago (SCRUM-120)', () => {
     );
   });
 
-  it('E6-H1 FE · pago aprobado al volver: lleva al detalle del pedido', async () => {
-    simularBackend({
-      [CONFIRMAR]: () =>
-        responder({
-          estadoPago: 'aprobado',
-          pedido: pedido({ estado: 'pagado', pagarHasta: null }),
-        }),
-    });
-    iniciarSesion();
-    mostrar('payment_id=1234567890');
-
-    await waitFor(() =>
-      expect(replace).toHaveBeenCalledWith(`/cuenta/pedidos/${CODIGO}`),
-    );
-  });
-
   it('E6-H1 FE · pedido ya pagado: si al reintentar el backend dice que ya no se puede pagar, relee el pedido', async () => {
     let pagado = false;
     simularBackend({
@@ -358,6 +348,310 @@ describe('Regreso desde Mercado Pago (SCRUM-120)', () => {
       screen.getByText('El pago indicado no corresponde a este pedido.'),
     ).toBeInTheDocument();
     expect(screen.queryByText(/no se hizo ningún cargo/i)).toBeNull();
+    // SCRUM-121 · Pudo haber un cargo: no ofrece pagar de nuevo
+    expect(
+      screen.queryByRole('button', { name: /intentar de nuevo/i }),
+    ).toBeNull();
+    expect(
+      screen.getByRole('link', { name: 'Ver mis pedidos' }),
+    ).toHaveAttribute('href', '/cuenta/pedidos');
+  });
+});
+
+const pagado = (extra: Partial<DetallePedidoCuenta> = {}) =>
+  pedido({
+    estado: 'pagado',
+    pagarHasta: null,
+    tipoEntrega: 'despacho',
+    montos: { neto: 24345, iva: 4625, total: 28970 },
+    items: [
+      {
+        articuloId: 11,
+        tipo: 'formato',
+        nombre: 'Shampoo reparador',
+        nombreFormato: '300 ml',
+        imagen: null,
+        cantidad: 1,
+        precioUnitario: 12990,
+        subtotal: 12990,
+      },
+      {
+        articuloId: 12,
+        tipo: 'formato',
+        nombre: 'Acondicionador hidratante',
+        nombreFormato: '300 ml',
+        imagen: null,
+        cantidad: 1,
+        precioUnitario: 11990,
+        subtotal: 11990,
+      },
+    ],
+    envio: {
+      servicio: 'Chilexpress',
+      costo: 3990,
+      estado: 'pendiente',
+      codigoSeguimiento: null,
+      fechaEstimada: null,
+      destinatario: 'Camila Rojas',
+      telefonoContacto: null,
+      calle: 'Irarrázaval',
+      numero: '1000',
+      referencia: null,
+      comuna: { codigoCut: '13120', nombre: 'Ñuñoa' },
+    },
+    ...extra,
+  });
+
+const tituloAprobado = () =>
+  screen.findByRole('heading', { level: 1, name: 'Recibimos tu pago' });
+const tituloPendiente = () =>
+  screen.findByRole('heading', {
+    level: 1,
+    name: 'Estamos confirmando tu pago',
+  });
+const tituloCancelado = () =>
+  screen.findByRole('heading', { level: 1, name: 'Tu pedido se canceló' });
+
+/** Avanza el reloj simulado lo que tarda una lectura del seguimiento. */
+const esperarSeguimiento = (veces = 1) =>
+  act(() => vi.advanceTimersByTimeAsync(INTERVALO_SEGUIMIENTO_MS * veces));
+
+describe('Resultado del pago (SCRUM-121)', () => {
+  it('E6-H2 FE · pago aprobado: muestra el resumen del pedido y que la confirmación llega al correo', async () => {
+    simularBackend({
+      [CONFIRMAR]: () =>
+        responder({ estadoPago: 'aprobado', pedido: pagado() }),
+      [MIS_DATOS]: () => responder(DATOS),
+    });
+    iniciarSesion();
+    mostrar('payment_id=1234567890');
+
+    expect(await tituloAprobado()).toHaveFocus();
+    expect(
+      await screen.findByText(
+        `Pedido ${CODIGO} · Te enviamos la confirmación a camila@correo.cl`,
+      ),
+    ).toBeInTheDocument();
+    const productos = screen.getByRole('list', {
+      name: 'Productos del pedido',
+    });
+    expect(within(productos).getAllByRole('listitem')).toHaveLength(2);
+    expect(
+      within(productos).getByRole('listitem', { name: 'Shampoo reparador' }),
+    ).toHaveTextContent('300 ml · 1 unidad$12.990');
+    // Montos del backend, sin calcular nada
+    expect(screen.getByText('Despacho a Ñuñoa').nextSibling).toHaveTextContent(
+      '$3.990',
+    );
+    expect(screen.getByText('Total pagado').nextSibling).toHaveTextContent(
+      '$28.970',
+    );
+    expect(
+      screen.getByText(
+        'Te avisaremos por correo cuando tu pedido salga a despacho.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Ver mi pedido' })).toHaveAttribute(
+      'href',
+      `/cuenta/pedidos/${CODIGO}`,
+    );
+    expect(
+      screen.getByRole('link', { name: 'Seguir comprando' }),
+    ).toHaveAttribute('href', '/catalogo');
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it('E6-H2 FE · pago aprobado con retiro en tienda: sin despacho y avisa cuando esté listo para retiro', async () => {
+    simularBackend({
+      [CONFIRMAR]: () =>
+        responder({
+          estadoPago: 'aprobado',
+          // Sin líneas (caso borde): solo el total
+          pedido: pagado({ tipoEntrega: 'retiro', envio: null, items: [] }),
+        }),
+      // Sin el correo de la cuenta, la frase igual, sin la dirección
+      [MIS_DATOS]: () => responder({ message: 'Error' }, 500),
+    });
+    iniciarSesion();
+    mostrar('payment_id=1234567890');
+
+    await tituloAprobado();
+    expect(
+      screen.getByText(
+        `Pedido ${CODIGO} · Te enviamos la confirmación a tu correo`,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/despacho a/i)).toBeNull();
+    expect(
+      screen.queryByRole('list', { name: 'Productos del pedido' }),
+    ).toBeNull();
+    expect(screen.getByText('Total pagado').nextSibling).toHaveTextContent(
+      '$28.970',
+    );
+    expect(
+      screen.getByText(
+        'Te avisaremos por correo cuando tu pedido esté listo para retiro.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('E6-H2 FE · pago pendiente: muestra el estado pendiente, sin ofrecer pagar de nuevo', async () => {
+    simularBackend({
+      [CONFIRMAR]: () =>
+        responder({ estadoPago: 'pendiente', pedido: pedido() }),
+      [PEDIDO_GET]: () => responder(pedido()),
+    });
+    iniciarSesion();
+    mostrar('payment_id=1234567890');
+
+    expect(await tituloPendiente()).toHaveFocus();
+    expect(
+      screen.getByText(
+        `Aún no se confirma el pago del pedido ${CODIGO}. Esta pantalla se actualiza sola cuando llegue.`,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /intentar de nuevo/i }),
+    ).toBeNull();
+    expect(
+      screen.getByRole('link', { name: 'Ver mis pedidos' }),
+    ).toHaveAttribute('href', '/cuenta/pedidos');
+  });
+
+  it('E6-H2 FE · pago pendiente: la pantalla se actualiza al llegar la confirmación', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    let confirmado = false;
+    let lecturas = 0;
+    const escrituras = simularBackend({
+      [CONFIRMAR]: () =>
+        responder({ estadoPago: 'pendiente', pedido: pedido() }),
+      [PEDIDO_GET]: () => {
+        lecturas += 1;
+        return responder(confirmado ? pagado() : pedido());
+      },
+      [MIS_DATOS]: () => responder(DATOS),
+    });
+    iniciarSesion();
+    mostrar('payment_id=1234567890');
+
+    await tituloPendiente();
+    await esperarSeguimiento();
+    // Aún sin confirmar: lo releyó y sigue pendiente
+    await waitFor(() => expect(lecturas).toBe(1));
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Estamos confirmando tu pago',
+    );
+
+    confirmado = true;
+    await esperarSeguimiento();
+
+    expect(await tituloAprobado()).toHaveFocus();
+    expect(screen.getByText('Total pagado').nextSibling).toHaveTextContent(
+      '$28.970',
+    );
+    // Confirmar el pago se pide una sola vez: después solo se lee el pedido
+    expect(escrituras.map((e) => e.peticion)).toEqual([CONFIRMAR]);
+    expect(replace).not.toHaveBeenCalled();
+
+    // Ya confirmado, deja de leer el pedido
+    await esperarSeguimiento(3);
+    expect(lecturas).toBe(2);
+  });
+
+  it('E6-H2 FE · pago pendiente: si leer el pedido falla, deja de insistir y permite reintentar', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    let lecturas = 0;
+    simularBackend({
+      [CONFIRMAR]: () =>
+        responder({ estadoPago: 'pendiente', pedido: pedido() }),
+      [PEDIDO_GET]: () => {
+        lecturas += 1;
+        return responder({ message: 'Error' }, 500);
+      },
+    });
+    iniciarSesion();
+    mostrar('payment_id=1234567890');
+
+    await tituloPendiente();
+    // La lectura y sus dos reintentos (una falla pasajera no detiene el seguimiento)
+    await esperarSeguimiento(2);
+
+    // Un 5xx no muestra detalles: el mensaje genérico
+    expect(
+      await screen.findByText(
+        'No pudimos completar la acción. Intenta de nuevo en unos minutos.',
+      ),
+    ).toBeInTheDocument();
+    expect(lecturas).toBe(3);
+    // Ya no promete actualizarse sola
+    expect(screen.queryByText(/se actualiza sola/i)).toBeNull();
+    await esperarSeguimiento(3);
+    expect(lecturas).toBe(3);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
+    await waitFor(() => expect(lecturas).toBeGreaterThan(3));
+  });
+
+  it('E6-H2 FE · pago pendiente: si el plazo vence mientras espera, informa la cancelación', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    let vencido = false;
+    simularBackend({
+      [CONFIRMAR]: () =>
+        responder({ estadoPago: 'pendiente', pedido: pedido() }),
+      [PEDIDO_GET]: () =>
+        responder(
+          vencido
+            ? pedido({ estado: 'cancelado', pagarHasta: null })
+            : pedido(),
+        ),
+    });
+    iniciarSesion();
+    mostrar('payment_id=1234567890');
+
+    await tituloPendiente();
+    vencido = true;
+    await esperarSeguimiento();
+
+    expect(await tituloCancelado()).toHaveFocus();
+  });
+
+  it('E6-H2 FE · pedido vencido: al abrir el pedido, la pantalla informa la cancelación', async () => {
+    simularBackend({
+      [PEDIDO_GET]: () =>
+        responder(pedido({ estado: 'cancelado', pagarHasta: null })),
+    });
+    iniciarSesion();
+    mostrar();
+
+    expect(await tituloCancelado()).toHaveFocus();
+    expect(
+      screen.getByText(
+        `El pedido ${CODIGO} se canceló. Si aún quieres los productos, puedes volver a comprarlos.`,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Ir al catálogo' }),
+    ).toHaveAttribute('href', '/catalogo');
+    expect(
+      screen.getByRole('link', { name: 'Ver mis pedidos' }),
+    ).toHaveAttribute('href', '/cuenta/pedidos');
+    expect(
+      screen.queryByRole('button', { name: /intentar de nuevo/i }),
+    ).toBeNull();
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it('E6-H2 FE · pedido vencido: si el backend responde 409 al confirmar, lee el pedido e informa la cancelación', async () => {
+    simularBackend({
+      [CONFIRMAR]: () =>
+        responder({ message: 'El pedido fue cancelado.' }, 409),
+      [PEDIDO_GET]: () =>
+        responder(pedido({ estado: 'cancelado', pagarHasta: null })),
+    });
+    iniciarSesion();
+    mostrar('payment_id=1234567890');
+
+    await tituloCancelado();
   });
 });
 
