@@ -17,9 +17,9 @@ Como un Cliente, necesito ver el resultado de mi pago, con la finalidad de saber
 
 ## Pantalla y ruta
 
-| Pantalla              | Escritorio         | Celular                                 | Ruta                                        |
-| --------------------- | ------------------ | --------------------------------------- | ------------------------------------------- |
-| 09 Resultado del pago | aprobado 2034:2106 | rechazado 2034:4663 · vencido 2034:4725 | `/pago/resultado` (retorno de Mercado Pago) |
+| Pantalla              | Escritorio         | Celular                                 | Ruta                                               |
+| --------------------- | ------------------ | --------------------------------------- | -------------------------------------------------- |
+| 09 Resultado del pago | aprobado 2034:2106 | rechazado 2034:4663 · vencido 2034:4725 | `/pedidos/[codigo]/pago` (retorno de Mercado Pago) |
 
 Nodos del archivo de Figma `cl9eSD5YBS9qF4tQXJki68` (ver `docs/pantallas.md`).
 
