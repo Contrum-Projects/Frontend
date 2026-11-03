@@ -39,6 +39,8 @@ Estado al 03-11-2026: **Sí**, con el backend real (sin rutas simuladas).
 
 **03-11-2026**
 
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/46 (depende de #45, SCRUM-123).
+
 - **Rama:** sale de `SCRUM-123-cotizacion-direccion`, porque el checkout depende de esa historia
   y su PR #45 aún no se integra. El PR de esta historia muestra también esos commits hasta que
   se integre.
