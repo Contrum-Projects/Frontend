@@ -37,6 +37,8 @@ export interface RegresoPago {
 export const CLAVES_PAGO = {
   regreso: (codigoPedido: string, pagoId: string | null) =>
     ['pago', codigoPedido, pagoId] as const,
+  seguimiento: (codigoPedido: string) =>
+    ['pago', codigoPedido, 'seguimiento'] as const,
 } as const;
 
 const leerPedido = (codigoPedido: string) =>
@@ -85,6 +87,67 @@ export const useRegresoPago = (codigoPedido: string, pagoId: string | null) =>
       return { estadoPago: null, pedido: await leerPedido(codigoPedido) };
     },
   });
+
+/** Cada cuánto se vuelve a leer el pedido mientras Mercado Pago no confirma el pago. */
+export const INTERVALO_SEGUIMIENTO_MS = 5000;
+
+const ESPERA_PAGO = 'pendiente_pago';
+
+/**
+ * E6-H2, criterio 2 · Con el pago pendiente, lee el pedido cada 5 s hasta que deja de esperar
+ * el pago: la notificación de Mercado Pago lo deja pagado, o la tarea de vencimiento lo cancela
+ * (E6-H3). Lo decide el backend; aquí solo se mira el estado. `pedido` es lo que ya se leyó al
+ * volver (`null` mientras no hay que seguirlo). Sin reintentos: la lectura siguiente reemplaza a
+ * la que falló.
+ */
+export const useSeguimientoPedido = (pedido: DetallePedidoCuenta | null) =>
+  useQuery({
+    queryKey: CLAVES_PAGO.seguimiento(pedido?.codigoPublico ?? ''),
+    enabled: pedido !== null,
+    retry: false,
+    initialData: pedido ?? undefined,
+    initialDataUpdatedAt: () => Date.now(),
+    staleTime: INTERVALO_SEGUIMIENTO_MS,
+    refetchInterval: (consulta) =>
+      consulta.state.data?.estado === ESPERA_PAGO
+        ? INTERVALO_SEGUIMIENTO_MS
+        : false,
+    queryFn: () => leerPedido(pedido?.codigoPublico ?? ''),
+  });
+
+/** Qué muestra la pantalla al volver de Mercado Pago, con el pedido que corresponde. */
+export type ResultadoPago =
+  'aprobado' | 'pendiente' | 'cancelado' | 'no_completado' | 'detalle';
+
+/** Este regreso trajo un pago que Mercado Pago aprobó o aún procesa. */
+const trajoPago = ({ estadoPago }: RegresoPago) =>
+  estadoPago === 'aprobado' || estadoPago === 'pendiente';
+
+/** Trajo un pago y el pedido sigue esperándolo: hay que seguirlo hasta que se confirme. */
+export const esperaConfirmacion = (regreso: RegresoPago) =>
+  trajoPago(regreso) && regreso.pedido.estado === ESPERA_PAGO;
+
+/**
+ * E6-H1 y E6-H2 · Decide la pantalla con lo que dijo el backend. `actual` es el pedido releído
+ * mientras el pago estaba pendiente.
+ * - Cancelado (venció el plazo o lo canceló la tienda): «Tu pedido se canceló».
+ * - Ya no espera el pago y este regreso trajo el pago (aprobado, o pendiente que se confirmó):
+ *   «Recibimos tu pago». Sin ese pago (volvió sin id, o 400/409), el pedido ya estaba pagado: va
+ *   al detalle (E6-H1, criterio 3).
+ * - Sigue esperando el pago: pendiente si trajo un pago que Mercado Pago aún procesa; si no
+ *   (rechazado o volvió sin pagar), no se completó.
+ */
+export const resolverResultado = (
+  regreso: RegresoPago,
+  actual?: DetallePedidoCuenta,
+): ResultadoPago => {
+  const pedido = actual ?? regreso.pedido;
+  if (pedido.estado === 'cancelado') return 'cancelado';
+  if (pedido.estado !== ESPERA_PAGO) {
+    return trajoPago(regreso) ? 'aprobado' : 'detalle';
+  }
+  return trajoPago(regreso) ? 'pendiente' : 'no_completado';
+};
 
 /**
  * E6-H1, criterio 2 · «Intentar de nuevo»: pide otra vez el cobro del mismo pedido y lleva a Mercado Pago.

@@ -1,15 +1,14 @@
 'use client';
 
 import { ArrowRight, Clock } from 'lucide-react';
-import Image from 'next/image';
 import { useId } from 'react';
-import type { CarritoCuenta, LineaCarrito } from '@/compartido/api/respuestas';
+import type { CarritoCuenta } from '@/compartido/api/respuestas';
 import { formatearPesos } from '@/compartido/formato/moneda';
 import { Button } from '@/compartido/ui/button';
 import { Separator } from '@/compartido/ui/separator';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { Spinner } from '@/compartido/ui/spinner';
-import { textoUnidades } from '@/tienda/carrito/textos';
+import { LineaResumen } from './lineaResumen';
 
 interface ResumenCheckoutProps {
   carrito: CarritoCuenta;
@@ -142,39 +141,4 @@ const MontoDespacho = ({
     );
   }
   return formatearPesos(despacho[monto]);
-};
-
-/** Foto de 56 px, nombre, formato y unidades, y el subtotal con IVA. */
-const LineaResumen = ({ linea }: { linea: LineaCarrito }) => {
-  const idNombre = useId();
-  return (
-    <li aria-labelledby={idNombre} className="flex items-center gap-3">
-      <div className="relative size-14 shrink-0 overflow-hidden rounded-md bg-marca-acento-suave">
-        {linea.imagen && (
-          <Image
-            src={linea.imagen}
-            alt=""
-            fill
-            sizes="56px"
-            className="object-cover"
-          />
-        )}
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <p id={idNombre} className="texto-etiqueta text-texto-principal">
-          {linea.nombre}
-        </p>
-        <p className="texto-leyenda text-texto-secundario">
-          {[linea.nombreFormato, textoUnidades(linea.cantidad)]
-            .filter(Boolean)
-            .join(' · ')}
-        </p>
-      </div>
-      {linea.subtotal !== null && (
-        <p className="texto-etiqueta text-texto-principal tabular-nums">
-          {formatearPesos(linea.subtotal)}
-        </p>
-      )}
-    </li>
-  );
 };
