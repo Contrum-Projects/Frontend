@@ -47,7 +47,7 @@ Total: 53 historias, 185 puntos.
 | 29  | [SCRUM-122](SCRUM-122.md) · E7-H1 · Elegir despacho o retiro en el checkout              | 2   | En revisión | Sí      | SCRUM-50 | SCRUM-118            |
 | 30  | [SCRUM-123](SCRUM-123.md) · E7-H2 · Cotización del despacho y dirección                  | 3   | En revisión | Sí      | SCRUM-51 | SCRUM-122            |
 | 31  | [SCRUM-125](SCRUM-125.md) · E9-H1 · Interruptor «Necesito factura» en el checkout        | 2   | En revisión | Sí      | SCRUM-53 | SCRUM-118, SCRUM-126 |
-| 32  | [SCRUM-120](SCRUM-120.md) · E6-H1 · Botón de pago y regreso desde Mercado Pago           | 3   | En curso    | Sí      | SCRUM-47 | SCRUM-118            |
+| 32  | [SCRUM-120](SCRUM-120.md) · E6-H1 · Botón de pago y regreso desde Mercado Pago           | 3   | En revisión | Sí      | SCRUM-47 | SCRUM-118            |
 | 33  | [SCRUM-121](SCRUM-121.md) · E6-H2 · Pantalla de resultado del pago                       | 3   | Por hacer   | No      | SCRUM-48 | SCRUM-120            |
 | 34  | [SCRUM-129](SCRUM-129.md) · E8-H1 · Mis pedidos y detalle del pedido                     | 3   | Por hacer   | No      | SCRUM-57 | SCRUM-97             |
 | 35  | [SCRUM-124](SCRUM-124.md) · E7-H3 · Seguimiento del despacho en el pedido                | 2   | Por hacer   | No      | SCRUM-52 | SCRUM-129            |
