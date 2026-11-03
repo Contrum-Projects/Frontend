@@ -49,7 +49,7 @@ export const EncabezadoResultado = ({
         >
           {titulo}
         </h1>
-        <p className="texto-pequeno text-texto-secundario md:texto-cuerpo">
+        <p className="texto-pequeno wrap-break-word text-texto-secundario md:texto-cuerpo">
           {children}
         </p>
       </div>

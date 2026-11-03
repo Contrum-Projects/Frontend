@@ -97,18 +97,20 @@ const ESPERA_PAGO = 'pendiente_pago';
  * E6-H2, criterio 2 · Con el pago pendiente, lee el pedido cada 5 s hasta que deja de esperar
  * el pago: la notificación de Mercado Pago lo deja pagado, o la tarea de vencimiento lo cancela
  * (E6-H3). Lo decide el backend; aquí solo se mira el estado. `pedido` es lo que ya se leyó al
- * volver (`null` mientras no hay que seguirlo). Sin reintentos: la lectura siguiente reemplaza a
- * la que falló.
+ * volver (`null` mientras no hay que seguirlo). Una lectura que falla se reintenta dos veces (una
+ * falla pasajera de red no la detiene); si sigue fallando, se detiene y no insiste.
  */
 export const useSeguimientoPedido = (pedido: DetallePedidoCuenta | null) =>
   useQuery({
     queryKey: CLAVES_PAGO.seguimiento(pedido?.codigoPublico ?? ''),
     enabled: pedido !== null,
-    retry: false,
+    retry: 2,
     initialData: pedido ?? undefined,
     initialDataUpdatedAt: () => Date.now(),
     staleTime: INTERVALO_SEGUIMIENTO_MS,
+    // Si la lectura falla, deja de insistir: la pantalla muestra el error y «Reintentar»
     refetchInterval: (consulta) =>
+      consulta.state.status !== 'error' &&
       consulta.state.data?.estado === ESPERA_PAGO
         ? INTERVALO_SEGUIMIENTO_MS
         : false,

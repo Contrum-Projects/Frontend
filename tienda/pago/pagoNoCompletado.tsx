@@ -26,7 +26,10 @@ export const PagoNoCompletado = ({
   pedido: DetallePedidoCuenta;
   /** Mercado Pago rechazó el pago (lo confirmó el backend): solo entonces no hubo cargo. */
   rechazado: boolean;
-  /** Mensaje del backend cuando el pago no corresponde al pedido (400). */
+  /**
+   * Mensaje del backend cuando el pago no corresponde al pedido o no es por su total (400): pudo
+   * haber un cargo, así que no se ofrece pagar de nuevo (SCRUM-121).
+   */
   aviso?: string;
   /** El backend dijo que el pedido ya no se puede pagar (pagado, cancelado, vencido): se relee. */
   onPedidoCambio: () => void;
@@ -48,7 +51,7 @@ export const PagoNoCompletado = ({
     <div className="flex flex-col items-start gap-4 md:gap-6">
       <EncabezadoResultado
         tono="aviso"
-        icono={<XIcon aria-hidden className="size-6.5" />}
+        icono={<XIcon aria-hidden className="size-6.5" strokeWidth={1.75} />}
         titulo="El pago no se completó"
       >
         {rechazado
@@ -82,16 +85,23 @@ export const PagoNoCompletado = ({
         </Alert>
       )}
       <AccionesResultado>
-        <Button
-          size="grande"
-          className="w-full md:w-auto"
-          disabled={yendoAPagar}
-          aria-busy={yendoAPagar}
-          onClick={reintentar}
-        >
-          Intentar de nuevo
-          {yendoAPagar && <Spinner aria-hidden className="size-5" />}
-        </Button>
+        {/* Con el aviso pudo haber un cargo: pagar otra vez podría cobrar dos veces */}
+        {aviso ? (
+          <EnlaceResultado href={RUTAS.misPedidos}>
+            Ver mis pedidos
+          </EnlaceResultado>
+        ) : (
+          <Button
+            size="grande"
+            className="w-full md:w-auto"
+            disabled={yendoAPagar}
+            aria-busy={yendoAPagar}
+            onClick={reintentar}
+          >
+            Intentar de nuevo
+            {yendoAPagar && <Spinner aria-hidden className="size-5" />}
+          </Button>
+        )}
         <EnlaceResultado href={RUTAS.catalogo} contorno>
           Seguir comprando
         </EnlaceResultado>

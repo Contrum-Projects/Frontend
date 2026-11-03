@@ -33,7 +33,10 @@ export const LineaResumen = ({ linea }: { linea: DatosLineaResumen }) => {
         )}
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <p id={idNombre} className="texto-etiqueta text-texto-principal">
+        <p
+          id={idNombre}
+          className="texto-etiqueta wrap-break-word text-texto-principal"
+        >
           {linea.nombre}
         </p>
         <p className="texto-leyenda text-texto-secundario">

@@ -27,8 +27,9 @@ export const PagoAprobado = ({ pedido }: { pedido: DetallePedidoCuenta }) => {
         icono={<CheckIcon aria-hidden className="size-7" strokeWidth={1.75} />}
         titulo="Recibimos tu pago"
       >
-        Pedido {pedido.codigoPublico}
-        {correo && ` · Te enviamos la confirmación a ${correo}`}
+        {/* Sin el correo de la cuenta (cargando o con error), la frase igual: no salta al llegar */}
+        Pedido {pedido.codigoPublico} · Te enviamos la confirmación a{' '}
+        {correo ?? 'tu correo'}
       </EncabezadoResultado>
       <ResumenPagado pedido={pedido} />
       <p className="flex w-full items-center gap-3 rounded-lg bg-marca-acento-suave px-4 py-3 texto-pequeno text-marca-profundo">

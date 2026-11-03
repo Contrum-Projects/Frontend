@@ -348,6 +348,13 @@ describe('Regreso desde Mercado Pago (SCRUM-120)', () => {
       screen.getByText('El pago indicado no corresponde a este pedido.'),
     ).toBeInTheDocument();
     expect(screen.queryByText(/no se hizo ningún cargo/i)).toBeNull();
+    // SCRUM-121 · Pudo haber un cargo: no ofrece pagar de nuevo
+    expect(
+      screen.queryByRole('button', { name: /intentar de nuevo/i }),
+    ).toBeNull();
+    expect(
+      screen.getByRole('link', { name: 'Ver mis pedidos' }),
+    ).toHaveAttribute('href', '/cuenta/pedidos');
   });
 });
 
@@ -459,17 +466,28 @@ describe('Resultado del pago (SCRUM-121)', () => {
       [CONFIRMAR]: () =>
         responder({
           estadoPago: 'aprobado',
-          pedido: pagado({ tipoEntrega: 'retiro', envio: null }),
+          // Sin líneas (caso borde): solo el total
+          pedido: pagado({ tipoEntrega: 'retiro', envio: null, items: [] }),
         }),
-      // Sin el correo de la cuenta, solo el código del pedido
+      // Sin el correo de la cuenta, la frase igual, sin la dirección
       [MIS_DATOS]: () => responder({ message: 'Error' }, 500),
     });
     iniciarSesion();
     mostrar('payment_id=1234567890');
 
     await tituloAprobado();
-    expect(screen.getByText(`Pedido ${CODIGO}`)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        `Pedido ${CODIGO} · Te enviamos la confirmación a tu correo`,
+      ),
+    ).toBeInTheDocument();
     expect(screen.queryByText(/despacho a/i)).toBeNull();
+    expect(
+      screen.queryByRole('list', { name: 'Productos del pedido' }),
+    ).toBeNull();
+    expect(screen.getByText('Total pagado').nextSibling).toHaveTextContent(
+      '$28.970',
+    );
     expect(
       screen.getByText(
         'Te avisaremos por correo cuando tu pedido esté listo para retiro.',
@@ -489,7 +507,7 @@ describe('Resultado del pago (SCRUM-121)', () => {
     expect(await tituloPendiente()).toHaveFocus();
     expect(
       screen.getByText(
-        `Mercado Pago aún no confirma el pago del pedido ${CODIGO}. Esta pantalla se actualiza sola cuando llegue.`,
+        `Aún no se confirma el pago del pedido ${CODIGO}. Esta pantalla se actualiza sola cuando llegue.`,
       ),
     ).toBeInTheDocument();
     expect(
@@ -540,6 +558,40 @@ describe('Resultado del pago (SCRUM-121)', () => {
     expect(lecturas).toBe(2);
   });
 
+  it('E6-H2 FE · pago pendiente: si leer el pedido falla, deja de insistir y permite reintentar', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    let lecturas = 0;
+    simularBackend({
+      [CONFIRMAR]: () =>
+        responder({ estadoPago: 'pendiente', pedido: pedido() }),
+      [PEDIDO_GET]: () => {
+        lecturas += 1;
+        return responder({ message: 'Error' }, 500);
+      },
+    });
+    iniciarSesion();
+    mostrar('payment_id=1234567890');
+
+    await tituloPendiente();
+    // La lectura y sus dos reintentos (una falla pasajera no detiene el seguimiento)
+    await esperarSeguimiento(2);
+
+    // Un 5xx no muestra detalles: el mensaje genérico
+    expect(
+      await screen.findByText(
+        'No pudimos completar la acción. Intenta de nuevo en unos minutos.',
+      ),
+    ).toBeInTheDocument();
+    expect(lecturas).toBe(3);
+    // Ya no promete actualizarse sola
+    expect(screen.queryByText(/se actualiza sola/i)).toBeNull();
+    await esperarSeguimiento(3);
+    expect(lecturas).toBe(3);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
+    await waitFor(() => expect(lecturas).toBeGreaterThan(3));
+  });
+
   it('E6-H2 FE · pago pendiente: si el plazo vence mientras espera, informa la cancelación', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     let vencido = false;
@@ -574,7 +626,7 @@ describe('Resultado del pago (SCRUM-121)', () => {
     expect(await tituloCancelado()).toHaveFocus();
     expect(
       screen.getByText(
-        `El pedido ${CODIGO} se canceló porque el pago no se completó a tiempo. Si aún quieres los productos, puedes volver a comprarlos.`,
+        `El pedido ${CODIGO} se canceló. Si aún quieres los productos, puedes volver a comprarlos.`,
       ),
     ).toBeInTheDocument();
     expect(
