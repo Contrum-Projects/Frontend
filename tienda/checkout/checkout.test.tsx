@@ -140,7 +140,7 @@ describe('Pantalla de checkout (SCRUM-118)', () => {
     ).toBeInTheDocument();
   });
 
-  it('E5-H3 FE · confirmar: deshabilita el botón mientras se envía y lleva al pago en Mercado Pago', async () => {
+  it('E5-H3 FE · E6-H1 FE · ir a pagar: deshabilita el botón mientras se envía y lleva al pago en Mercado Pago', async () => {
     let soltarPedido: () => void = () => undefined;
     const escrituras: { ruta: string; cuerpo: unknown }[] = [];
     vi.stubGlobal(

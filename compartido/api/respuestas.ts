@@ -909,6 +909,17 @@ export interface CobroIniciado {
 }
 
 /**
+ * POST /api/pedidos/{codigoPedido}/pago/confirmar (E6-H1, SCRUM-47). Backend
+ * `src/modulos/pagos/pagar-pedido.service.ts` › `PagoConfirmado`. TODO(SCRUM-120): el Swagger no
+ * declara la respuesta; pedido a SCRUM-47.
+ */
+export interface PagoConfirmado {
+  /** Lo que informó Mercado Pago, consultado por el backend (nunca el `status` de la URL). */
+  estadoPago: 'aprobado' | 'rechazado' | 'pendiente';
+  pedido: DetallePedidoCuenta;
+}
+
+/**
  * GET /api/despacho/cotizacion?direccionId= (E7-H2, SCRUM-51). Backend
  * `src/modulos/despacho/cotizar-envio.service.ts` › `CotizacionDespacho`. TODO(SCRUM-122): el
  * Swagger no declara la respuesta; pedido a SCRUM-51.

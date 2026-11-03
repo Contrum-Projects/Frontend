@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { api } from '@/compartido/api/cliente';
 import { ErrorDeApi, exigir } from '@/compartido/api/errores';
 import type {
-  CobroIniciado,
   CotizacionDespacho,
   DetallePedidoCuenta,
 } from '@/compartido/api/respuestas';
@@ -14,6 +13,7 @@ import {
   useCuentaCompradora,
 } from '@/tienda/carrito/consultasCarrito';
 import { CLAVES_CUENTA, conErrorDeApi } from '@/tienda/cuenta/consultasCuenta';
+import { pedirCobro } from '@/tienda/pago/cobro';
 import { irAUrlExterna } from './navegacion';
 
 /** Cómo recibe el pedido: retiro, o despacho a una dirección de su cuenta (E7-H1). */
@@ -51,27 +51,6 @@ export const useCotizacionDespacho = (direccionId: number | null) => {
   });
 };
 
-/** Dominios desde donde Mercado Pago sirve el pago (también el de prueba, `sandbox.`). */
-const DOMINIOS_PAGO = ['mercadopago.cl', 'mercadopago.com'] as const;
-
-/**
- * Defensa en profundidad (RNF-05): solo se abre una URL de pago con https y en un dominio de
- * Mercado Pago. Cualquier otra se trata como un error y muestra el mensaje genérico.
- */
-const urlDePagoSegura = (url: string): boolean => {
-  try {
-    const { protocol, hostname } = new URL(url);
-    return (
-      protocol === 'https:' &&
-      DOMINIOS_PAGO.some(
-        (dominio) => hostname === dominio || hostname.endsWith(`.${dominio}`),
-      )
-    );
-  } catch {
-    return false;
-  }
-};
-
 /**
  * E5-H3, criterio 2 · Crea el pedido (`POST /api/pedidos`) y pide la URL de pago
  * (`POST /api/pedidos/{codigo}/pago`) para llevar al comprador a Mercado Pago.
@@ -103,15 +82,7 @@ export const useConfirmarPedido = () => {
         codigoPedido = pedido.codigoPublico;
         setPedidoCreado(codigoPedido);
       }
-      const cobro = await conErrorDeApi(async () =>
-        exigir<CobroIniciado>(
-          await api.POST('/api/pedidos/{codigoPedido}/pago', {
-            params: { path: { codigoPedido } },
-          }),
-        ),
-      );
-      if (!urlDePagoSegura(cobro.urlPago)) throw new ErrorDeApi(0, []);
-      return cobro;
+      return pedirCobro(codigoPedido);
     },
     onSuccess: (cobro) => irAUrlExterna(cobro.urlPago),
     onError: (error) => {
