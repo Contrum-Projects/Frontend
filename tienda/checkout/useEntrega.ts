@@ -7,7 +7,7 @@ import { useCuentaCompradora } from '@/tienda/carrito/consultasCarrito';
 import { useDirecciones } from '@/tienda/cuenta/consultasCuenta';
 import {
   useCotizacionDespacho,
-  type EleccionCheckout,
+  type EleccionEntrega,
 } from './consultasCheckout';
 
 export type TipoEntrega = 'retiro' | 'despacho';
@@ -41,14 +41,10 @@ export const useEntrega = () => {
     conDespacho ? (direccion?.id ?? null) : null,
   );
   // Despacho sin dirección no se envía: nunca se cambia a retiro sin avisar
-  const eleccion: EleccionCheckout | null = !conDespacho
-    ? { tipoEntrega: 'retiro', tipoDocumento: 'boleta' }
+  const eleccion: EleccionEntrega | null = !conDespacho
+    ? { tipoEntrega: 'retiro' }
     : direccion
-      ? {
-          tipoEntrega: 'despacho',
-          direccionId: direccion.id,
-          tipoDocumento: 'boleta',
-        }
+      ? { tipoEntrega: 'despacho', direccionId: direccion.id }
       : null;
 
   return {

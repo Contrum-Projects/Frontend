@@ -53,10 +53,16 @@ export const useDirecciones = ({ activa = true }: { activa?: boolean } = {}) =>
       ),
   });
 
-/** E9-H2 · Los registros activos, del más antiguo al más reciente (orden del backend). */
-export const useDatosFacturacion = () =>
+/**
+ * E9-H2 · Los registros activos, del más antiguo al más reciente (orden del backend).
+ * `activa: false` no pide la lista (en el checkout, hasta que se pide factura).
+ */
+export const useDatosFacturacion = ({
+  activa = true,
+}: { activa?: boolean } = {}) =>
   useQuery({
     queryKey: CLAVES_CUENTA.facturacion,
+    enabled: activa,
     queryFn: () =>
       conErrorDeApi(async () =>
         exigir<DatosFacturacionCuenta[]>(
