@@ -18,7 +18,8 @@ import { useConfirmarPedido } from './consultasCheckout';
 import { PasosCheckout } from './pasosCheckout';
 import { ResumenCheckout } from './resumenCheckout';
 import { SeccionEntrega } from './seccionEntrega';
-import { SeccionDocumento } from './seccionesCheckout';
+import { SeccionDocumento } from './seccionDocumento';
+import { useDocumento } from './useDocumento';
 import { useEntrega, type Entrega } from './useEntrega';
 
 /**
@@ -38,6 +39,7 @@ function Checkout() {
   const consulta = useCarrito();
   const confirmar = useConfirmarPedido();
   const entrega = useEntrega();
+  const documento = useDocumento();
   // El resumen que se confirmó: si el pedido ya se creó, el carrito del backend viene vacío
   const [confirmado, setConfirmado] = useState<CarritoCuenta | null>(null);
 
@@ -96,7 +98,7 @@ function Checkout() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:items-start lg:gap-12">
         <div className="flex flex-col gap-8 md:gap-12">
           <SeccionEntrega entrega={entrega} />
-          <SeccionDocumento />
+          <SeccionDocumento documento={documento} />
         </div>
         <div className="flex flex-col gap-4">
           {error}
@@ -104,13 +106,13 @@ function Checkout() {
             carrito={carrito}
             unidades={contarUnidades(carrito)}
             despacho={despachoDelResumen(entrega)}
-            bloqueado={!entrega.listaParaPagar}
+            bloqueado={!entrega.listaParaPagar || !documento.eleccion}
             // Tras el éxito el navegador ya va hacia Mercado Pago: no se vuelve a habilitar
             enviando={confirmar.isPending || confirmar.isSuccess}
             onPagar={() => {
-              if (!entrega.eleccion) return;
+              if (!entrega.eleccion || !documento.eleccion) return;
               setConfirmado(carrito);
-              confirmar.mutate(entrega.eleccion);
+              confirmar.mutate({ ...entrega.eleccion, ...documento.eleccion });
             }}
           />
         </div>

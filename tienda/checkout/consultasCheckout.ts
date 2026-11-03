@@ -13,16 +13,20 @@ import {
   CLAVES_CARRITO,
   useCuentaCompradora,
 } from '@/tienda/carrito/consultasCarrito';
-import { conErrorDeApi } from '@/tienda/cuenta/consultasCuenta';
+import { CLAVES_CUENTA, conErrorDeApi } from '@/tienda/cuenta/consultasCuenta';
 import { irAUrlExterna } from './navegacion';
 
-/**
- * Lo que el comprador eligió en el checkout: retiro, o despacho a una dirección de su cuenta
- * (E7-H1). El documento hoy es el comprobante; la factura la agrega SCRUM-125.
- */
-export type EleccionCheckout = (
-  { tipoEntrega: 'retiro' } | { tipoEntrega: 'despacho'; direccionId: number }
-) & { tipoDocumento: 'boleta' };
+/** Cómo recibe el pedido: retiro, o despacho a una dirección de su cuenta (E7-H1). */
+export type EleccionEntrega =
+  { tipoEntrega: 'retiro' } | { tipoEntrega: 'despacho'; direccionId: number };
+
+/** El documento: el comprobante de pago, o factura con datos de la cuenta (E9-H1). */
+export type EleccionDocumento =
+  | { tipoDocumento: 'boleta' }
+  | { tipoDocumento: 'factura'; datosFacturacionId: number };
+
+/** Lo que el comprador eligió en el checkout y se envía al crear el pedido. */
+export type EleccionCheckout = EleccionEntrega & EleccionDocumento;
 
 /**
  * E7-H1, criterio 2 · El costo del despacho del carrito a una dirección de la cuenta
@@ -111,14 +115,18 @@ export const useConfirmarPedido = () => {
     },
     onSuccess: (cobro) => irAUrlExterna(cobro.urlPago),
     onError: (error) => {
-      // Stock o artículos cambiaron: el carrito se vuelve a pedir para marcar qué ajustar
-      if (
-        !pedidoCreado &&
-        error instanceof ErrorDeApi &&
-        error.estado === 409
-      ) {
+      if (pedidoCreado || !(error instanceof ErrorDeApi)) return;
+      // Stock o artículos cambiaron: se vuelven a pedir para marcar qué ajustar
+      if (error.estado === 409) {
         void clienteConsultas.invalidateQueries({
           queryKey: CLAVES_CARRITO.carrito(cuenta),
+        });
+      }
+      // E9-H1 · 409 si ya no quedan datos de facturación y 404 si los elegidos se desactivaron
+      // (otra pestaña): la lista se vuelve a pedir y no queda elegido uno que ya no existe
+      if (error.estado === 409 || error.estado === 404) {
+        void clienteConsultas.invalidateQueries({
+          queryKey: CLAVES_CUENTA.facturacion,
         });
       }
     },

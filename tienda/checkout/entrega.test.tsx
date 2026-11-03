@@ -101,6 +101,34 @@ const COTIZACIONES: Record<string, { costo: number; total: number }> = {
 const cotizacionDe = (id: string) =>
   responder({ ...COTIZACIONES[id], totalCarrito: CARRITO.total });
 
+/** La lista oficial que entrega el backend (`/api/territorio`). */
+const REGIONES = [
+  { codigoCut: '05', nombre: 'Valparaíso' },
+  { codigoCut: '13', nombre: 'Metropolitana de Santiago' },
+];
+const COMUNAS: Record<string, { codigoCut: string; nombre: string }[]> = {
+  '05': [{ codigoCut: '05109', nombre: 'Viña del Mar' }],
+  '13': [
+    { codigoCut: '13120', nombre: 'Ñuñoa' },
+    { codigoCut: '13123', nombre: 'Providencia' },
+  ],
+};
+
+/** La dirección que crea el backend desde el checkout (id 12). */
+const DIRECCION_NUEVA = direccion({
+  id: 12,
+  calle: 'Irarrázaval',
+  numero: '3200',
+  referencia: null,
+  esPrincipal: false,
+  comuna: {
+    codigoCut: '13120',
+    nombre: 'Ñuñoa',
+    region: { codigoCut: '13', nombre: 'Metropolitana de Santiago' },
+  },
+});
+COTIZACIONES['12'] = { costo: 4290, total: 30270 };
+
 /** El backend con direcciones y cotización; registra las cotizaciones y las escrituras. */
 const simularBackend = ({
   direcciones = DIRECCIONES,
@@ -111,6 +139,7 @@ const simularBackend = ({
 } = {}) => {
   const cotizadas: string[] = [];
   const escrituras: { ruta: string; cuerpo: unknown }[] = [];
+  let lista = direcciones;
   vi.stubGlobal(
     'fetch',
     vi.fn(async (peticion: Request) => {
@@ -121,9 +150,16 @@ const simularBackend = ({
         escrituras.push({ ruta, cuerpo: texto ? JSON.parse(texto) : null });
       }
       if (ruta === 'GET /api/carrito') return responder(CARRITO);
-      if (ruta === 'GET /api/cuentas/yo/direcciones') {
-        return responder(direcciones);
+      if (ruta === 'GET /api/cuentas/yo/direcciones') return responder(lista);
+      if (ruta === 'POST /api/cuentas/yo/direcciones') {
+        lista = [...lista, DIRECCION_NUEVA];
+        return responder(DIRECCION_NUEVA, 201);
       }
+      if (ruta === 'GET /api/territorio/regiones') return responder(REGIONES);
+      const comunas = /^GET \/api\/territorio\/regiones\/(\w+)\/comunas$/.exec(
+        ruta,
+      );
+      if (comunas) return responder(COMUNAS[comunas[1] ?? ''] ?? []);
       if (ruta === 'GET /api/despacho/cotizacion') {
         const id = url.searchParams.get('direccionId') ?? '';
         cotizadas.push(id);
@@ -364,5 +400,143 @@ describe('Elegir despacho o retiro en el checkout (SCRUM-122)', () => {
     await elegirDespacho();
     expect(await screen.findByRole('alert')).not.toHaveTextContent('boom');
     expect(await botonPagar()).toBeDisabled();
+  });
+});
+
+const SIN_COBERTURA =
+  'Chilexpress no tiene despacho disponible para esta dirección y este pedido. Puedes elegir retiro en tienda.';
+
+describe('Cotización del despacho y dirección (SCRUM-123)', () => {
+  it('E7-H2 FE · cotización: el resumen muestra el costo de Chilexpress y el total que entrega el backend', async () => {
+    const { cotizadas } = simularBackend();
+    mostrar();
+
+    await elegirDespacho();
+    expect(await within(resumen()).findByText('$29.970')).toBeInTheDocument();
+    expect(
+      within(resumen()).getByText('Despacho').parentElement,
+    ).toHaveTextContent('Despacho$3.990');
+    expect(filaTotal()).toHaveTextContent('Total$29.970');
+    expect(cotizadas).toEqual(['7']);
+  });
+
+  // Un 5xx nunca muestra el mensaje del backend: se ve el genérico (compartido/api/errores.ts)
+  it.each([
+    [409, SIN_COBERTURA, SIN_COBERTURA],
+    [
+      503,
+      'No pudimos cotizar el despacho en este momento. Intenta de nuevo o elige retiro en tienda.',
+      'No pudimos completar la acción. Intenta de nuevo en unos minutos.',
+    ],
+  ])(
+    'E7-H2 FE · sin respuesta (%i): lo indica y ofrece el retiro en tienda',
+    async (estado, mensaje, visible) => {
+      const { escrituras } = simularBackend({
+        cotizar: () =>
+          responder({ statusCode: estado, message: mensaje }, estado),
+      });
+      mostrar();
+
+      await elegirDespacho();
+      const aviso = await screen.findByRole('alert');
+      expect(aviso).toHaveTextContent(visible);
+      expect(await botonPagar()).toBeDisabled();
+
+      await userEvent.click(
+        within(aviso).getByRole('button', { name: 'Retirar en tienda' }),
+      );
+      const retiro = screen.getByRole('radio', { name: /retiro en tienda/i });
+      expect(retiro).toBeChecked();
+      expect(retiro).toHaveFocus();
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      expect(filaTotal()).toHaveTextContent('Total$25.980');
+
+      expect(await pedidoEnviado(escrituras)).toMatchObject({
+        tipoEntrega: 'retiro',
+      });
+    },
+  );
+
+  it('E7-H2 FE · sin respuesta: con otros errores (429) solo muestra el mensaje', async () => {
+    simularBackend({
+      cotizar: () =>
+        responder(
+          {
+            statusCode: 429,
+            message: 'Espera un momento antes de volver a cotizar.',
+          },
+          429,
+        ),
+    });
+    mostrar();
+
+    await elegirDespacho();
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Espera un momento antes de volver a cotizar.',
+    );
+    expect(
+      screen.queryByRole('button', { name: 'Retirar en tienda' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('E7-H2 FE · dirección nueva: región y comuna solo de la lista oficial, y la dirección queda elegida y cotizada', async () => {
+    const { cotizadas, escrituras } = simularBackend();
+    mostrar();
+
+    await elegirDespacho();
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Agregar otra dirección' }),
+    );
+    const dialogo = await screen.findByRole('dialog', {
+      name: 'Agregar dirección',
+    });
+
+    // La comuna espera la región, y cada selector muestra solo lo que entrega el backend
+    expect(
+      within(dialogo).getByRole('combobox', { name: /Comuna/ }),
+    ).toBeDisabled();
+    await userEvent.click(
+      await within(dialogo).findByRole('combobox', { name: /Región/ }),
+    );
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole('option').map((opcion) => opcion.textContent),
+      ).toEqual(['Valparaíso', 'Metropolitana de Santiago']),
+    );
+    await userEvent.click(
+      screen.getByRole('option', { name: 'Metropolitana de Santiago' }),
+    );
+    await userEvent.click(
+      await within(dialogo).findByRole('combobox', { name: /Comuna/ }),
+    );
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole('option').map((opcion) => opcion.textContent),
+      ).toEqual(['Ñuñoa', 'Providencia']),
+    );
+    await userEvent.click(screen.getByRole('option', { name: 'Ñuñoa' }));
+
+    await userEvent.type(
+      within(dialogo).getByRole('textbox', { name: /Calle/ }),
+      'Irarrázaval',
+    );
+    await userEvent.type(
+      within(dialogo).getByRole('textbox', { name: /Número/ }),
+      '3200',
+    );
+    await userEvent.click(
+      within(dialogo).getByRole('button', { name: 'Guardar dirección' }),
+    );
+
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
+    expect(escrituras[0]).toMatchObject({
+      ruta: 'POST /api/cuentas/yo/direcciones',
+      cuerpo: { comuna: '13120' },
+    });
+    expect(await screen.findByText('Irarrázaval 3200')).toBeInTheDocument();
+    expect(await within(resumen()).findByText('$30.270')).toBeInTheDocument();
+    expect(cotizadas).toEqual(['7', '12']);
   });
 });

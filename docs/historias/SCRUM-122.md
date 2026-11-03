@@ -70,9 +70,8 @@ nueva con la lista oficial.
 
 **Preguntas abiertas:**
 
-- La dirección que se agrega desde el checkout no queda elegida: el despacho sigue con la
-  principal y hay que pulsar «Cambiar». ¿Debe quedar elegida? Requiere que `DialogoDireccion`
-  devuelva la dirección creada.
+- ~~¿La dirección que se agrega desde el checkout debe quedar elegida?~~ Resuelta en SCRUM-123
+  (02-11-2026): sí, queda elegida y se cotiza.
 - `docs/diseno.md` dice «Blue Express» en el checkout; el courier es Chilexpress (decisión del
   backend del 26-10) y Figma 2010:1088 dice «Chilexpress». Conviene corregir `docs/diseno.md`.
 

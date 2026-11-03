@@ -36,6 +36,8 @@ interface DialogoDireccionProps {
   direccion?: DireccionCuenta;
   abierto: boolean;
   alCambiarAbierto: (abierto: boolean) => void;
+  /** La dirección guardada, cuando la lista ya está al día (el checkout la deja elegida). */
+  alGuardar?: (direccion: DireccionCuenta) => void;
 }
 
 /**
@@ -47,6 +49,7 @@ export function DialogoDireccion({
   direccion,
   abierto,
   alCambiarAbierto,
+  alGuardar,
 }: DialogoDireccionProps) {
   return (
     <Dialog open={abierto} onOpenChange={alCambiarAbierto}>
@@ -64,6 +67,7 @@ export function DialogoDireccion({
           <FormularioDireccion
             direccion={direccion}
             alTerminar={() => alCambiarAbierto(false)}
+            alGuardar={alGuardar}
           />
         )}
       </DialogContent>
@@ -74,9 +78,11 @@ export function DialogoDireccion({
 function FormularioDireccion({
   direccion,
   alTerminar,
+  alGuardar,
 }: {
   direccion?: DireccionCuenta;
   alTerminar: () => void;
+  alGuardar?: (direccion: DireccionCuenta) => void;
 }) {
   const clienteConsultas = useQueryClient();
   const [aviso, setAviso] = useState<string | null>(null);
@@ -94,10 +100,11 @@ function FormularioDireccion({
       : DIRECCION_VACIA,
   });
 
-  const terminar = async () => {
+  const terminar = async (guardada?: DireccionCuenta) => {
     await clienteConsultas.invalidateQueries({
       queryKey: CLAVES_CUENTA.direcciones,
     });
+    if (guardada) alGuardar?.(guardada);
     alTerminar();
   };
 
@@ -118,7 +125,7 @@ function FormularioDireccion({
   const enviar = async (datos: SalidaDireccion) => {
     setAviso(null);
     try {
-      exigir<DireccionCuenta>(
+      const guardada = exigir<DireccionCuenta>(
         direccion
           ? await api.PATCH('/api/cuentas/yo/direcciones/{id}', {
               params: { path: { id: direccion.id } },
@@ -128,7 +135,7 @@ function FormularioDireccion({
               body: cuerpoNuevaDireccion(datos),
             }),
       );
-      await terminar();
+      await terminar(guardada);
     } catch (error) {
       // Sin conexión, fetch lanza TypeError: se muestra el mensaje genérico
       mostrarError(error instanceof ErrorDeApi ? error : errorDeApi(undefined));

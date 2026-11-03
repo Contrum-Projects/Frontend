@@ -106,7 +106,12 @@ export const DireccionDespacho = ({ entrega }: { entrega: Entrega }) => {
         <Plus aria-hidden />
         {direccion ? 'Agregar otra dirección' : 'Agregar dirección'}
       </Button>
-      <DialogoDireccion abierto={agregando} alCambiarAbierto={setAgregando} />
+      <DialogoDireccion
+        abierto={agregando}
+        alCambiarAbierto={setAgregando}
+        // E7-H2 · La dirección nueva queda elegida y se cotiza
+        alGuardar={(nueva) => entrega.elegirDireccion(nueva.id)}
+      />
     </div>
   );
 };
