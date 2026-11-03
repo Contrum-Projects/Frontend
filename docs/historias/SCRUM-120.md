@@ -39,6 +39,7 @@ El Swagger no declara las respuestas de los dos `POST`: los tipos están en
 
 ## Notas de trabajo
 
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/47
 - **Ruta de regreso:** el backend arma `back_urls` con `URL_TIENDA` + `/pedidos/{codigo}/pago`,
   así que la pantalla está en `app/(tienda)/pedidos/[codigo]/pago`, no en `/pago/resultado`.
   Se corrigió `docs/pantallas.md` y SCRUM-121.
