@@ -39,6 +39,7 @@ El pago pendiente lo resuelve el backend: la notificación de Mercado Pago (E6-H
 
 ## Notas de trabajo
 
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/48
 - **Qué muestra** (`resolverResultado` en `tienda/pago/consultasPago.ts`):
   - `cancelado` → «Tu pedido se canceló».
   - Ya no espera el pago y este regreso trajo un pago aprobado o pendiente → «Recibimos tu pago».
