@@ -48,3 +48,14 @@ const soloDia = new Intl.DateTimeFormat('es-CL', {
 /** Día sin hora de la API (AAAA-MM-DD) → «31 dic 2027». No depende de la zona del equipo. */
 export const formatearDia = (dia: string) =>
   soloDia.format(new Date(`${dia}T00:00:00Z`));
+
+const soloHora = new Intl.DateTimeFormat('es-CL', {
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+  timeZone: ZONA,
+});
+
+/** «10:29», en la hora de Chile. */
+export const formatearHora = (valor: Date | string) =>
+  soloHora.format(aFecha(valor));

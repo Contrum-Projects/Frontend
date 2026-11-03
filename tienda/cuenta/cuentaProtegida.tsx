@@ -20,14 +20,18 @@ import { RUTAS } from '@/tienda/diseno/enlaces';
 export function CuentaProtegida({
   children,
   esqueleto = <EsqueletoCuenta />,
+  volver,
 }: {
   children: ReactNode;
   /** Lo que se ve mientras se sabe si hay sesión; por defecto, el de «Mi cuenta». */
   esqueleto?: ReactNode;
+  /** Adónde volver tras ingresar, si la página necesita su consulta; por defecto, su ruta. */
+  volver?: string;
 }) {
   const { estado, cierre } = useSesion();
   const router = useRouter();
-  const ruta = usePathname();
+  const rutaActual = usePathname();
+  const ruta = volver ?? rutaActual;
   // El cierre solo cuenta si la sesión estaba activa en esta página; quien llega después sin
   // sesión va a iniciar sesión.
   const estabaActiva = useRef(false);

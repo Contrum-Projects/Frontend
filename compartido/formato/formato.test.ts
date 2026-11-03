@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatearDia, formatearDiaMes } from './fecha';
+import { formatearDia, formatearDiaMes, formatearHora } from './fecha';
 import { formatearPesos, formatearPesosNetos } from './moneda';
 import { formatearRut, normalizarRut } from './rut';
 
@@ -51,5 +51,13 @@ describe('formatearDia()', () => {
   it('muestra el día de la API con día, mes corto y año, sin correrse por la zona horaria', () => {
     expect(formatearDia('2027-12-31')).toBe('31 dic 2027');
     expect(formatearDia('2027-01-01')).toBe('1 ene 2027');
+  });
+});
+
+describe('formatearHora()', () => {
+  it('muestra la hora de Chile con dos dígitos', () => {
+    // 13:29 UTC del 3 de noviembre de 2026 = 10:29 en Chile continental (UTC−3)
+    expect(formatearHora('2026-11-03T13:29:00Z')).toBe('10:29');
+    expect(formatearHora('2026-11-03T12:05:00Z')).toBe('09:05');
   });
 });

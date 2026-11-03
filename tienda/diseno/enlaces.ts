@@ -78,6 +78,9 @@ export const hrefDe = ({ pathname, query }: UrlObject): Route => {
 
 export const urlProducto = (id: number) => `/productos/${id}` as Route;
 export const urlPack = (id: number) => `/packs/${id}` as Route;
+// TODO(SCRUM-129): detalle del pedido
+export const urlPedido = (codigo: string) =>
+  `/cuenta/pedidos/${encodeURIComponent(codigo)}` as Route;
 
 /** Enlaces de ayuda, en el orden de Figma (footer y menú del celular). */
 export const ENLACES_AYUDA = [
