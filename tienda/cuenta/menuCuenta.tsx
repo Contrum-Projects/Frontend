@@ -38,7 +38,9 @@ export function MenuCuenta({ className }: { className?: string }) {
       )}
       <ul className="flex flex-col gap-1">
         {ENLACES.map((enlace) => {
-          const actual = enlace.href === ruta;
+          // El detalle de un pedido sigue en «Mis pedidos»
+          const actual =
+            ruta === enlace.href || ruta.startsWith(`${enlace.href}/`);
           return (
             <li key={enlace.texto}>
               <Link

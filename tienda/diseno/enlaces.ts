@@ -24,7 +24,6 @@ export const RUTAS = {
   facturacion: '/cuenta/facturacion',
   // TODO(SCRUM-139): ofertas por correo
   ofertas: '/cuenta/ofertas' as Route,
-  // TODO(SCRUM-129): mis pedidos
   misPedidos: '/cuenta/pedidos' as Route,
   // TODO(SCRUM-134): verificación profesional
   verificacion: '/cuenta/verificacion' as Route,
@@ -78,7 +77,6 @@ export const hrefDe = ({ pathname, query }: UrlObject): Route => {
 
 export const urlProducto = (id: number) => `/productos/${id}` as Route;
 export const urlPack = (id: number) => `/packs/${id}` as Route;
-// TODO(SCRUM-129): detalle del pedido
 export const urlPedido = (codigo: string) =>
   `/cuenta/pedidos/${encodeURIComponent(codigo)}` as Route;
 

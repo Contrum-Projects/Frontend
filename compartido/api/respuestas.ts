@@ -836,6 +836,30 @@ export interface DatosFacturacionCuenta {
   comuna: UbicacionOficial & { region: UbicacionOficial };
 }
 
+/**
+ * Un pedido del historial de la cuenta (E8-H1, SCRUM-57). Backend
+ * `src/modulos/pedidos/mis-pedidos.service.ts` › `ResumenPedido`. TODO(SCRUM-129): el Swagger no
+ * declara la respuesta; pedido a SCRUM-57.
+ */
+export interface ResumenPedido {
+  codigoPublico: string;
+  /** ISO 8601. */
+  fechaPedido: string;
+  /** Total con IVA, en pesos. */
+  total: number;
+  estado: string;
+}
+
+/** GET /api/pedidos (E8-H1). Backend `mis-pedidos.service.ts` › `HistorialPedidos`. */
+export interface HistorialPedidos {
+  /** Del más reciente al más antiguo. */
+  items: ResumenPedido[];
+  /** Cuántos pedidos tiene la cuenta en total. */
+  total: number;
+  pagina: number;
+  limite: number;
+}
+
 /** Un artículo del pedido (E8-H1). Backend `src/modulos/pedidos/mis-pedidos.service.ts` › `LineaPedido`. */
 export interface LineaPedido {
   articuloId: number;
