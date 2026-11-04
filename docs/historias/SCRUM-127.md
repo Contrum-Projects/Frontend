@@ -84,6 +84,8 @@ Errores: 401, 403 (sin `facturacion.gestionar`), 404 (el pedido no existe o no p
 
 ## Notas de trabajo
 
+**PR:** https://github.com/Contrum-Projects/Frontend/pull/54 (En revisión; lista y tarjeta con API simulada).
+
 **04-11-2026 · implementación (rama `SCRUM-127-facturas-por-emitir`)**
 
 - **Rutas:** `/panel/pedidos` y `/panel/pedidos/[codigo]` pasaron al grupo `app/panel/pedidos/(todos)/`
