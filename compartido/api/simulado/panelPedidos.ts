@@ -83,6 +83,7 @@ const BASE = {
   porcentajeIva: 19,
   documento: null,
   idTransaccionPago: '1320000001',
+  sePuedeCancelar: false,
 };
 
 const CLIENTE_UNO = {
@@ -273,6 +274,7 @@ const PEDIDOS: PedidoSimulado[] = [
       historial: [CREADO('2026-11-04T09:30:00.000Z')],
       // Pagar es del pago (E6) y cancelar de su propia ruta (E8-H3)
       cambiosPermitidos: [],
+      sePuedeCancelar: true,
     },
   },
 ];
@@ -376,6 +378,25 @@ export const rutasPanelPedidos: RutaSimulada[] = [
         );
       }
       return json({ codigoPublico: params.codigoPedido, estado });
+    },
+  },
+  {
+    metodo: 'POST',
+    ruta: '/pedidos/:codigoPedido/cancelar',
+    historia: 'SCRUM-131',
+    // El endpoint existe (SCRUM-59), pero no conoce los pedidos simulados: los demás van al backend
+    responder: ({ peticion, params }) => {
+      const pedido = pedidoSimulado(params.codigoPedido);
+      if (!pedido) return null;
+      const noAutorizado = sinSesion(peticion);
+      if (noAutorizado) return noAutorizado;
+      if (!pedido.detalle.sePuedeCancelar) {
+        return errorSimulado(
+          409,
+          'Solo se puede cancelar un pedido pendiente de pago.',
+        );
+      }
+      return json({ codigoPublico: params.codigoPedido, estado: 'cancelado' });
     },
   },
 ];

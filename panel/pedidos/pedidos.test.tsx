@@ -129,6 +129,7 @@ const DETALLE: DetallePedidoGestion = {
     },
   ],
   cambiosPermitidos: [cambio('en_preparacion')],
+  sePuedeCancelar: false,
 };
 
 type Manejador = (peticion: Request) => Response | Promise<Response>;
@@ -751,5 +752,222 @@ describe('Panel de pedidos · retiro en tienda (SCRUM-130)', () => {
     expect(await cuerposEnviados(pedidas)).toEqual([
       { estado: 'listo_para_retiro' },
     ]);
+  });
+});
+
+describe('Panel de pedidos · cancelar un pedido pendiente de pago (SCRUM-131)', () => {
+  const PENDIENTE: DetallePedidoGestion = {
+    ...DETALLE,
+    codigoPublico: 'PENDPAGO0001',
+    estado: 'pendiente_pago',
+    pagarHasta: '2026-11-03T13:44:00.000Z',
+    idTransaccionPago: null,
+    historial: [DETALLE.historial[0]],
+    cambiosPermitidos: [],
+    sePuedeCancelar: true,
+  };
+  const CANCELADO: DetallePedidoGestion = {
+    ...PENDIENTE,
+    estado: 'cancelado',
+    historial: [
+      ...PENDIENTE.historial,
+      {
+        estado: 'cancelado',
+        fecha: '2026-11-03T14:00:00.000Z',
+        comentario: 'El cliente pidió anular la compra.',
+        realizadoPor: 'Marcela Díaz',
+      },
+    ],
+    sePuedeCancelar: false,
+  };
+
+  /** Abre el diálogo y devuelve su botón de confirmar. */
+  const abrirDialogo = async (usuario: ReturnType<typeof userEvent.setup>) => {
+    await usuario.click(
+      await screen.findByRole('button', { name: 'Cancelar pedido' }),
+    );
+    const dialogo = screen.getByRole('alertdialog');
+    return {
+      dialogo,
+      confirmar: within(dialogo).getByRole('button', {
+        name: 'Cancelar pedido',
+      }),
+      motivo: within(dialogo).getByLabelText('Motivo (opcional)'),
+    };
+  };
+
+  it('E8-H3 FE · CA1 cancelar: pide confirmación, envía el motivo y el historial muestra el pedido cancelado', async () => {
+    let cancelado = false;
+    const { pedidas } = simularBackend({
+      'GET /api/gestion/pedidos/PENDPAGO0001': () =>
+        Response.json(cancelado ? CANCELADO : PENDIENTE),
+      'POST /api/pedidos/PENDPAGO0001/cancelar': () => {
+        cancelado = true;
+        return Response.json({
+          codigoPublico: 'PENDPAGO0001',
+          estado: 'cancelado',
+        });
+      },
+    });
+    const usuario = userEvent.setup();
+    mostrarDetalle('PENDPAGO0001');
+
+    const { dialogo, confirmar, motivo } = await abrirDialogo(usuario);
+    expect(dialogo).toHaveAccessibleName('¿Cancelar el pedido PENDPAGO0001?');
+    // Nada se envía sin confirmar
+    expect(await cuerposEnviados(pedidas)).toEqual([]);
+
+    await usuario.type(motivo, 'El cliente pidió anular la compra.');
+    await usuario.click(confirmar);
+
+    expect(
+      await screen.findByText('El pedido PENDPAGO0001 quedó cancelado.'),
+    ).toBeInTheDocument();
+    expect(await cuerposEnviados(pedidas)).toEqual([
+      { comentario: 'El cliente pidió anular la compra.' },
+    ]);
+    const historial = screen.getByRole('region', { name: 'Historial' });
+    await waitFor(() =>
+      expect(within(historial).getAllByRole('listitem')[0]).toHaveTextContent(
+        'Cancelado3 nov, 11:00 · Marcela DíazEl cliente pidió anular la compra.',
+      ),
+    );
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Cancelar pedido' }),
+    ).not.toBeInTheDocument();
+    // El botón ya no existe: el foco queda en el título del pedido
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'PENDPAGO0001' }),
+    ).toHaveFocus();
+  });
+
+  it('E8-H3 FE · CA1 cancelar: «Volver» no cancela y sin motivo se envía el cuerpo vacío', async () => {
+    const { pedidas } = simularBackend({
+      'GET /api/gestion/pedidos/PENDPAGO0001': () => Response.json(PENDIENTE),
+      'POST /api/pedidos/PENDPAGO0001/cancelar': () =>
+        Response.json({ codigoPublico: 'PENDPAGO0001', estado: 'cancelado' }),
+    });
+    const usuario = userEvent.setup();
+    mostrarDetalle('PENDPAGO0001');
+
+    await abrirDialogo(usuario);
+    await usuario.click(screen.getByRole('button', { name: 'Volver' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(await cuerposEnviados(pedidas)).toEqual([]);
+
+    const { confirmar } = await abrirDialogo(usuario);
+    await usuario.click(confirmar);
+    await waitFor(async () =>
+      expect(await cuerposEnviados(pedidas)).toEqual([{}]),
+    );
+  });
+
+  it('E8-H3 FE · CA1 cancelar: un motivo demasiado largo se avisa junto al campo sin perder lo escrito', async () => {
+    const { pedidas } = simularBackend({
+      'GET /api/gestion/pedidos/PENDPAGO0001': () => Response.json(PENDIENTE),
+    });
+    const usuario = userEvent.setup();
+    mostrarDetalle('PENDPAGO0001');
+
+    const { dialogo, confirmar, motivo } = await abrirDialogo(usuario);
+    const largo = 'a'.repeat(501);
+    await usuario.click(motivo);
+    await usuario.paste(largo);
+    await usuario.click(confirmar);
+
+    expect(
+      await within(dialogo).findByText(
+        'El comentario no puede superar los 500 caracteres.',
+      ),
+    ).toBeInTheDocument();
+    expect(motivo).toHaveValue(largo);
+    expect(await cuerposEnviados(pedidas)).toEqual([]);
+  });
+
+  it('E8-H3 FE · CA1 cancelar: si el backend rechaza el motivo, el mensaje queda junto al campo', async () => {
+    simularBackend({
+      'GET /api/gestion/pedidos/PENDPAGO0001': () => Response.json(PENDIENTE),
+      'POST /api/pedidos/PENDPAGO0001/cancelar': () =>
+        error(400, ['El comentario debe ser un texto.']),
+    });
+    const usuario = userEvent.setup();
+    mostrarDetalle('PENDPAGO0001');
+
+    const { dialogo, confirmar, motivo } = await abrirDialogo(usuario);
+    await usuario.type(motivo, 'Pedido duplicado.');
+    await usuario.click(confirmar);
+
+    expect(
+      await within(dialogo).findByText('El comentario debe ser un texto.'),
+    ).toBeInTheDocument();
+    expect(motivo).toHaveAttribute('aria-invalid', 'true');
+    expect(motivo).toHaveValue('Pedido duplicado.');
+  });
+
+  it('E8-H3 FE · CA1 cancelar: si el servidor falla, el aviso queda en el diálogo con el motivo escrito', async () => {
+    simularBackend({
+      'GET /api/gestion/pedidos/PENDPAGO0001': () => Response.json(PENDIENTE),
+      'POST /api/pedidos/PENDPAGO0001/cancelar': () =>
+        error(500, 'Internal server error'),
+    });
+    const usuario = userEvent.setup();
+    mostrarDetalle('PENDPAGO0001');
+
+    const { dialogo, confirmar, motivo } = await abrirDialogo(usuario);
+    await usuario.type(motivo, 'Pedido duplicado.');
+    await usuario.click(confirmar);
+
+    const aviso = await within(dialogo).findByRole('alert');
+    expect(aviso).not.toHaveTextContent('Internal server error');
+    expect(motivo).toHaveValue('Pedido duplicado.');
+  });
+
+  it('E8-H3 FE · CA2 pedido pagado: al abrir su detalle no se ofrece cancelar', async () => {
+    simularBackend();
+    mostrarDetalle();
+
+    expect(
+      await screen.findByRole('combobox', { name: 'Cambiar estado' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Cancelar pedido' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('E8-H3 FE · CA2 pedido pagado: si se pagó mientras tanto, muestra el mensaje del backend y deja de ofrecer cancelar', async () => {
+    let pagado = false;
+    simularBackend({
+      'GET /api/gestion/pedidos/PENDPAGO0001': () =>
+        Response.json(
+          pagado
+            ? { ...PENDIENTE, estado: 'pagado', sePuedeCancelar: false }
+            : PENDIENTE,
+        ),
+      'POST /api/pedidos/PENDPAGO0001/cancelar': () => {
+        pagado = true;
+        return error(
+          409,
+          'Solo se puede cancelar un pedido pendiente de pago.',
+        );
+      },
+    });
+    const usuario = userEvent.setup();
+    mostrarDetalle('PENDPAGO0001');
+
+    const { confirmar } = await abrirDialogo(usuario);
+    await usuario.click(confirmar);
+
+    expect(
+      await screen.findByText(
+        'Solo se puede cancelar un pedido pendiente de pago.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: 'Cancelar pedido' }),
+      ).not.toBeInTheDocument(),
+    );
   });
 });

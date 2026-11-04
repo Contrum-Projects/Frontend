@@ -1025,6 +1025,20 @@ export interface DetallePedidoGestion extends Omit<
   }[];
   /** Vacío si el pedido ya no cambia desde el panel (entregado, retirado, cancelado). */
   cambiosPermitidos: CambioPermitido[];
+  /**
+   * Si el personal puede cancelarlo (E8-H3): hoy, solo un pedido pendiente de pago. Lo decide el
+   * backend. TODO(SCRUM-131): pedido a SCRUM-58 junto con el detalle.
+   */
+  sePuedeCancelar: boolean;
+}
+
+/**
+ * POST /api/pedidos/{codigoPedido}/cancelar (E8-H3). Backend `cancelar-pedido.service.ts` ›
+ * `PedidoCancelado`. TODO(SCRUM-131): el Swagger no declara la respuesta; pedido a SCRUM-59.
+ */
+export interface PedidoCancelado {
+  codigoPublico: string;
+  estado: string;
 }
 
 /**

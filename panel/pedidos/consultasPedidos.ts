@@ -12,6 +12,7 @@ import type { components } from '@/compartido/api/esquema';
 import type {
   DetallePedidoGestion,
   ListadoPedidosGestion,
+  PedidoCancelado,
   PedidoConNuevoEstado,
 } from '@/compartido/api/respuestas';
 import { conErrorDeApi } from '@/tienda/cuenta/consultasCuenta';
@@ -107,6 +108,31 @@ export const useCambiarEstado = (codigoPedido: string) => {
       conErrorDeApi(async () =>
         exigir<PedidoConNuevoEstado>(
           await api.POST('/api/pedidos/{codigoPedido}/estado', {
+            params: { path: { codigoPedido } },
+            body: cuerpo,
+          }),
+        ),
+      ),
+    // También si falla: un 409 dice que el pedido ya cambió y el detalle debe ponerse al día
+    onSettled: () =>
+      clienteConsultas.invalidateQueries({ queryKey: CLAVE_PEDIDOS_PANEL }),
+  });
+};
+
+export type CuerpoCancelarPedido = components['schemas']['CancelarPedidoDto'];
+
+/**
+ * E8-H3, criterio 1 · Cancela un pedido pendiente de pago (POST /pedidos/{codigoPedido}/cancelar).
+ * El backend devuelve el stock y guarda el cambio en el historial; después se vuelven a pedir la
+ * lista y el detalle. Si rechaza (por ejemplo, el pedido ya se pagó), lanza `ErrorDeApi`.
+ */
+export const useCancelarPedido = (codigoPedido: string) => {
+  const clienteConsultas = useQueryClient();
+  return useMutation({
+    mutationFn: (cuerpo: CuerpoCancelarPedido) =>
+      conErrorDeApi(async () =>
+        exigir<PedidoCancelado>(
+          await api.POST('/api/pedidos/{codigoPedido}/cancelar', {
             params: { path: { codigoPedido } },
             body: cuerpo,
           }),
