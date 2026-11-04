@@ -326,6 +326,35 @@ describe('Detalle del pedido (SCRUM-129)', () => {
     expect(screen.getAllByText('Pendiente de pago')).toHaveLength(2);
   });
 
+  it('E8-H3 FE · cliente: en un pedido pendiente de pago no ve opción de cancelar', async () => {
+    simularBackend({
+      [PEDIDO]: () =>
+        responder(
+          detalle({
+            estado: 'pendiente_pago',
+            idTransaccionPago: null,
+            historial: [
+              { estado: 'pendiente_pago', fecha: '2026-10-10T17:20:00Z' },
+            ],
+          }),
+        ),
+    });
+    mostrarPantallaCuenta(<PantallaDetallePedido codigo={CODIGO} />);
+
+    expect(
+      await screen.findByRole('heading', {
+        level: 1,
+        name: `Pedido ${CODIGO}`,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /cancelar/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: /cancelar/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it('E7-H3 FE · envío registrado: muestra el servicio, el código de seguimiento y el estado del envío', async () => {
     simularBackend({ [PEDIDO]: () => responder(detalle()) });
     mostrarPantallaCuenta(<PantallaDetallePedido codigo={CODIGO} />);

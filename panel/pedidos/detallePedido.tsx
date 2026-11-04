@@ -2,7 +2,7 @@
 
 import { ArrowLeft, Store, Truck } from 'lucide-react';
 import Link from 'next/link';
-import { useId, type ReactNode } from 'react';
+import { useId, useRef, type ReactNode } from 'react';
 import { errorDeApi } from '@/compartido/api/errores';
 import type {
   DetallePedidoGestion,
@@ -20,6 +20,7 @@ import {
 } from '@/tienda/pedidos/consultasPedidos';
 import { textoDireccion } from '@/tienda/pedidos/entregaPedido';
 import { EstadoPedido, etiquetaEstado } from '@/tienda/pedidos/estadoPedido';
+import { CancelarPedido } from './cancelarPedido';
 import { useDetallePedidoPanel } from './consultasPedidos';
 import { FormularioEstado } from './formularioEstado';
 
@@ -92,6 +93,7 @@ const SinPedido = () => (
 
 const Detalle = ({ pedido }: { pedido: DetallePedidoGestion }) => {
   const idTitulo = useId();
+  const titulo = useRef<HTMLHeadingElement>(null);
   return (
     <article
       aria-labelledby={idTitulo}
@@ -100,7 +102,9 @@ const Detalle = ({ pedido }: { pedido: DetallePedidoGestion }) => {
       <VolverAPedidos />
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h2
+          ref={titulo}
           id={idTitulo}
+          tabIndex={-1}
           className="min-w-0 titulo-h2 wrap-anywhere text-texto-principal lg:titulo-h3"
         >
           {pedido.codigoPublico}
@@ -117,6 +121,14 @@ const Detalle = ({ pedido }: { pedido: DetallePedidoGestion }) => {
               key={pedido.estado}
               codigoPedido={pedido.codigoPublico}
               cambios={pedido.cambiosPermitidos}
+            />
+          </div>
+        )}
+        {pedido.sePuedeCancelar && (
+          <div className={BLOQUE}>
+            <CancelarPedido
+              codigoPedido={pedido.codigoPublico}
+              alTerminar={() => titulo.current?.focus()}
             />
           </div>
         )}
