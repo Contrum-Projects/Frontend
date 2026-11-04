@@ -39,8 +39,7 @@ export const SECCIONES: readonly SeccionPanel[] = [
   { texto: 'Inicio', href: '/panel', icono: House },
   {
     texto: 'Pedidos',
-    // TODO(SCRUM-130): pedidos
-    href: '/panel/pedidos' as Route,
+    href: '/panel/pedidos',
     icono: ReceiptText,
     permiso: PERMISOS.PEDIDOS_GESTIONAR,
   },

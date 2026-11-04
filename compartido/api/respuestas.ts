@@ -957,3 +957,81 @@ export interface CotizacionDespacho {
   /** Lo que pagaría: carrito más despacho. */
   total: number;
 }
+
+/**
+ * Un pedido de la lista del panel (E8-H2). TODO(SCRUM-130): `GET /api/gestion/pedidos` aún no
+ * existe; forma pedida a SCRUM-58 (ver docs/historias/SCRUM-130.md).
+ */
+export interface PedidoGestion {
+  codigoPublico: string;
+  /** ISO 8601. */
+  fechaPedido: string;
+  /** Nombre o razón social de quien compró. */
+  cliente: string;
+  tipoEntrega: 'despacho' | 'retiro';
+  estado: string;
+  /** Total con IVA, en pesos. */
+  total: number;
+  /** Suma de las cantidades del pedido. */
+  unidades: number;
+}
+
+/** Un grupo del filtro de la lista: qué estados entran en cada uno lo decide el backend. */
+export interface GrupoPedidos {
+  clave: string;
+  nombre: string;
+  /** `null`: el grupo no muestra cuántos pedidos tiene. */
+  cantidad: number | null;
+}
+
+/** GET /api/gestion/pedidos (E8-H2). Pedida a SCRUM-58. */
+export interface ListadoPedidosGestion {
+  /** Del más reciente al más antiguo. */
+  items: PedidoGestion[];
+  total: number;
+  pagina: number;
+  limite: number;
+  grupos: GrupoPedidos[];
+  /** El grupo que se aplicó: sin `grupo` en la consulta, el que el backend elige por defecto. */
+  grupo: string;
+}
+
+/**
+ * Un cambio de estado que el personal puede hacer desde el estado actual del pedido (E8-H2). Sale
+ * de `transiciones-estado-pedido.ts` del backend: el frontend no conoce la secuencia.
+ */
+export interface CambioPermitido {
+  estado: string;
+  sentido: 'avance' | 'retroceso';
+  /** Al despachar se pide el número de la OT de Chilexpress (E7-H3). */
+  pideCodigoSeguimiento: boolean;
+  /** Si el backend avisa al cliente por correo (`ESTADOS_CON_AVISO`). */
+  avisaAlCliente: boolean;
+}
+
+/** GET /api/gestion/pedidos/{codigoPedido} (E8-H2). Pedida a SCRUM-58. */
+export interface DetallePedidoGestion extends Omit<
+  DetallePedidoCuenta,
+  'historial'
+> {
+  cliente: { nombre: string; correo: string; telefono: string | null };
+  historial: {
+    estado: string;
+    /** ISO 8601. */
+    fecha: string;
+    comentario: string | null;
+    /** «Sistema», «Cliente» o el nombre de quien lo cambió. */
+    realizadoPor: string;
+  }[];
+  /** Vacío si el pedido ya no cambia desde el panel (entregado, retirado, cancelado). */
+  cambiosPermitidos: CambioPermitido[];
+}
+
+/**
+ * POST /api/pedidos/{codigoPedido}/estado (E8-H2). Backend `cambiar-estado-pedido.service.ts` ›
+ * `PedidoConNuevoEstado`. TODO(SCRUM-130): el Swagger no declara la respuesta; pedido a SCRUM-58.
+ */
+export interface PedidoConNuevoEstado {
+  codigoPublico: string;
+  estado: string;
+}
