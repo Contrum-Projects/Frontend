@@ -1,12 +1,13 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/compartido/api/cliente';
 import { exigir } from '@/compartido/api/errores';
 import type { PerfilProfesionalCuenta } from '@/compartido/api/respuestas';
 import { ROLES } from '@/compartido/sesion/roles';
 import { useSesion } from '@/compartido/sesion/sesion';
 import { conErrorDeApi } from '@/tienda/cuenta/consultasCuenta';
+import { cuerpoPerfil, type SalidaPerfil } from './esquemaPerfil';
 
 /**
  * Perfil profesional de la cuenta (E10-H5) en el navegador: son datos de la cuenta (RNF-30).
@@ -32,5 +33,31 @@ export const useMiPerfilProfesional = () => {
         if (respuesta.response.status === 404) return null;
         return exigir<PerfilProfesionalCuenta>(respuesta);
       }),
+  });
+};
+
+/**
+ * Guarda el perfil (PUT, lo reemplaza entero) y deja la respuesta en la caché: la pantalla lo
+ * muestra y la invitación a completarlo desaparece (E10-H4).
+ */
+export const useGuardarPerfilProfesional = () => {
+  const { usuario } = useSesion();
+  const clienteConsultas = useQueryClient();
+  return useMutation({
+    mutationFn: (datos: SalidaPerfil) =>
+      conErrorDeApi(async () =>
+        exigir<PerfilProfesionalCuenta>(
+          await api.PUT('/api/perfil-profesional/yo', {
+            body: cuerpoPerfil(datos),
+          }),
+        ),
+      ),
+    onSuccess: (perfil) => {
+      if (!usuario) return;
+      clienteConsultas.setQueryData(
+        CLAVE_PERFIL_PROFESIONAL(usuario.codigoPublico),
+        perfil,
+      );
+    },
   });
 };

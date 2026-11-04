@@ -4,16 +4,23 @@ import type { Route } from 'next';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/compartido/lib/utils';
+import { ROLES } from '@/compartido/sesion/roles';
 import { useSesion } from '@/compartido/sesion/sesion';
 import { RUTAS } from '@/tienda/diseno/enlaces';
 import { useCerrarSesion } from './useCerrarSesion';
 
-const ENLACES: { texto: string; href: Route }[] = [
+const ENLACES: { texto: string; href: Route; soloProfesional?: true }[] = [
   { texto: 'Mis pedidos', href: RUTAS.misPedidos },
   { texto: 'Mis datos', href: RUTAS.misDatos },
   { texto: 'Direcciones', href: RUTAS.direcciones },
   { texto: 'Datos de facturación', href: RUTAS.facturacion },
   { texto: 'Verificación profesional', href: RUTAS.verificacion },
+  // E10-H5: solo con la verificación aprobada
+  {
+    texto: 'Perfil profesional',
+    href: RUTAS.perfilProfesional,
+    soloProfesional: true,
+  },
   { texto: 'Ofertas por correo', href: RUTAS.ofertas },
 ];
 
@@ -28,6 +35,10 @@ export function MenuCuenta({ className }: { className?: string }) {
   const { usuario } = useSesion();
   const ruta = usePathname();
   const { cerrar, cerrando, error } = useCerrarSesion();
+  const esProfesional = usuario?.rol === ROLES.PROFESIONAL;
+  const enlaces = ENLACES.filter(
+    (enlace) => !enlace.soloProfesional || esProfesional,
+  );
 
   return (
     <nav aria-label="Mi cuenta" className={cn('flex-col gap-1', className)}>
@@ -37,7 +48,7 @@ export function MenuCuenta({ className }: { className?: string }) {
         </p>
       )}
       <ul className="flex flex-col gap-1">
-        {ENLACES.map((enlace) => {
+        {enlaces.map((enlace) => {
           // El detalle de un pedido sigue en «Mis pedidos»
           const actual =
             ruta === enlace.href || ruta.startsWith(`${enlace.href}/`);

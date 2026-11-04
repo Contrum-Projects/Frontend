@@ -140,5 +140,29 @@ describe('SCRUM-106 · Menú del celular', () => {
     expect(
       within(menu).queryByRole('link', { name: 'Ingresar' }),
     ).not.toBeInTheDocument();
+    expect(
+      within(menu).queryByRole('link', { name: 'Perfil profesional' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('E10-H5 FE · sin verificación: el menú del celular ofrece el perfil profesional solo a la cuenta verificada', async () => {
+    act(() =>
+      guardarSesion({
+        tokenAcceso: 't',
+        expiraEn: 900,
+        usuario: {
+          codigoPublico: 'p-1',
+          nombre: 'Camila',
+          apellido: 'Rojas',
+          rol: 'profesional',
+        },
+      }),
+    );
+
+    const { menu } = await abrirMenu();
+
+    expect(
+      within(menu).getByRole('link', { name: 'Perfil profesional' }),
+    ).toHaveAttribute('href', '/cuenta/perfil-profesional');
   });
 });
