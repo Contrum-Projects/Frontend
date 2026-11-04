@@ -91,7 +91,7 @@ export const nombreDeArchivo = (
 };
 
 /** Guarda el archivo en el equipo con un enlace temporal, sin abrir otra pestaña. */
-const guardarArchivo = (archivo: Blob, nombre: string) => {
+export const guardarArchivo = (archivo: Blob, nombre: string) => {
   const url = URL.createObjectURL(archivo);
   const enlace = document.createElement('a');
   enlace.href = url;

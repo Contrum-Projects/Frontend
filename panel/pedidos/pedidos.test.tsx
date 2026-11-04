@@ -139,6 +139,15 @@ const simularBackend = (rutas: Record<string, Manejador> = {}) => {
   const pedidas: Request[] = [];
   const base: Record<string, Manejador> = {
     'GET /api/gestion/pedidos': () => Response.json(LISTADO),
+    // La pestaña «Facturas por emitir» (SCRUM-127) pide su conteo
+    'GET /api/gestion/facturas': () =>
+      Response.json({
+        items: [],
+        porEmitir: 0,
+        total: 0,
+        pagina: 1,
+        limite: 20,
+      }),
     'GET /api/gestion/pedidos/PAGADODESP01': () => Response.json(DETALLE),
     ...rutas,
   };
