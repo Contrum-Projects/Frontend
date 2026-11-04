@@ -75,3 +75,5 @@ especialidades (de la propuesta).
 
 **Para el backend (SCRUM-66):** declarar en el Swagger la respuesta `PerfilProfesionalCuenta` del GET
 y del PUT. Cuando la clienta valide las listas, actualizar `opcionesPerfil.ts` junto con `valores.ts`.
+
+**PR:** https://github.com/Contrum-Projects/Frontend/pull/60 (04-11-2026, En revisión).
