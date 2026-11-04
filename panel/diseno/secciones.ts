@@ -65,8 +65,7 @@ export const SECCIONES: readonly SeccionPanel[] = [
   },
   {
     texto: 'Verificaciones',
-    // TODO(SCRUM-135): verificaciones
-    href: '/panel/verificaciones' as Route,
+    href: '/panel/verificaciones',
     icono: BadgeCheck,
     permiso: PERMISOS.VERIFICACION_GESTIONAR,
   },

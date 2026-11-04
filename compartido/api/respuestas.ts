@@ -1146,3 +1146,123 @@ export interface SolicitudVerificacionCuenta {
   /** Los documentos que adjuntó; vacío mientras no los envíe. */
   documentos: { tipo: TipoDocumentoVerificacion; nombreArchivo: string }[];
 }
+
+/**
+ * Por qué una solicitud no se aprobó sola: lo que dio la consulta al SII (backend `valores.ts` ›
+ * RESULTADOS_CONSULTA_SII sin `aprobado`). `null` si no se consultó.
+ */
+export type MotivoRevisionVerificacion =
+  'sin_inicio_actividades' | 'otro_giro' | 'no_disponible';
+
+/**
+ * Una solicitud en revisión manual en el panel: GET /api/verificaciones/revision-manual (E10-H7).
+ * Backend `consulta-verificacion.service.ts` › `SolicitudEnRevision`.
+ * TODO(SCRUM-135): el Swagger no declara la respuesta; pedido a SCRUM-64.
+ */
+export interface SolicitudEnRevision {
+  /** `codigoPublico` de la cuenta que solicitó: abre el detalle y sirve para resolver. */
+  codigoPublicoCuenta: string;
+  nombre: string;
+  apellido: string;
+  rut: string | null;
+  /** ISO 8601. */
+  fechaEnvio: string;
+  motivoRevision: MotivoRevisionVerificacion | null;
+}
+
+export interface ListadoSolicitudesEnRevision {
+  items: SolicitudEnRevision[];
+  total: number;
+  pagina: number;
+  limite: number;
+}
+
+/** Quien del personal resolvió la solicitud; `null` si la aprobó el sistema. */
+export interface ResolutorSolicitud {
+  codigoPublico: string;
+  nombre: string;
+  apellido: string;
+}
+
+/** Backend `consulta-verificacion.service.ts` › `ResumenSolicitud`. */
+export interface ResumenSolicitudVerificacion {
+  estado: EstadoSolicitudVerificacion;
+  /** ISO 8601. */
+  fechaSolicitud: string;
+  fechaResolucion: string | null;
+  /** Solo si fue rechazada. */
+  motivoRechazo: string | null;
+  resolutor: ResolutorSolicitud | null;
+}
+
+/** Un giro que informó el SII (backend `proveedor-situacion-tributaria.ts` › `ActividadSii`). */
+export interface GiroSii {
+  /** Código del giro (`960200`). */
+  codigo: string;
+  nombre: string;
+  /** AAAA-MM-DD; `null` si el proveedor no la entrega. */
+  fechaInicio: string | null;
+}
+
+export interface DocumentoSolicitudVerificacion {
+  /** Posición en la solicitud, desde 1: con ella se pide el enlace. */
+  numero: number;
+  tipo: TipoDocumentoVerificacion;
+  nombreArchivo: string;
+  /** ISO 8601 si el archivo ya se borró (E10-H6): entonces no hay enlace. */
+  fechaEliminacion: string | null;
+}
+
+/**
+ * GET /api/verificaciones/{codigoPublico} (E10-H7). Backend `consulta-verificacion.service.ts` ›
+ * `DetalleVerificacion`. TODO(SCRUM-135): el Swagger no declara la respuesta; pedido a SCRUM-64.
+ */
+export interface DetalleVerificacion {
+  cliente: {
+    codigoPublico: string;
+    nombre: string;
+    apellido: string;
+    rut: string | null;
+    email: string;
+    telefono: string | null;
+  };
+  /** La solicitud más reciente de la cuenta. */
+  solicitud: ResumenSolicitudVerificacion & {
+    motivoRevision: MotivoRevisionVerificacion | null;
+    /** `null` si nunca se consultó al SII. */
+    consultaSii: {
+      fecha: string;
+      resultado: MotivoRevisionVerificacion | 'aprobado';
+      /** `null` si la consulta falló (`no_disponible`). */
+      giros: GiroSii[] | null;
+    } | null;
+    documentos: DocumentoSolicitudVerificacion[];
+  };
+  /** Las anteriores, de la más reciente a la más antigua. */
+  solicitudesAnteriores: ResumenSolicitudVerificacion[];
+}
+
+/**
+ * GET /api/verificaciones/{codigoPublico}/documentos/{numero} (E10-H7): enlace firmado que vence
+ * en 60 s. Backend `consulta-verificacion.service.ts` › `EnlaceDocumento`.
+ */
+export interface EnlaceDocumentoVerificacion {
+  url: string;
+  /** ISO 8601. */
+  venceEn: string;
+  tipo: TipoDocumentoVerificacion;
+  nombreArchivo: string;
+}
+
+/**
+ * POST /api/verificaciones/{codigoPublico}/aprobar y …/rechazar (E10-H3). Backend
+ * `revision-verificacion.service.ts` › `SolicitudResuelta`.
+ */
+export interface SolicitudResuelta {
+  codigoPublicoCuenta: string;
+  estado: 'aprobada' | 'rechazada';
+  fechaSolicitud: string;
+  fechaResolucion: string;
+  motivoRechazo: string | null;
+  resolutor: ResolutorSolicitud;
+}
