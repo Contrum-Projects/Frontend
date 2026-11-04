@@ -44,6 +44,8 @@ SCRUM-69 no tiene endpoints ni rama en el backend. Se trabaja con la **API simul
 
 ## Notas de trabajo
 
+PR: https://github.com/Contrum-Projects/Frontend/pull/62
+
 **4-11-2026**
 
 - **Pantalla `/cuenta/ofertas`** (Figma 2066:3690 y 2070:2703) en `tienda/ofertas/pantallaOfertasCorreo.tsx`
