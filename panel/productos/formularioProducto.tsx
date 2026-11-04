@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useId, useState, type ReactNode } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import { api } from '@/compartido/api/cliente';
 import { ErrorDeApi, errorDeApi, exigir } from '@/compartido/api/errores';
@@ -27,7 +27,13 @@ import { useCategorias, useMarcas } from '@/panel/catalogo/consultasCatalogo';
 import { opcionesDeCategoria } from '@/panel/catalogo/esquemaCatalogo';
 import { CampoFormulario } from '@/tienda/cuenta/campoFormulario';
 import { clavePreciosProducto } from './consultasPrecios';
-import { CLAVE_PRODUCTOS, claveProducto } from './consultasProductos';
+import { AvisoAlSalir } from './avisoAlSalir';
+import {
+  CLAVE_PRODUCTOS,
+  claveProducto,
+  useSugerirDescripcion,
+  type SugerenciaDescripcion,
+} from './consultasProductos';
 import {
   PRODUCTO_VACIO,
   campoDelErrorProducto,
@@ -36,8 +42,9 @@ import {
   productoAFormulario,
   type FormularioProducto,
   type SalidaProducto,
+  type SugerenciaUsada,
 } from './esquemaProducto';
-import { OrigenDescripcionProducto } from './etiquetasProducto';
+import { OrigenDescripcionProducto, SinDescripcion } from './etiquetasProducto';
 import { urlProducto } from './listaProductos';
 import { SugerenciaDescripcionProducto } from './sugerenciaDescripcion';
 
@@ -86,17 +93,26 @@ export function FormularioProductoPanel({
   const marcas = useMarcas();
   const categorias = useCategorias();
   const [aviso, setAviso] = useState<string | null>(null);
+  const sugerir = useSugerirDescripcion();
+  /** La sugerencia que se usó o editó en la descripción y aún no se guarda (E4-H2). */
+  const [sugerenciaUsada, setSugerenciaUsada] =
+    useState<SugerenciaUsada | null>(null);
   const {
     register,
     control,
     handleSubmit,
     setError,
+    setValue,
+    setFocus,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<FormularioProducto, unknown, SalidaProducto>({
     resolver: zodResolver(esquemaProducto),
     defaultValues: producto ? productoAFormulario(producto) : PRODUCTO_VACIO,
   });
+
+  /** El chip «Sin descripción aún» del producto nuevo se quita al escribir o usar la sugerencia. */
+  const descripcionEscrita = useWatch({ control, name: 'descripcion' }) !== '';
 
   // Solo hay marcas activas en la lista: la de un producto con su marca desactivada se agrega
   // para no mostrar el campo vacío (al guardar, el backend avisa que está desactivada)
@@ -108,6 +124,23 @@ export function FormularioProductoPanel({
     opcionesMarca.push({ ...producto.marca, activa: false });
   }
   const opcionesCategoria = opcionesDeCategoria(categorias.data ?? []);
+
+  /**
+   * «Usar» y «Editar» (E4-H2 criterio 1): la sugerencia pasa a la descripción y, si la foto los
+   * muestra, a los ingredientes. Al guardar se reenvía con su firma y el backend decide si queda
+   * «IA» o «IA editada»; sin firma, el texto se guarda como manual.
+   */
+  const usarSugerencia = (
+    { descripcion, ingredientes, firma }: SugerenciaDescripcion,
+    editar: boolean,
+  ) => {
+    if (!descripcion) return;
+    const opciones = { shouldDirty: true, shouldValidate: true };
+    setValue('descripcion', descripcion, opciones);
+    if (ingredientes) setValue('ingredientes', ingredientes, opciones);
+    setSugerenciaUsada(firma ? { descripcion, firma } : null);
+    if (editar) setFocus('descripcion');
+  };
 
   const mostrarError = (fallo: ErrorDeApi) => {
     if (![400, 404].includes(fallo.estado)) {
@@ -130,12 +163,14 @@ export function FormularioProductoPanel({
         producto
           ? await api.PATCH('/api/catalogo/productos/{id}', {
               params: { path: { id: producto.id } },
-              body: cuerpoProducto(datos),
+              body: cuerpoProducto(datos, sugerenciaUsada),
             })
           : await api.POST('/api/catalogo/productos', {
-              body: cuerpoProducto(datos),
+              body: cuerpoProducto(datos, sugerenciaUsada),
             }),
       );
+      // Ya quedó guardada: salir no pierde nada
+      setSugerenciaUsada(null);
       clienteConsultas.setQueryData(claveProducto(guardado.id), guardado);
       await Promise.all([
         clienteConsultas.invalidateQueries({
@@ -166,6 +201,7 @@ export function FormularioProductoPanel({
       aria-label={producto ? 'Editar producto' : 'Producto nuevo'}
       className="flex flex-col gap-4 lg:gap-6"
     >
+      <AvisoAlSalir activo={sugerir.isSuccess || sugerenciaUsada !== null} />
       <div className="flex flex-wrap items-center gap-3 lg:gap-4">
         {titulo}
         <div className="flex gap-3 max-lg:hidden">
@@ -181,7 +217,11 @@ export function FormularioProductoPanel({
           derecha como el asistente de Figma (2029:830); antes, la columna de 372 px aplasta
           los datos (igual que en packs) */}
       <div className="grid grid-cols-1 items-start gap-4 lg:gap-6 xl:grid-cols-[minmax(0,1fr)_372px]">
-        <SugerenciaDescripcionProducto className="xl:col-start-2 xl:row-span-2 xl:row-start-1" />
+        <SugerenciaDescripcionProducto
+          sugerir={sugerir}
+          alUsar={usarSugerencia}
+          className="xl:col-start-2 xl:row-span-2 xl:row-start-1"
+        />
         <Tarjeta titulo="Datos del producto">
           {/* Celular y escritorio con la sugerencia al lado (xl): el nombre arriba y marca con
             categoría lado a lado (Figma 2024:544 y 2029:742). Entre lg y xl la tarjeta va a
@@ -318,8 +358,10 @@ export function FormularioProductoPanel({
         <Tarjeta
           titulo="Descripción"
           extra={
-            producto && (
+            producto ? (
               <OrigenDescripcionProducto origen={producto.origenDescripcion} />
+            ) : (
+              !descripcionEscrita && <SinDescripcion />
             )
           }
         >
@@ -332,9 +374,23 @@ export function FormularioProductoPanel({
             {(propsControl) => (
               <Textarea
                 {...propsControl}
-                placeholder="Escribe la descripción"
-                className="min-h-28 rounded-md border-[1.5px] border-input bg-fondo-hueso px-4 py-3 texto-cuerpo shadow-none focus-visible:ring-ring/40 lg:texto-pequeno"
+                placeholder="Escribe la descripción o usa la sugerencia"
+                className={CLASE_AREA_TEXTO}
                 {...register('descripcion')}
+              />
+            )}
+          </CampoFormulario>
+          {/* Sin Figma: opcional, se llena con la sugerencia y se puede corregir (E4-H2) */}
+          <CampoFormulario
+            id="producto-ingredientes"
+            etiqueta="Ingredientes"
+            error={errors.ingredientes?.message}
+          >
+            {(propsControl) => (
+              <Textarea
+                {...propsControl}
+                className={CLASE_AREA_TEXTO}
+                {...register('ingredientes')}
               />
             )}
           </CampoFormulario>
@@ -346,6 +402,10 @@ export function FormularioProductoPanel({
     </form>
   );
 }
+
+/** Área de texto del panel (Figma P3 2029:768). */
+const CLASE_AREA_TEXTO =
+  'min-h-28 rounded-md border-[1.5px] border-input bg-fondo-hueso px-4 py-3 texto-cuerpo shadow-none focus-visible:ring-ring/40 lg:texto-pequeno';
 
 /** «Cancelar» vuelve al listado sin guardar; «Guardar producto» envía (Figma 2029:730). */
 const AccionesProducto = ({ enviando }: { enviando: boolean }) => (

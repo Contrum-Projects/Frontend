@@ -1,6 +1,6 @@
 # SCRUM-133 · E4-H2 · Aceptar, editar o descartar la sugerencia
 
-**Orden:** 41 de 53 · **Puntos:** 2 · **Historia backend:** SCRUM-61 · **API:** No
+**Orden:** 41 de 53 · **Puntos:** 2 · **Historia backend:** SCRUM-61 · **API:** Sí
 
 **Necesita antes (frontend):** [SCRUM-132](SCRUM-132.md)  
 **La necesitan después:** ninguna
@@ -25,11 +25,37 @@ Nodos del archivo de Figma `cl9eSD5YBS9qF4tQXJki68` (ver `docs/pantallas.md`).
 
 ## API
 
-Estado al 26-10-2026 (`compartido/api/esquema.d.ts` de `main`): **No**. Aún no existe en el Swagger.
+Estado al 04-11-2026 (`compartido/api/esquema.d.ts` de `main`): **Sí**.
 
-Si falta el endpoint, avanza con la API simulada (`docs/api-simulada.md`) y anota aquí qué
-formato de respuesta acordaste con quien hace la historia backend.
+- `POST /api/catalogo/descripciones/sugerencia` devuelve `{ descripcion, ingredientes, firma }`.
+- `POST /api/catalogo/productos` y `PATCH /api/catalogo/productos/{id}` aceptan
+  `sugerencia: { descripcion, firma }` (la sugerida, sin cambios) e `ingredientes` (texto o
+  `null`; en el PATCH, `null` borra). El backend decide el origen: igual a la sugerida, `ia`;
+  distinta, `ia_editada`; sin `sugerencia`, `manual`. Firma que no corresponde: 400.
+- Las respuestas del panel traen `ingredientes` (agregado a `ProductoPanel` en `respuestas.ts`).
 
 ## Notas de trabajo
 
-<!-- Decisiones, preguntas abiertas y lo que quedó pendiente. Lo completa /historia. -->
+- **Acciones (decisión del 04-11 con el usuario):** «Usar» copia la descripción y, si la foto los
+  muestra, los ingredientes; «Editar» hace lo mismo y deja el cursor en la descripción; ambas
+  cierran la tarjeta, que queda lista para pedir otra. «Descartar» la cierra sin tocar el
+  formulario. Al guardar se reenvía la sugerencia usada con su firma; el frontend nunca calcula
+  el origen. Si después de usarla se descarta otra sugerencia, la usada se sigue enviando.
+- **Ingredientes (decisión del 04-11):** campo opcional «Ingredientes» bajo la descripción, sin
+  Figma. Vacío se envía como `null`, así que en la edición borra la lista. Revisar con diseño.
+- **Aviso al salir:** activo con una sugerencia a la vista o una usada sin guardar. Los enlaces
+  internos (menú del panel, «Cancelar») abren «¿Salir sin guardar?» / «La sugerencia de
+  descripción no se guardará.» con «Seguir editando» y «Salir sin guardar» (textos aprobados el
+  04-11, sin Figma); cerrar o recargar la pestaña pide la confirmación del navegador. El botón
+  «Atrás» del navegador no tiene aviso: Next 16 no permite detener esa navegación.
+- **Chip «Sin descripción aún»** (Figma 2029:766) en el producto nuevo mientras la descripción
+  está vacía.
+- **Origen visible (criterio 3):** ya estaba en el listado y en la edición desde SCRUM-100; se
+  agregó la prueba E4-H2.
+- **Para el backend:** el Swagger declara `ingredientes` de `CrearProductoDto` y
+  `ActualizarProductoDto` como objeto; falta `type: String` en `@ApiPropertyOptional`. El
+  frontend lo convierte en `cuerpoProducto` mientras tanto.
+- **Pendiente con diseño:** en la edición, la etiqueta de origen muestra lo guardado hasta
+  guardar (tras «Usar» sigue «Manual»). El alto de 38 px del botón mediano en celular y el foco
+  de acento de las áreas de texto son de los componentes base, fuera de esta historia.
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/56

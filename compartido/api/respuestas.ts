@@ -536,6 +536,8 @@ export interface ProductoPanel {
   nombre: string;
   descripcion: string;
   origenDescripcion: OrigenDescripcion;
+  /** Ingredientes del reverso (E4-H2), hasta 3000 caracteres; `null` si no se guardaron. */
+  ingredientes: string | null;
   canalVenta: CanalVenta;
   activo: boolean;
   marca: { id: number; nombre: string } | null;

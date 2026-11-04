@@ -2,16 +2,17 @@
 
 import { ImageUp, Sparkles } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useId, useState, type ChangeEvent } from 'react';
+import { useEffect, useId, useRef, useState, type ChangeEvent } from 'react';
+import { flushSync } from 'react-dom';
 import type { ErrorDeApi } from '@/compartido/api/errores';
 import { cn } from '@/compartido/lib/utils';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Button, buttonVariants } from '@/compartido/ui/button';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { Spinner } from '@/compartido/ui/spinner';
-import {
+import type {
+  SugerenciaDescripcion,
   useSugerirDescripcion,
-  type SugerenciaDescripcion,
 } from './consultasProductos';
 import { TIPOS_FOTO, problemaDelArchivo } from './fotosFormato';
 
@@ -33,22 +34,31 @@ interface PropsArchivo {
 /**
  * «Sugerir descripción» (Figma P3 2031:1022; celular 2024:505, E4-H1). El personal sube la
  * foto del reverso y la IA del backend sugiere la descripción y los ingredientes. Es solo una
- * sugerencia: no toca el formulario; usarla, editarla o descartarla es de SCRUM-133. Si no hay
- * resultado, el aviso queda aquí y la descripción se sigue escribiendo a mano.
+ * sugerencia hasta que el personal la usa o la edita (E4-H2): entonces pasa al formulario y la
+ * tarjeta se cierra, lista para pedir otra; descartarla la cierra sin tocar el formulario. Si no
+ * hay resultado, el aviso queda aquí y la descripción se sigue escribiendo a mano.
  *
  * Escritorio (xl): una tarjeta menta en la columna derecha. Celular y pantallas medianas: una
  * tarjeta clara arriba del formulario, con la sugerencia en una caja menta (2024:522).
  */
 export const SugerenciaDescripcionProducto = ({
+  sugerir,
+  alUsar,
   className,
 }: {
+  /** La consulta vive en el formulario: con una sugerencia a la vista, avisa al salir. */
+  sugerir: ReturnType<typeof useSugerirDescripcion>;
+  /** Pasa la sugerencia al formulario; con `editar`, deja el cursor en la descripción. */
+  alUsar: (sugerencia: SugerenciaDescripcion, editar: boolean) => void;
   className?: string;
 }) => {
   const idTitulo = useId();
   const idProblema = useId();
   const [foto, setFoto] = useState<FotoReverso | null>(null);
   const [problema, setProblema] = useState<string | null>(null);
-  const sugerir = useSugerirDescripcion();
+  const botonGenerar = useRef<HTMLButtonElement>(null);
+  /** Para lectores de pantalla: la sugerencia pasó al formulario y la tarjeta se cerró. */
+  const [usada, setUsada] = useState(false);
 
   useEffect(() => {
     if (!foto) return;
@@ -74,6 +84,15 @@ export const SugerenciaDescripcionProducto = ({
   };
   const hayRespuesta =
     sugerir.isPending || sugerir.isError || sugerir.isSuccess;
+
+  /** Cierra la sugerencia; el foco, si no va a la descripción, a «Generar descripción». */
+  const cerrar = (enfocar: boolean, anunciar = false) => {
+    flushSync(() => {
+      sugerir.reset();
+      setUsada(anunciar);
+    });
+    if (enfocar) botonGenerar.current?.focus();
+  };
 
   return (
     <section
@@ -114,9 +133,13 @@ export const SugerenciaDescripcionProducto = ({
       )}
       {foto && (
         <Button
+          ref={botonGenerar}
           type="button"
           disabled={sugerir.isPending}
-          onClick={() => sugerir.mutate(foto.archivo)}
+          onClick={() => {
+            setUsada(false);
+            sugerir.mutate(foto.archivo);
+          }}
         >
           Generar descripción
         </Button>
@@ -135,6 +158,7 @@ export const SugerenciaDescripcionProducto = ({
             Leyendo la foto del reverso…
           </>
         )}
+        {usada && 'Pasamos la sugerencia a la descripción.'}
       </p>
       {hayRespuesta && (
         <div className="flex flex-col gap-3 rounded-md bg-marca-acento-suave p-3 xl:p-0">
@@ -154,7 +178,22 @@ export const SugerenciaDescripcionProducto = ({
               </AlertDescription>
             </Alert>
           )}
-          {sugerir.isSuccess && <Resultado sugerencia={sugerir.data} />}
+          {sugerir.isSuccess && (
+            <>
+              <Resultado sugerencia={sugerir.data} />
+              <AccionesSugerencia
+                alUsar={() => {
+                  alUsar(sugerir.data, false);
+                  cerrar(true, true);
+                }}
+                alEditar={() => {
+                  alUsar(sugerir.data, true);
+                  cerrar(false, true);
+                }}
+                alDescartar={() => cerrar(true)}
+              />
+            </>
+          )}
         </div>
       )}
     </section>
@@ -283,4 +322,29 @@ const Resultado = ({ sugerencia }: { sugerencia: SugerenciaDescripcion }) => (
       </div>
     )}
   </>
+);
+
+/** «Usar», «Editar» y «Descartar» (Figma 2031:1045 y 2024:531), a lo ancho en partes iguales. */
+const AccionesSugerencia = ({
+  alUsar,
+  alEditar,
+  alDescartar,
+}: {
+  alUsar: () => void;
+  alEditar: () => void;
+  alDescartar: () => void;
+}) => (
+  // Cada botón al menos de su texto: a 360 px «Descartar» toma lo que necesita. El foco en
+  // profundo: el anillo de acento no se ve sobre la menta
+  <div className="flex gap-2 *:flex-1 *:px-2 *:focus-visible:ring-0 *:focus-visible:outline-2 *:focus-visible:outline-offset-2 *:focus-visible:outline-marca-profundo">
+    <Button type="button" onClick={alUsar}>
+      Usar
+    </Button>
+    <Button type="button" variant="contorno" onClick={alEditar}>
+      Editar
+    </Button>
+    <Button type="button" variant="contorno" onClick={alDescartar}>
+      Descartar
+    </Button>
+  </div>
 );
