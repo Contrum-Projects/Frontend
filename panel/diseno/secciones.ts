@@ -71,8 +71,7 @@ export const SECCIONES: readonly SeccionPanel[] = [
   },
   {
     texto: 'Campañas',
-    // TODO(SCRUM-140): campañas
-    href: '/panel/campanas' as Route,
+    href: '/panel/campanas',
     icono: Mail,
     permiso: PERMISOS.CAMPANAS_GESTIONAR,
   },

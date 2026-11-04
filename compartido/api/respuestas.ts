@@ -1295,3 +1295,115 @@ export interface PreferenciaOfertas {
   email: string;
   correoVerificado: boolean;
 }
+
+/*
+ * Campañas del panel (E12-H3). TODO(SCRUM-70): el backend aún no las tiene; forma propuesta en
+ * docs/historias/SCRUM-140.md (API simulada). Permiso `campanas.gestionar`. Quién cuenta como
+ * destinatario (consentimiento, rebotes) y los textos del segmento los decide el backend.
+ */
+
+export type EstadoCampana = 'borrador' | 'enviada';
+
+/** Contactos con consentimiento: los contadores de «Campañas». */
+export interface ContactosCampanas {
+  aceptanPublicidad: number;
+  cuentasVerificadas: number;
+  suscriptoresSinCuenta: number;
+  conRebote: number;
+}
+
+/** Una fila de GET /api/gestion/campanas. */
+export interface CampanaListada {
+  codigo: string;
+  asunto: string;
+  /** Texto del segmento armado por el backend, p. ej. «Profesionales · Colorimetría». */
+  segmento: string;
+  /** Borrador: los que recibirían hoy; enviada: a cuántos salió. */
+  destinatarios: number;
+  estado: EstadoCampana;
+  /** ISO 8601. */
+  fechaEdicion: string;
+  /** ISO 8601; `null` en un borrador. */
+  fechaEnvio: string | null;
+  /** 0 a 100; `null` en un borrador. */
+  porcentajeApertura: number | null;
+}
+
+/** GET /api/gestion/campanas. */
+export interface ListadoCampanas {
+  contactos: ContactosCampanas;
+  /** En el orden del backend (las más recientes primero). */
+  campanas: CampanaListada[];
+}
+
+export interface OpcionSegmento {
+  valor: string;
+  texto: string;
+}
+
+/** Criterio extra de un tipo de segmento, p. ej. especialidad para «Profesionales». */
+export interface CriterioSegmento {
+  clave: string;
+  texto: string;
+  opciones: OpcionSegmento[];
+}
+
+export interface TipoSegmento extends OpcionSegmento {
+  criterios: CriterioSegmento[];
+}
+
+/** GET /api/gestion/campanas/segmentos: lo que se puede elegir en «¿A quién le llega?». */
+export interface OpcionesSegmentoCampana {
+  tipos: TipoSegmento[];
+}
+
+/** El segmento elegido, como se envía y se guarda. */
+export interface SegmentoCampana {
+  tipo: string;
+  /** Un valor por criterio como máximo. */
+  criterios: { clave: string; valor: string }[];
+}
+
+/** Cuerpo de POST /api/gestion/campanas, PUT …/{codigo} y POST …/vista-previa. */
+export interface DatosCampana {
+  asunto: string;
+  /** Texto simple: párrafos separados por una línea en blanco; `{nombre}` se reemplaza. */
+  cuerpo: string;
+  segmento: SegmentoCampana;
+}
+
+/** GET /api/gestion/campanas/{codigo}, y respuesta de POST y PUT. */
+export interface CampanaGestion extends DatosCampana {
+  codigo: string;
+  estado: EstadoCampana;
+  /** ISO 8601. */
+  fechaEdicion: string;
+  /** ISO 8601; `null` en un borrador. */
+  fechaEnvio: string | null;
+}
+
+/** POST /api/gestion/campanas/vista-previa: el correo como lo verá quien lo recibe. */
+export interface VistaPreviaCampana {
+  /** Nombre del remitente (RNF-26). */
+  remitente: string;
+  asunto: string;
+  /** El cuerpo en párrafos, con `{nombre}` ya reemplazado por un nombre de ejemplo. */
+  parrafos: string[];
+  /** Por qué le llega, p. ej. «Recibes este correo porque aceptaste ofertas…». */
+  pie: string;
+  /** Texto del enlace de baja que lleva cada correo (RNF-26). */
+  textoBaja: string;
+  /** Destinatarios con consentimiento del segmento, contados por el backend. */
+  destinatarios: number;
+  /** Texto del segmento, como en el listado. */
+  segmento: string;
+}
+
+/** POST /api/gestion/campanas/{codigo}/envio (202). Sale una sola vez; otra vez, 409. */
+export interface CampanaEnviada {
+  codigo: string;
+  estado: 'enviada';
+  destinatarios: number;
+  /** ISO 8601. */
+  fechaEnvio: string;
+}

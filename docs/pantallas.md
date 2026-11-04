@@ -55,7 +55,7 @@ autorizar cada llamada).
 | SCRUM-110                 | P5f Proveedores                         | 2064:3094                         | 2069:1819                   | `/panel/inventario/proveedores`                                                                             |
 | SCRUM-112, 113            | P5c Registrar salida                    | 2043:1689 (panel lateral)         | 2044:1209                   | panel lateral sobre `/panel/inventario`                                                                     |
 | SCRUM-135                 | P4 Verificaciones                       | 2029:872                          | 2025:481                    | `/panel/verificaciones`                                                                                     |
-| SCRUM-140, 141            | P7 Campañas · P7a Nueva · P7b Confirmar | 2045:1569 · 2046:1646 · 2046:1846 | 2047:1225 · 2047:1323       | `/panel/campanas`, `/panel/campanas/nueva`                                                                  |
+| SCRUM-140, 141            | P7 Campañas · P7a Nueva · P7b Confirmar | 2045:1569 · 2046:1646 · 2046:1846 | 2047:1225 · 2047:1323       | `/panel/campanas`, `/panel/campanas/nueva`, `/panel/campanas/[codigo]` (borrador)                           |
 | SCRUM-142 a 145           | P6 Reportes                             | 2041:1229                         | 2042:1010                   | `/panel/reportes`                                                                                           |
 | SCRUM-98                  | P8 Personal · P8a Nueva cuenta          | 2049:1896 · 2049:2070             | 2051:1343                   | `/panel/personal`; activar la cuenta desde el correo: `/personal/activar?token=` (ya fijada por el backend) |
 

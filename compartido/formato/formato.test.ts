@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { formatearDia, formatearDiaMes, formatearHora } from './fecha';
 import { formatearPesos, formatearPesosNetos } from './moneda';
+import { formatearNumero, formatearPorcentaje } from './numero';
 import { formatearRut, normalizarRut } from './rut';
 
 describe('formatearPesos()', () => {
@@ -59,5 +60,14 @@ describe('formatearHora()', () => {
     // 13:29 UTC del 3 de noviembre de 2026 = 10:29 en Chile continental (UTC−3)
     expect(formatearHora('2026-11-03T13:29:00Z')).toBe('10:29');
     expect(formatearHora('2026-11-03T12:05:00Z')).toBe('09:05');
+  });
+});
+
+describe('formatearNumero() y formatearPorcentaje()', () => {
+  it('separa los miles con punto y deja el porcentaje sin espacio', () => {
+    expect(formatearNumero(2140)).toBe('2.140');
+    expect(formatearNumero(186)).toBe('186');
+    expect(formatearPorcentaje(41)).toBe('41%');
+    expect(formatearPorcentaje(57.6)).toBe('58%');
   });
 });
