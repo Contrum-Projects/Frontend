@@ -54,3 +54,4 @@ filename="factura-<folio>.pdf"`). Factura pendiente, pedido de otra cuenta o ine
 - Sin documento ni pago aprobado (boleta sin pagar, o cancelado), no hay tarjeta.
 - Para el backend: el Swagger declara el 200 de `/documento` sin `content` (`application/pdf`);
   conviene declararlo como binario.
+- PR: https://github.com/Contrum-Projects/Frontend/pull/51
