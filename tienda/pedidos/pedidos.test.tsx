@@ -16,7 +16,7 @@ import {
   simularBackend,
 } from '@/tienda/cuenta/cuentaDePrueba';
 import { RUTAS } from '@/tienda/diseno/enlaces';
-import { paginaSiguiente } from './consultasPedidos';
+import { nombreDeArchivo, paginaSiguiente } from './consultasPedidos';
 import { PantallaDetallePedido } from './pantallaDetallePedido';
 import { PantallaMisPedidos } from './pantallaMisPedidos';
 
@@ -465,5 +465,156 @@ describe('Detalle del pedido (SCRUM-129)', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: `Pedido ${CODIGO}` }),
     ).toBeInTheDocument();
+  });
+});
+
+describe('Documento del pedido (SCRUM-128)', () => {
+  const PEDIDO = `GET /api/pedidos/${CODIGO}`;
+  const DOCUMENTO = `GET /api/pedidos/${CODIGO}/documento`;
+
+  const conFactura = (estado: 'pendiente' | 'disponible') =>
+    detalle({
+      tipoDocumento: 'factura',
+      idTransaccionPago: null,
+      documento:
+        estado === 'disponible'
+          ? { tipo: 'factura', estado, folio: 4521, fechaEmision: '2026-10-12' }
+          : { tipo: 'factura', estado, folio: null, fechaEmision: null },
+    });
+
+  /** jsdom no descarga: se espía el enlace temporal que arma la descarga. */
+  const espiarDescarga = () => {
+    const crearUrl = vi.fn(() => 'blob:tienda.test/factura');
+    // jsdom no implementa createObjectURL: se asigna en cada prueba que descarga
+    URL.createObjectURL = crearUrl;
+    URL.revokeObjectURL = vi.fn();
+    const pulsar = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {});
+    return { crearUrl, pulsar };
+  };
+
+  it('E9-H4 FE · disponible: al pulsar descargar pide el PDF y se descarga el archivo', async () => {
+    const { crearUrl, pulsar } = espiarDescarga();
+    simularBackend({
+      [PEDIDO]: () => responder(conFactura('disponible')),
+      [DOCUMENTO]: () =>
+        new Response(new Blob(['%PDF-1.7'], { type: 'application/pdf' }), {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': 'attachment; filename="factura-4521.pdf"',
+          },
+        }),
+    });
+    mostrarPantallaCuenta(<PantallaDetallePedido codigo={CODIGO} />);
+
+    const documento = await screen.findByRole('region', { name: 'Documento' });
+    expect(documento).toHaveTextContent('Factura n.º 4521');
+    await userEvent.click(
+      within(documento).getByRole('button', { name: 'Descargar PDF' }),
+    );
+
+    await vi.waitFor(() => expect(pulsar).toHaveBeenCalledOnce());
+    const enlace = pulsar.mock.contexts[0] as HTMLAnchorElement;
+    expect(enlace.download).toBe('factura-4521.pdf');
+    expect(enlace.href).toBe('blob:tienda.test/factura');
+    expect(crearUrl).toHaveBeenCalledWith(expect.any(Blob));
+    // La descarga lleva el token: pasa por el cliente de la API
+    const peticion = vi
+      .mocked(fetch)
+      .mock.calls.map(([entrada]) => entrada as Request)
+      .find((entrada) => entrada.url.endsWith('/documento'));
+    expect(peticion?.headers.get('Authorization')).toBe('Bearer token');
+  });
+
+  it('E9-H4 FE · pendiente: indica que el documento está pendiente y no ofrece la descarga', async () => {
+    simularBackend({ [PEDIDO]: () => responder(conFactura('pendiente')) });
+    mostrarPantallaCuenta(<PantallaDetallePedido codigo={CODIGO} />);
+
+    const documento = await screen.findByRole('region', { name: 'Documento' });
+    expect(documento).toHaveTextContent('Factura');
+    expect(documento).toHaveTextContent(
+      'Pendiente: la descargas aquí cuando esté lista.',
+    );
+    expect(
+      within(documento).queryByRole('button', { name: /Descargar/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('E9-H4 FE · disponible: si la descarga falla, muestra el mensaje del backend y deja reintentar', async () => {
+    espiarDescarga();
+    simularBackend({
+      [PEDIDO]: () => responder(conFactura('disponible')),
+      [DOCUMENTO]: () =>
+        responder(
+          {
+            statusCode: 404,
+            message: 'El documento del pedido aún no está disponible.',
+          },
+          404,
+        ),
+    });
+    mostrarPantallaCuenta(<PantallaDetallePedido codigo={CODIGO} />);
+
+    const documento = await screen.findByRole('region', { name: 'Documento' });
+    await userEvent.click(
+      within(documento).getByRole('button', { name: 'Descargar PDF' }),
+    );
+
+    expect(await within(documento).findByRole('alert')).toHaveTextContent(
+      'El documento del pedido aún no está disponible.',
+    );
+    expect(
+      within(documento).getByRole('button', { name: 'Descargar PDF' }),
+    ).toBeEnabled();
+  });
+
+  it('E9-H4 FE · boleta: muestra el comprobante con el n.º de operación de Mercado Pago, sin descarga', async () => {
+    simularBackend({ [PEDIDO]: () => responder(detalle()) });
+    mostrarPantallaCuenta(<PantallaDetallePedido codigo={CODIGO} />);
+
+    const documento = await screen.findByRole('region', { name: 'Documento' });
+    expect(documento).toHaveTextContent('Comprobante de pago');
+    expect(documento).toHaveTextContent(
+      'N.º de operación de Mercado Pago: 1234567890',
+    );
+    expect(
+      within(documento).queryByRole('button', { name: /Descargar/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('E9-H4 FE · sin documento: un pedido sin pagar con boleta no muestra la tarjeta', async () => {
+    simularBackend({
+      [PEDIDO]: () =>
+        responder(
+          detalle({ estado: 'pendiente_pago', idTransaccionPago: null }),
+        ),
+    });
+    mostrarPantallaCuenta(<PantallaDetallePedido codigo={CODIGO} />);
+
+    await screen.findByRole('region', { name: 'Envío' });
+    expect(
+      screen.queryByRole('region', { name: 'Documento' }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe('Nombre del archivo descargado (SCRUM-128)', () => {
+  it('E9-H4 FE · disponible: usa el nombre del backend solo si es un PDF simple', () => {
+    const porDefecto = 'factura-K7M2Q9XA4BCD.pdf';
+    expect(
+      nombreDeArchivo('attachment; filename="factura-4521.pdf"', porDefecto),
+    ).toBe('factura-4521.pdf');
+    expect(
+      nombreDeArchivo('attachment; filename="pagina.html"', porDefecto),
+    ).toBe(porDefecto);
+    expect(
+      nombreDeArchivo(
+        "attachment; filename*=UTF-8''factura-4521.pdf",
+        porDefecto,
+      ),
+    ).toBe(porDefecto);
+    expect(nombreDeArchivo(null, porDefecto)).toBe(porDefecto);
   });
 });

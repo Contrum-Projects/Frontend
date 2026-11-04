@@ -51,7 +51,7 @@ Total: 53 historias, 185 puntos.
 | 33  | [SCRUM-121](SCRUM-121.md) · E6-H2 · Pantalla de resultado del pago                       | 3   | En revisión | Sí      | SCRUM-48 | SCRUM-120            |
 | 34  | [SCRUM-129](SCRUM-129.md) · E8-H1 · Mis pedidos y detalle del pedido                     | 3   | En revisión | Sí      | SCRUM-57 | SCRUM-97             |
 | 35  | [SCRUM-124](SCRUM-124.md) · E7-H3 · Seguimiento del despacho en el pedido                | 2   | En revisión | Sí      | SCRUM-52 | SCRUM-129            |
-| 36  | [SCRUM-128](SCRUM-128.md) · E9-H4 · Descargar el comprobante o la factura                | 1   | Por hacer   | No      | SCRUM-56 | SCRUM-129            |
+| 36  | [SCRUM-128](SCRUM-128.md) · E9-H4 · Descargar el comprobante o la factura                | 1   | En curso    | Sí      | SCRUM-56 | SCRUM-129            |
 | 37  | [SCRUM-130](SCRUM-130.md) · E8-H2 · Panel de pedidos: cambio de estado                   | 5   | Por hacer   | No      | SCRUM-58 | SCRUM-99             |
 | 38  | [SCRUM-131](SCRUM-131.md) · E8-H3 · Cancelar un pedido pendiente de pago desde el panel  | 1   | Por hacer   | No      | SCRUM-59 | SCRUM-130            |
 | 39  | [SCRUM-127](SCRUM-127.md) · E9-H3 · Facturas por emitir y registro de la factura         | 5   | Por hacer   | No      | SCRUM-55 | SCRUM-130            |

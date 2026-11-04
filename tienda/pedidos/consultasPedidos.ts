@@ -1,8 +1,8 @@
 'use client';
 
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 import { api } from '@/compartido/api/cliente';
-import { ErrorDeApi, exigir } from '@/compartido/api/errores';
+import { ErrorDeApi, errorDeApi, exigir } from '@/compartido/api/errores';
 import type {
   DetallePedidoCuenta,
   HistorialPedidos,
@@ -76,4 +76,56 @@ export const useDetallePedido = (codigoPedido: string) =>
           }),
         ),
       ),
+  });
+
+/**
+ * «factura-4521.pdf» desde `Content-Disposition: attachment; filename="factura-4521.pdf"`. Solo
+ * acepta un nombre simple terminado en `.pdf` (no `filename*=`); si no, usa `porDefecto`.
+ */
+export const nombreDeArchivo = (
+  cabecera: string | null,
+  porDefecto: string,
+) => {
+  const nombre = cabecera?.match(/filename\s*=\s*"?([^";]+)"?/i)?.[1]?.trim();
+  return nombre && /^[\w.-]+\.pdf$/i.test(nombre) ? nombre : porDefecto;
+};
+
+/** Guarda el archivo en el equipo con un enlace temporal, sin abrir otra pestaña. */
+const guardarArchivo = (archivo: Blob, nombre: string) => {
+  const url = URL.createObjectURL(archivo);
+  const enlace = document.createElement('a');
+  enlace.href = url;
+  enlace.download = nombre;
+  enlace.click();
+  // Liberarla en el mismo instante puede cancelar la descarga en algunos navegadores
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+/**
+ * E9-H4, criterio 1 · Descarga el PDF de la factura del pedido. Va por `api` (con el token y por el
+ * proxy), no con un enlace directo: el backend pide la sesión. Mientras la factura no se registre
+ * responde 404 con su mensaje.
+ */
+export const useDescargarDocumento = (codigoPedido: string) =>
+  useMutation({
+    mutationFn: () =>
+      conErrorDeApi(async () => {
+        const resultado = await api.GET(
+          '/api/pedidos/{codigoPedido}/documento',
+          {
+            params: { path: { codigoPedido } },
+            parseAs: 'blob',
+          },
+        );
+        const archivo = exigir<Blob>(resultado);
+        // Solo se guarda un PDF: otra cosa es una respuesta inesperada
+        if (archivo.type !== 'application/pdf') throw errorDeApi(undefined);
+        guardarArchivo(
+          archivo,
+          nombreDeArchivo(
+            resultado.response.headers.get('content-disposition'),
+            `factura-${codigoPedido}.pdf`,
+          ),
+        );
+      }),
   });
