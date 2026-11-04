@@ -58,3 +58,4 @@ Estado al 04-11-2026 (`compartido/api/esquema.d.ts` de `main`): **Sí**.
 - **Pendiente con diseño:** en la edición, la etiqueta de origen muestra lo guardado hasta
   guardar (tras «Usar» sigue «Manual»). El alto de 38 px del botón mediano en celular y el foco
   de acento de las áreas de texto son de los componentes base, fuera de esta historia.
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/56
