@@ -45,6 +45,8 @@ Los dos `POST` responden 409 si la solicitud ya no está en revisión manual. To
 
 ## Notas de trabajo
 
+**PR:** https://github.com/Contrum-Projects/Frontend/pull/58
+
 **Decisiones (4-11-2026, con el usuario):**
 
 - **El criterio 2 cambió con el backend.** Desde el 2 nov ya no hay OCR ni puntaje de confianza
