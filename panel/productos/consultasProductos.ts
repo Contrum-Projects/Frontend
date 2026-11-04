@@ -7,7 +7,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { api } from '@/compartido/api/cliente';
-import { exigir } from '@/compartido/api/errores';
+import { type ErrorDeApi, exigir } from '@/compartido/api/errores';
 import type { components } from '@/compartido/api/esquema';
 import type {
   FormatoPanel,
@@ -264,3 +264,28 @@ export const useQuitarFoto = (productoId: number, formatoId: number) =>
       }),
     ),
   ).mutacion;
+
+/** Respuesta de POST /api/catalogo/descripciones/sugerencia (SCRUM-60). */
+export type SugerenciaDescripcion = Awaited<ReturnType<typeof pedirSugerencia>>;
+
+const pedirSugerencia = async (archivo: File) => {
+  const datos = new FormData();
+  datos.append('imagen', archivo);
+  return exigir(
+    await api.POST('/api/catalogo/descripciones/sugerencia', {
+      body: { imagen: '' },
+      // openapi-fetch deja que el navegador ponga el Content-Type con su separador
+      bodySerializer: () => datos,
+    }),
+  );
+};
+
+/**
+ * Descripción e ingredientes sugeridos desde la foto del reverso (E4-H1). No guarda nada. Los
+ * errores llegan como `ErrorDeApi` (sin conexión, con estado 0); la tarjeta elige el texto.
+ */
+export const useSugerirDescripcion = () =>
+  useMutation<SugerenciaDescripcion, ErrorDeApi, File>({
+    mutationFn: (archivo: File) =>
+      conErrorDeApi(() => pedirSugerencia(archivo)),
+  });

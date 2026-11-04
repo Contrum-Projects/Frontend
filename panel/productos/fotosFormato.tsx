@@ -25,11 +25,11 @@ const MINIATURAS_VISIBLES = 3;
  * /api/catalogo/articulos/{id}/imagenes). Se revisan antes de enviar para no mandar un archivo
  * que será rechazado; el backend los vuelve a revisar (el tipo, por el contenido).
  */
-const TIPOS_FOTO = ['image/jpeg', 'image/png', 'image/webp'];
+export const TIPOS_FOTO = ['image/jpeg', 'image/png', 'image/webp'];
 const TAMANO_MAXIMO_FOTO = 5 * 1024 * 1024;
 
 /** El mismo mensaje que responde el backend, o `null` si el archivo se puede enviar. */
-const problemaDelArchivo = (archivo: File) => {
+export const problemaDelArchivo = (archivo: File) => {
   if (!TIPOS_FOTO.includes(archivo.type)) {
     return 'La imagen debe ser JPEG, PNG o WebP.';
   }

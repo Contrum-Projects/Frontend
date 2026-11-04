@@ -39,6 +39,7 @@ import {
 } from './esquemaProducto';
 import { OrigenDescripcionProducto } from './etiquetasProducto';
 import { urlProducto } from './listaProductos';
+import { SugerenciaDescripcionProducto } from './sugerenciaDescripcion';
 
 /** Tarjeta de Figma (P3 2029:742): superficie, borde y título. */
 export const Tarjeta = ({
@@ -69,7 +70,7 @@ export const Tarjeta = ({
 
 /**
  * Datos y descripción del producto (Figma P3 2029:742 y 2029:763, E3-H1 criterios 2 y 4). Los
- * formatos, las fotos y la sugerencia de IA llegan con SCRUM-101, 102 y 132.
+ * formatos y las fotos van aparte (SCRUM-101 y 102); la sugerencia de IA, al lado (SCRUM-132).
  */
 export function FormularioProductoPanel({
   producto,
@@ -176,162 +177,169 @@ export function FormularioProductoPanel({
           <AlertDescription>{aviso}</AlertDescription>
         </Alert>
       )}
-      <Tarjeta titulo="Datos del producto">
-        {/* Celular: el nombre arriba y marca con categoría lado a lado (Figma 2024:544).
-            Escritorio: los tres en una fila, a todo el ancho de la página. */}
-        <div className="grid grid-cols-2 gap-x-3 gap-y-4 lg:grid-cols-4">
-          <CampoFormulario
-            id="producto-nombre"
-            etiqueta="Nombre"
-            obligatorio
-            error={errors.nombre?.message}
-            className="col-span-2"
-          >
-            {(propsControl) => (
-              <Input
-                {...propsControl}
-                autoComplete="off"
-                {...register('nombre')}
-              />
-            )}
-          </CampoFormulario>
-          <CampoFormulario
-            id="producto-marca"
-            etiqueta="Marca"
-            obligatorio
-            error={errors.marcaId?.message}
-          >
-            {(propsControl) => (
-              <Controller
-                control={control}
-                name="marcaId"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger
-                      {...propsControl}
-                      ref={field.ref}
-                      onBlur={field.onBlur}
-                      className="w-full"
-                    >
-                      <SelectValue placeholder="Elige una marca" />
-                    </SelectTrigger>
-                    <SelectContent position="popper">
-                      {opcionesMarca.map((marca) => (
-                        <SelectItem key={marca.id} value={String(marca.id)}>
-                          {marca.nombre}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            )}
-          </CampoFormulario>
-          <CampoFormulario
-            id="producto-categoria"
-            etiqueta="Categoría"
-            obligatorio
-            error={errors.categoriaId?.message}
-          >
-            {(propsControl) => (
-              <Controller
-                control={control}
-                name="categoriaId"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger
-                      {...propsControl}
-                      ref={field.ref}
-                      onBlur={field.onBlur}
-                      className="w-full"
-                    >
-                      <SelectValue placeholder="Elige una categoría" />
-                    </SelectTrigger>
-                    {/* No pasa del ancho de la página: las rutas largas hacen salto de línea */}
-                    <SelectContent
-                      position="popper"
-                      className="max-w-(--radix-select-content-available-width)"
-                    >
-                      {opcionesCategoria.map((opcion) => (
-                        <SelectItem key={opcion.id} value={String(opcion.id)}>
-                          {opcion.ruta}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            )}
-          </CampoFormulario>
-        </div>
-        <Controller
-          control={control}
-          name="exclusivo"
-          render={({ field }) => (
-            <div className="flex items-center gap-3">
-              <Switch
-                id="producto-exclusivo"
-                ref={field.ref}
-                checked={field.value}
-                onCheckedChange={field.onChange}
-                onBlur={field.onBlur}
-                aria-invalid={errors.exclusivo ? true : undefined}
-                aria-describedby={
-                  errors.exclusivo
-                    ? 'producto-exclusivo-ayuda producto-exclusivo-error'
-                    : 'producto-exclusivo-ayuda'
-                }
-              />
-              <div className="flex min-w-0 flex-col">
-                <label
-                  htmlFor="producto-exclusivo"
-                  className="texto-etiqueta text-texto-principal"
-                >
-                  Exclusivo para profesionales
-                </label>
-                <span
-                  id="producto-exclusivo-ayuda"
-                  className="texto-leyenda text-texto-secundario"
-                >
-                  Solo lo ven y compran peluqueros verificados
-                </span>
-                {errors.exclusivo?.message && (
-                  <span
-                    id="producto-exclusivo-error"
-                    className="texto-pequeno text-destructive"
+      {/* Celular y pantallas medianas: la sugerencia arriba (Figma 2024:505). Desde xl, a la
+          derecha como el asistente de Figma (2029:830); antes, la columna de 372 px aplasta
+          los datos (igual que en packs) */}
+      <div className="grid grid-cols-1 items-start gap-4 lg:gap-6 xl:grid-cols-[minmax(0,1fr)_372px]">
+        <SugerenciaDescripcionProducto className="xl:col-start-2 xl:row-span-2 xl:row-start-1" />
+        <Tarjeta titulo="Datos del producto">
+          {/* Celular y escritorio con la sugerencia al lado (xl): el nombre arriba y marca con
+            categoría lado a lado (Figma 2024:544 y 2029:742). Entre lg y xl la tarjeta va a
+            todo el ancho: los tres en una fila. */}
+          <div className="grid grid-cols-2 gap-x-3 gap-y-4 lg:grid-cols-4 xl:grid-cols-2">
+            <CampoFormulario
+              id="producto-nombre"
+              etiqueta="Nombre"
+              obligatorio
+              error={errors.nombre?.message}
+              className="col-span-2"
+            >
+              {(propsControl) => (
+                <Input
+                  {...propsControl}
+                  autoComplete="off"
+                  {...register('nombre')}
+                />
+              )}
+            </CampoFormulario>
+            <CampoFormulario
+              id="producto-marca"
+              etiqueta="Marca"
+              obligatorio
+              error={errors.marcaId?.message}
+            >
+              {(propsControl) => (
+                <Controller
+                  control={control}
+                  name="marcaId"
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger
+                        {...propsControl}
+                        ref={field.ref}
+                        onBlur={field.onBlur}
+                        className="w-full"
+                      >
+                        <SelectValue placeholder="Elige una marca" />
+                      </SelectTrigger>
+                      <SelectContent position="popper">
+                        {opcionesMarca.map((marca) => (
+                          <SelectItem key={marca.id} value={String(marca.id)}>
+                            {marca.nombre}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              )}
+            </CampoFormulario>
+            <CampoFormulario
+              id="producto-categoria"
+              etiqueta="Categoría"
+              obligatorio
+              error={errors.categoriaId?.message}
+            >
+              {(propsControl) => (
+                <Controller
+                  control={control}
+                  name="categoriaId"
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger
+                        {...propsControl}
+                        ref={field.ref}
+                        onBlur={field.onBlur}
+                        className="w-full"
+                      >
+                        <SelectValue placeholder="Elige una categoría" />
+                      </SelectTrigger>
+                      {/* No pasa del ancho de la página: las rutas largas hacen salto de línea */}
+                      <SelectContent
+                        position="popper"
+                        className="max-w-(--radix-select-content-available-width)"
+                      >
+                        {opcionesCategoria.map((opcion) => (
+                          <SelectItem key={opcion.id} value={String(opcion.id)}>
+                            {opcion.ruta}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              )}
+            </CampoFormulario>
+          </div>
+          <Controller
+            control={control}
+            name="exclusivo"
+            render={({ field }) => (
+              <div className="flex items-center gap-3">
+                <Switch
+                  id="producto-exclusivo"
+                  ref={field.ref}
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  onBlur={field.onBlur}
+                  aria-invalid={errors.exclusivo ? true : undefined}
+                  aria-describedby={
+                    errors.exclusivo
+                      ? 'producto-exclusivo-ayuda producto-exclusivo-error'
+                      : 'producto-exclusivo-ayuda'
+                  }
+                />
+                <div className="flex min-w-0 flex-col">
+                  <label
+                    htmlFor="producto-exclusivo"
+                    className="texto-etiqueta text-texto-principal"
                   >
-                    {errors.exclusivo.message}
+                    Exclusivo para profesionales
+                  </label>
+                  <span
+                    id="producto-exclusivo-ayuda"
+                    className="texto-leyenda text-texto-secundario"
+                  >
+                    Solo lo ven y compran peluqueros verificados
                   </span>
-                )}
+                  {errors.exclusivo?.message && (
+                    <span
+                      id="producto-exclusivo-error"
+                      className="texto-pequeno text-destructive"
+                    >
+                      {errors.exclusivo.message}
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-        />
-      </Tarjeta>
-      <Tarjeta
-        titulo="Descripción"
-        extra={
-          producto && (
-            <OrigenDescripcionProducto origen={producto.origenDescripcion} />
-          )
-        }
-      >
-        <CampoFormulario
-          id="producto-descripcion"
-          etiqueta="Descripción del producto"
-          obligatorio
-          error={errors.descripcion?.message}
+            )}
+          />
+        </Tarjeta>
+        <Tarjeta
+          titulo="Descripción"
+          extra={
+            producto && (
+              <OrigenDescripcionProducto origen={producto.origenDescripcion} />
+            )
+          }
         >
-          {(propsControl) => (
-            <Textarea
-              {...propsControl}
-              placeholder="Escribe la descripción"
-              className="min-h-28 rounded-md border-[1.5px] border-input bg-fondo-hueso px-4 py-3 texto-cuerpo shadow-none focus-visible:ring-ring/40 lg:texto-pequeno"
-              {...register('descripcion')}
-            />
-          )}
-        </CampoFormulario>
-      </Tarjeta>
+          <CampoFormulario
+            id="producto-descripcion"
+            etiqueta="Descripción del producto"
+            obligatorio
+            error={errors.descripcion?.message}
+          >
+            {(propsControl) => (
+              <Textarea
+                {...propsControl}
+                placeholder="Escribe la descripción"
+                className="min-h-28 rounded-md border-[1.5px] border-input bg-fondo-hueso px-4 py-3 texto-cuerpo shadow-none focus-visible:ring-ring/40 lg:texto-pequeno"
+                {...register('descripcion')}
+              />
+            )}
+          </CampoFormulario>
+        </Tarjeta>
+      </div>
       <div className="flex flex-col-reverse gap-3 lg:hidden">
         <AccionesProducto enviando={isSubmitting} />
       </div>
