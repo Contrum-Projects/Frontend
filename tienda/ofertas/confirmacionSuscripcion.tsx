@@ -113,11 +113,15 @@ const EnlaceVencido = ({ mensaje }: { mensaje: string }) => (
   </ResultadoCuenta>
 );
 
-/** Ícono, título, mensaje y botón mientras se confirma. */
-export const ConfirmacionEsqueleto = () => (
+/** Ícono, título, mensaje y botón mientras se envía el enlace (confirmación o baja). */
+export const ConfirmacionEsqueleto = ({
+  texto = 'Confirmando tu suscripción…',
+}: {
+  texto?: string;
+}) => (
   <div className="flex flex-col items-start gap-4">
     <span className="sr-only" role="status">
-      Confirmando tu suscripción…
+      {texto}
     </span>
     <Skeleton aria-hidden className="size-14 rounded-full" />
     <Skeleton aria-hidden className="h-[34px] w-56" />

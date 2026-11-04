@@ -43,6 +43,12 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Enlaces de los correos con token en la URL (E12-H1, E12-H2): sin Referer desde el primer
+      // byte, también en las peticiones que salen antes de leer el <meta> de la página
+      ...['/suscripcion/confirmar', '/ofertas/baja'].map((source) => ({
+        source,
+        headers: [{ key: 'Referrer-Policy', value: 'no-referrer' }],
+      })),
     ];
   },
   turbopack: {

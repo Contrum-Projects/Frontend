@@ -22,8 +22,7 @@ export const RUTAS = {
   misDatos: '/cuenta/datos',
   direcciones: '/cuenta/datos#direcciones',
   facturacion: '/cuenta/facturacion',
-  // TODO(SCRUM-139): ofertas por correo
-  ofertas: '/cuenta/ofertas' as Route,
+  ofertas: '/cuenta/ofertas',
   misPedidos: '/cuenta/pedidos' as Route,
   verificacion: '/cuenta/verificacion',
   perfilProfesional: '/cuenta/perfil-profesional',
