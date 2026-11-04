@@ -60,7 +60,7 @@ Total: 53 historias, 185 puntos.
 | 42  | [SCRUM-134](SCRUM-134.md) · E10-H1 · Formulario y estados de la verificación profesional | 5   | En revisión | Sí      | SCRUM-62 | SCRUM-97             |
 | 43  | [SCRUM-135](SCRUM-135.md) · E10-H3 · Panel de verificaciones: revisión manual            | 5   | En revisión | Sí      | SCRUM-64 | SCRUM-99             |
 | 44  | [SCRUM-136](SCRUM-136.md) · E10-H4 · Cuenta profesional activa en la tienda              | 2   | En revisión | Sí      | SCRUM-65 | SCRUM-109, SCRUM-134 |
-| 45  | [SCRUM-137](SCRUM-137.md) · E10-H5 · Pantalla Perfil profesional                         | 2   | En curso    | Sí      | SCRUM-66 | SCRUM-136            |
+| 45  | [SCRUM-137](SCRUM-137.md) · E10-H5 · Pantalla Perfil profesional                         | 2   | En revisión | Sí      | SCRUM-66 | SCRUM-136            |
 | 46  | [SCRUM-138](SCRUM-138.md) · E12-H1 · Formulario de suscripción a ofertas                 | 2   | Por hacer   | No      | SCRUM-68 | SCRUM-106            |
 | 47  | [SCRUM-139](SCRUM-139.md) · E12-H2 · Pantalla Ofertas por correo y baja                  | 2   | Por hacer   | No      | SCRUM-69 | SCRUM-97             |
 | 48  | [SCRUM-140](SCRUM-140.md) · E12-H3 · Panel de campañas: redactar, segmentar y enviar     | 8   | Por hacer   | No      | SCRUM-70 | SCRUM-99             |
