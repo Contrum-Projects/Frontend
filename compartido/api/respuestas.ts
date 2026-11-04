@@ -1281,3 +1281,17 @@ export interface SolicitudResuelta {
   motivoRechazo: string | null;
   resolutor: ResolutorSolicitud;
 }
+
+/**
+ * GET y PUT /api/cuentas/yo/ofertas (E12-H2). TODO(SCRUM-69): el backend aún no lo tiene; forma
+ * propuesta en docs/historias/SCRUM-139.md (API simulada). Sale de `Usuario.aceptaMarketingEmail`,
+ * `fechaConsentimientoMarketing` y `fechaVerificacionCorreo`.
+ */
+export interface PreferenciaOfertas {
+  /** Si la cuenta acepta publicidad por correo. */
+  activa: boolean;
+  /** ISO 8601. Cuándo la activó; `null` si nunca la activó o la desactivó. */
+  fechaConsentimiento: string | null;
+  email: string;
+  correoVerificado: boolean;
+}
