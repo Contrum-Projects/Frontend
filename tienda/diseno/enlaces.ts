@@ -26,6 +26,8 @@ export const RUTAS = {
   ofertas: '/cuenta/ofertas' as Route,
   misPedidos: '/cuenta/pedidos' as Route,
   verificacion: '/cuenta/verificacion',
+  // TODO(SCRUM-137): pantalla del perfil profesional
+  perfilProfesional: '/cuenta/perfil-profesional' as Route,
   // Sin historia: listado de packs, ayuda, profesionales y legales
   packs: '/packs' as Route,
   precioProfesional: '/precio-profesional' as Route,

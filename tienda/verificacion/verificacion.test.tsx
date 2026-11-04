@@ -204,12 +204,12 @@ describe('E10-H1 FE · Verificación profesional', () => {
 
     expect(
       await screen.findByRole('heading', {
-        name: 'Tu cuenta profesional está activa',
+        name: 'Cuenta verificada',
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('link', { name: 'Ver precios profesionales' }),
-    ).toHaveAttribute('href', '/catalogo');
+      screen.getByText('Ya ves el precio profesional en todo el catálogo.'),
+    ).toBeInTheDocument();
     expect(escrituras).toEqual([
       'POST /api/verificaciones',
       'POST /api/cuentas/sesion/renovar',
@@ -499,10 +499,10 @@ describe('E10-H1 FE · Verificación profesional', () => {
           }),
         ),
     });
-    abrir();
+    mostrarPantallaCuenta(<PantallaVerificacion />, undefined, 'profesional');
 
     const titulo = await screen.findByRole('heading', {
-      name: 'Tu cuenta profesional está activa',
+      name: 'Cuenta verificada',
     });
     // Al abrir la pantalla el foco no se mueve: solo tras un envío
     expect(titulo).not.toHaveFocus();

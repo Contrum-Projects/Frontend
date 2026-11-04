@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 74.
+ * Versión de la API: 0.1.0. Rutas: 75.
  */
 
 export interface paths {
@@ -1147,6 +1147,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/perfil-profesional/yo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ver mi perfil profesional (E10-H5) */
+        get: operations["PerfilProfesionalController_obtener"];
+        /**
+         * Guardar mi perfil profesional (E10-H5)
+         * @description Crea el perfil o lo reemplaza entero. Obligatorios: años de experiencia (0 a 40), una modalidad de trabajo y al menos una especialidad. El lugar de trabajo y la red social son opcionales; si no vienen, quedan sin valor.
+         */
+        put: operations["PerfilProfesionalController_guardar"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/carrito": {
         parameters: {
             query?: never;
@@ -2077,6 +2098,34 @@ export interface components {
              * @example El certificado adjunto no es legible ni indica el nombre del titular.
              */
             motivo: string;
+        };
+        GuardarPerfilProfesionalDto: {
+            /** @example 8 */
+            anosExperiencia: number;
+            /**
+             * @description Una sola modalidad de trabajo.
+             * @example arriendo_sillon
+             * @enum {string}
+             */
+            modalidad: "dependiente_salon" | "arriendo_sillon" | "salon_propio" | "domicilio_clienta" | "domicilio_propio" | "eventos_producciones" | "docente";
+            /**
+             * @description Al menos una especialidad, sin repetir.
+             * @example [
+             *       "coloracion_tinturas",
+             *       "alisados"
+             *     ]
+             */
+            especialidades: ("corte_dama" | "corte_varon_barberia" | "peinados_recogidos" | "brushing_planchado" | "coloracion_tinturas" | "mechas_balayage" | "decoloracion_correccion" | "canas_matizacion" | "alisados" | "permanente_ondulacion" | "tratamientos_reparacion" | "tricologia" | "extensiones_pelucas" | "rizado_afro" | "peluqueria_infantil" | "novias_eventos")[];
+            /**
+             * @description Opcional. Nombre del salón o lugar donde trabaja.
+             * @example Salón Bella Vista
+             */
+            nombreLugarTrabajo?: Record<string, never> | null;
+            /**
+             * @description Opcional. Enlace https:// al perfil en Instagram, Facebook o TikTok (instagram.com, facebook.com o tiktok.com, con o sin www).
+             * @example https://www.instagram.com/bellavista.salon
+             */
+            redSocial?: Record<string, never> | null;
         };
         AgregarArticuloCarritoDto: {
             /**
@@ -5505,6 +5554,88 @@ export interface operations {
             };
             /** @description El archivo ya se eliminó; el mensaje indica cuándo. */
             410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PerfilProfesionalController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Perfil profesional de la cuenta. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La cuenta no tiene la verificación aprobada (no es profesional). Un cliente recién aprobado debe renovar la sesión. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Aún no completa su perfil. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PerfilProfesionalController_guardar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuardarPerfilProfesionalDto"];
+            };
+        };
+        responses: {
+            /** @description Perfil guardado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta algún dato obligatorio o hay datos inválidos. El mensaje indica cuáles. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La cuenta no tiene la verificación aprobada (no es profesional). Un cliente recién aprobado debe renovar la sesión. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
