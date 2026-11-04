@@ -54,3 +54,4 @@ sugerencia. Sin ruta simulada.
 - **Textos sin Figma:** el estado sin foto («Sube la foto del reverso y te sugerimos la
   descripción y los ingredientes.»), «Subir foto del reverso» y la carga («Leyendo la foto del
   reverso…»). Revisar con diseño.
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/55
