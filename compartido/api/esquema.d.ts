@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 61.
+ * Versión de la API: 0.1.0. Rutas: 74.
  */
 
 export interface paths {
@@ -591,8 +591,8 @@ export interface paths {
         get: operations["ProductosController_listar"];
         put?: never;
         /**
-         * Crear un producto (E3-H1)
-         * @description Guarda el producto activo, con su categoría, su marca y su canal de venta (general o profesional). Los formatos, precios e imágenes se agregan en sus propias historias.
+         * Crear un producto (E3-H1, E4-H2)
+         * @description Guarda el producto activo, con su categoría, su marca y su canal de venta (general o profesional). Los formatos, precios e imágenes se agregan en sus propias historias. Si la descripción partió de una sugerencia de la IA, envía `sugerencia` (texto sugerido y su firma): igual a la sugerida queda con origen «ia» y cambiada con «ia_editada»; sin `sugerencia` es «manual». La sugerencia nunca se guarda sola: solo lo que se envía aquí.
          */
         post: operations["ProductosController_crear"];
         delete?: never;
@@ -616,8 +616,8 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * Editar un producto (E3-H1)
-         * @description Cambia nombre, descripción, categoría, marca o canal de venta. Solo se modifica lo que llega; la marca se puede cambiar pero no quitar.
+         * Editar un producto (E3-H1, E4-H2)
+         * @description Cambia nombre, descripción, ingredientes, categoría, marca o canal de venta. Solo se modifica lo que llega; la marca se puede cambiar pero no quitar. Con `sugerencia` (exige `descripcion`) el origen se decide como al crear; sin ella, una descripción de origen «ia» que cambia pasa a «ia_editada».
          */
         patch: operations["ProductosController_actualizar"];
         trace?: never;
@@ -803,6 +803,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/catalogo/descripciones/sugerencia": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sugerir la descripción y los ingredientes desde la foto del reverso (E4-H1)
+         * @description Recibe la foto del reverso del producto (JPEG, PNG o WebP de hasta 5 MB) en el campo `imagen` y devuelve una descripción de venta sugerida y los ingredientes transcritos, para revisarlos antes de guardarlos. No guarda la foto ni la sugerencia. `ingredientes` es `null` si la foto no los muestra. Hasta 15 por minuto por cuenta.
+         */
+        post: operations["SugerenciaDescripcionController_sugerir"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tienda/productos": {
         parameters: {
             query?: never;
@@ -959,6 +979,166 @@ export interface paths {
          * @description Entrega el PDF de la factura registrada del pedido, como descarga. Un pedido de otra cuenta responde 404, igual que uno que no existe. Mientras la factura no se registre responde 404 sin archivo: el detalle del pedido (`GET /api/pedidos/:codigoPedido`) indica entonces que el documento está pendiente.
          */
         get: operations["DescargarDocumentoController_descargar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/verificaciones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Solicitar mi verificación como profesional (E10-H1)
+         * @description Sin cuerpo. Consulta en el SII el inicio de actividades del RUT de la cuenta, que debe estar registrado. Con el giro 960200 (Peluquería y otros tratamientos de belleza) vigente, la solicitud queda `aprobada`, la cuenta pasa a profesional y se le envía el correo de aviso (E10-H4): renovando la sesión (`POST /api/cuentas/sesion/renovar`) recibe el token con el rol nuevo y ve el precio mayorista. En cualquier otro caso, o si la consulta no está disponible, queda `pendiente` y `requiereDocumentos` es `true`: hay que adjuntar documentos para la revisión del personal. Nunca se rechaza sola. Si antes la rechazaron, se puede enviar una nueva y se consulta de nuevo.
+         */
+        post: operations["SolicitudVerificacionController_solicitar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/verificaciones/yo/documentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Adjuntar los documentos de mi solicitud de verificación (E10-H2)
+         * @description Para quien no pasó la verificación automática: la solicitud está `pendiente` y `requiereDocumentos` es `true`. Recibe de 1 a 5 documentos en el campo `archivos` (PDF, JPG o PNG, hasta 5 MB cada uno, reconocidos por su contenido) y, en el campo `tipos`, el tipo de cada uno en el mismo orden (`titulo`, `certificado` u `otro`; un certificado de curso vale como `certificado`). La solicitud pasa a `revision_manual`, a la espera del personal. Los archivos se guardan privados y no se entregan por esta API.
+         */
+        post: operations["SolicitudVerificacionController_adjuntarDocumentos"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/verificaciones/yo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver el estado de mi solicitud de verificación (E10-H1)
+         * @description La solicitud más reciente de la cuenta: su estado (`pendiente`, `revision_manual`, `aprobada` o `rechazada`), las fechas, el motivo si fue rechazada, si debe adjuntar documentos y el nombre y tipo de los que ya adjuntó. Nunca incluye lo que respondió el SII, el puntaje ni quién la resolvió.
+         */
+        get: operations["SolicitudVerificacionController_verMiSolicitud"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/verificaciones/{codigoPublico}/aprobar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Aprobar una solicitud en revisión manual (E10-H3)
+         * @description Sin cuerpo. Deja `aprobada` la solicitud en revisión manual de la cuenta y registra quién la resolvió y cuándo. En la misma operación la cuenta pasa a profesional y se le envía el correo de aviso (E10-H4); sus sesiones siguen abiertas y obtienen el precio mayorista al renovarse (`POST /api/cuentas/sesion/renovar`).
+         */
+        post: operations["RevisionVerificacionController_aprobar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/verificaciones/{codigoPublico}/rechazar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rechazar con motivo una solicitud en revisión manual (E10-H3)
+         * @description Deja `rechazada` la solicitud en revisión manual de la cuenta, guarda el motivo (obligatorio, de 10 a 1000 caracteres) y registra quién la resolvió y cuándo. Quien solicitó ve el motivo y puede enviar una solicitud nueva.
+         */
+        post: operations["RevisionVerificacionController_rechazar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/verificaciones/revision-manual": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar las solicitudes en revisión manual (E10-H7)
+         * @description Las solicitudes que esperan al personal, de la más antigua a la más reciente, con el nombre y el RUT de quien solicitó, la fecha de la solicitud y el motivo de la revisión (`sin_inicio_actividades`, `otro_giro` o `no_disponible`). Paginado con `pagina` y `limite`. `codigoPublicoCuenta` abre el detalle y sirve para aprobar o rechazar.
+         */
+        get: operations["ConsultaVerificacionController_listar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/verificaciones/{codigoPublico}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver el detalle de una solicitud de verificación (E10-H7)
+         * @description Los datos de la cuenta, su solicitud más reciente (estado, motivo de la revisión, resultado de la consulta al SII con fecha y giros, o `no_disponible` si falló) con sus documentos, y las solicitudes anteriores con su resolución. Un documento ya eliminado trae `fechaEliminacion`.
+         */
+        get: operations["ConsultaVerificacionController_detalle"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/verificaciones/{codigoPublico}/documentos/{numero}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Pedir el enlace temporal a un documento (E10-H7)
+         * @description Un enlace firmado para ver o descargar el documento `numero` de la solicitud más reciente de la cuenta. Vence en 60 segundos: pasado ese plazo se pide otro, así que se pide al abrirlo y no se guarda. Los archivos nunca son públicos.
+         */
+        get: operations["ConsultaVerificacionController_enlaceDocumento"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1235,6 +1415,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reportes/stock-bajo-minimo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Formatos con stock bajo el mínimo (E14-H4)
+         * @description Los formatos con stock mínimo definido cuyo stock total (todas las ubicaciones) está bajo él, con el stock actual, el mínimo y lo que falta, del que más falta al que menos. Es el mismo cálculo del aviso del panel de bodega (E11-H6). Se calcula al consultar; si ningún formato está bajo su mínimo, devuelve una lista vacía.
+         */
+        get: operations["ReporteStockBajoController_stockBajoMinimo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reportes/ventas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ventas por período y tipo de cliente (E14-H2)
+         * @description Cantidad de pedidos pagados y sus montos (neto, IVA y total, con el despacho incluido) entre las dos fechas, ambas incluidas y en hora de Chile, separados en minorista y mayorista según el precio que se aplicó al comprar, más el total. Los pedidos pendientes de pago y los cancelados no cuentan. Sin pedidos, todo en cero.
+         */
+        get: operations["ReporteVentasController_ventas"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/territorio/regiones": {
         parameters: {
             query?: never;
@@ -1269,6 +1489,43 @@ export interface paths {
         get: operations["TerritorioController_listarComunas"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/suscripciones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Suscribirse a las ofertas sin cuenta (E12-H1)
+         * @description Registra la suscripción inactiva y envía el enlace de confirmación. Responde lo mismo si el correo ya estaba suscrito.
+         */
+        post: operations["SuscripcionesController_suscribir"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/suscripciones/confirmar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirmar la suscripción con el token del enlace (E12-H1) */
+        post: operations["SuscripcionesController_confirmar"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1585,11 +1842,24 @@ export interface components {
              */
             padreId?: Record<string, never> | null;
         };
+        SugerenciaUsadaDto: {
+            /** @description La descripción sugerida, sin cambios. */
+            descripcion: string;
+            /** @description La firma que vino con la sugerencia. */
+            firma: string;
+        };
         CrearProductoDto: {
             /** @example Shampoo reparador */
             nombre: string;
             /** @example Repara el cabello dañado por procesos químicos. */
             descripcion: string;
+            /** @description Solo si la descripción partió de una sugerencia de la IA. Igual a la sugerida: origen «ia»; cambiada: «ia_editada». Sin este campo, al crear el origen es «manual». */
+            sugerencia?: components["schemas"]["SugerenciaUsadaDto"];
+            /**
+             * @description Lista de ingredientes del reverso (E4-H2). Opcional.
+             * @example Aqua, Sodium Laureth Sulfate, Glycerin
+             */
+            ingredientes?: Record<string, never> | null;
             /**
              * @description Id de la categoría o subcategoría del producto.
              * @example 1
@@ -1611,6 +1881,10 @@ export interface components {
             /** @example Shampoo reparador */
             nombre?: string;
             descripcion?: string;
+            /** @description Solo si la descripción partió de una sugerencia de la IA. Igual a la sugerida: origen «ia»; cambiada: «ia_editada». Sin este campo, al crear el origen es «manual». */
+            sugerencia?: components["schemas"]["SugerenciaUsadaDto"];
+            /** @description `null` o un texto vacío borra la lista de ingredientes. */
+            ingredientes?: Record<string, never> | null;
             /** @example 2 */
             categoriaId?: number;
             /**
@@ -1797,6 +2071,13 @@ export interface components {
             /** @example Alza del proveedor */
             motivo: string;
         };
+        RechazarSolicitudDto: {
+            /**
+             * @description Obligatorio. Se recorta y queda guardado en la solicitud; quien solicitó lo ve.
+             * @example El certificado adjunto no es legible ni indica el nombre del titular.
+             */
+            motivo: string;
+        };
         AgregarArticuloCarritoDto: {
             /**
              * @description Id del artículo: el de un formato de producto o el de un pack.
@@ -1896,6 +2177,17 @@ export interface components {
             codigoCut: string;
             /** @example Providencia */
             nombre: string;
+        };
+        SuscribirseDto: {
+            /**
+             * @description Se guarda recortado y en minúsculas.
+             * @example camila@correo.cl
+             */
+            email: string;
+        };
+        ConfirmarSuscripcionDto: {
+            /** @description Token firmado que llegó en el enlace del correo. */
+            token: string;
         };
     };
     responses: never;
@@ -3519,7 +3811,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Datos inválidos o marca desactivada. */
+            /** @description Datos inválidos, marca desactivada o sugerencia con una firma que no corresponde. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -3612,7 +3904,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Datos inválidos, cuerpo vacío o marca desactivada. */
+            /** @description Datos inválidos, cuerpo vacío, marca desactivada, sugerencia sin descripción o con una firma que no corresponde. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -4345,6 +4637,87 @@ export interface operations {
             };
         };
     };
+    SugerenciaDescripcionController_sugerir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    imagen: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Descripción e ingredientes sugeridos. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        descripcion?: string;
+                        ingredientes?: string | null;
+                        /** @description Se reenvía en `sugerencia` al crear o editar el producto para registrar el origen de la descripción. */
+                        firma?: string;
+                    };
+                };
+            };
+            /** @description Sin imagen, o el archivo no es JPEG, PNG ni WebP. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar el catálogo. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La imagen supera los 5 MB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La foto no se puede leer; la descripción se puede escribir a mano. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 15 sugerencias en un minuto con la misma cuenta. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El servicio de IA no respondió o no está configurado; la descripción se puede escribir a mano. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     TiendaController_listarProductos: {
         parameters: {
             query?: {
@@ -4701,6 +5074,437 @@ export interface operations {
             };
             /** @description El almacén de archivos no está configurado o no responde. */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SolicitudVerificacionController_solicitar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Solicitud registrada: `aprobada`, o `pendiente` con `requiereDocumentos` en `true`. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La cuenta no tiene RUT, ya es profesional o ya tiene una solicitud pendiente, en revisión manual o aprobada. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 5 solicitudes por hora de la misma cuenta. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SolicitudVerificacionController_adjuntarDocumentos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    archivos: string[];
+                    tipos: ("titulo" | "certificado" | "otro")[];
+                };
+            };
+        };
+        responses: {
+            /** @description Documentos guardados: la solicitud queda en `revision_manual`. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin documentos, más de 5, un archivo que no es PDF, JPG ni PNG, o los tipos no coinciden con los archivos. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La cuenta nunca envió una solicitud. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La solicitud ya fue aprobada, ya tiene documentos en revisión o fue rechazada (hay que enviar una nueva). */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Un documento supera los 5 MB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 5 envíos de documentos por hora de la misma cuenta. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El almacén de archivos no está configurado o no responde. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SolicitudVerificacionController_verMiSolicitud: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description La solicitud más reciente. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La cuenta nunca envió una solicitud. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RevisionVerificacionController_aprobar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Código público (UUID) de la cuenta que solicitó. */
+                codigoPublico: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Solicitud aprobada. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El código de la cuenta no es válido. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar verificaciones. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La cuenta no existe o nunca envió una solicitud. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La solicitud más reciente no está en revisión manual, o la cuenta está desactivada o ya no es cliente. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RevisionVerificacionController_rechazar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Código público (UUID) de la cuenta que solicitó. */
+                codigoPublico: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RechazarSolicitudDto"];
+            };
+        };
+        responses: {
+            /** @description Solicitud rechazada con su motivo. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta el motivo, tiene menos de 10 o más de 1000 caracteres, o el código de la cuenta no es válido. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar verificaciones. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La cuenta no existe o nunca envió una solicitud. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La solicitud más reciente no está en revisión manual: aún no adjunta documentos, o ya fue aprobada o rechazada. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ConsultaVerificacionController_listar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Página de solicitudes con el total; vacía si no hay. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Paginación inválida. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar verificaciones. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ConsultaVerificacionController_detalle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Código público (UUID) de la cuenta que solicitó. */
+                codigoPublico: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Detalle de la solicitud. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El código de la cuenta no es válido. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar verificaciones. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La cuenta no existe o nunca envió una solicitud. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ConsultaVerificacionController_enlaceDocumento: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Código público (UUID) de la cuenta que solicitó. */
+                codigoPublico: string;
+                /** @description Posición del documento en la solicitud, desde 1. */
+                numero: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Enlace temporal y hasta cuándo sirve. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El código de la cuenta o el número no son válidos. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar verificaciones. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La cuenta no tiene solicitudes o la solicitud no tiene ese documento. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El archivo ya se eliminó; el mensaje indica cuándo. */
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5471,6 +6275,80 @@ export interface operations {
             };
         };
     };
+    ReporteStockBajoController_stockBajoMinimo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Formatos bajo su stock mínimo (`formatoId`, `sku`, `producto`, `nombreFormato`, `activo`, `stockTotal`, `stockMinimo`, `faltante`); lista vacía si no hay. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de ver los reportes. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ReporteVentasController_ventas: {
+        parameters: {
+            query: {
+                desde: string;
+                hasta: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `desde`, `hasta` y, para `minorista`, `mayorista` y `total`: `pedidos`, `montoNeto`, `montoIva` y `montoTotal` en pesos. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Fechas inválidas, la fecha hasta anterior a la desde o un período de más de 366 días. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de ver los reportes. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     TerritorioController_listarRegiones: {
         parameters: {
             query?: never;
@@ -5512,6 +6390,78 @@ export interface operations {
             };
             /** @description La región no existe. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SuscripcionesController_suscribir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SuscribirseDto"];
+            };
+        };
+        responses: {
+            /** @description Solicitud recibida. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Correo inválido. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 5 peticiones por minuto desde la misma IP. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SuscripcionesController_confirmar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmarSuscripcionDto"];
+            };
+        };
+        responses: {
+            /** @description Suscripción activa. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Enlace inválido, vencido o anterior a una baja. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 5 peticiones por minuto desde la misma IP. */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

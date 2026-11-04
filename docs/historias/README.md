@@ -55,8 +55,8 @@ Total: 53 historias, 185 puntos.
 | 37  | [SCRUM-130](SCRUM-130.md) · E8-H2 · Panel de pedidos: cambio de estado                   | 5   | En revisión | Parcial | SCRUM-58 | SCRUM-99             |
 | 38  | [SCRUM-131](SCRUM-131.md) · E8-H3 · Cancelar un pedido pendiente de pago desde el panel  | 1   | En revisión | Sí      | SCRUM-59 | SCRUM-130            |
 | 39  | [SCRUM-127](SCRUM-127.md) · E9-H3 · Facturas por emitir y registro de la factura         | 5   | En revisión | Parcial | SCRUM-55 | SCRUM-130            |
-| 40  | [SCRUM-132](SCRUM-132.md) · E4-H1 · Sugerencia de IA en el producto nuevo                | 3   | Por hacer   | No      | SCRUM-60 | SCRUM-100            |
-| 41  | [SCRUM-133](SCRUM-133.md) · E4-H2 · Aceptar, editar o descartar la sugerencia            | 2   | Por hacer   | No      | SCRUM-61 | SCRUM-132            |
+| 40  | [SCRUM-132](SCRUM-132.md) · E4-H1 · Sugerencia de IA en el producto nuevo                | 3   | En revisión | Sí      | SCRUM-60 | SCRUM-100            |
+| 41  | [SCRUM-133](SCRUM-133.md) · E4-H2 · Aceptar, editar o descartar la sugerencia            | 2   | Por hacer   | Sí      | SCRUM-61 | SCRUM-132            |
 | 42  | [SCRUM-134](SCRUM-134.md) · E10-H1 · Formulario y estados de la verificación profesional | 5   | Por hacer   | No      | SCRUM-62 | SCRUM-97             |
 | 43  | [SCRUM-135](SCRUM-135.md) · E10-H3 · Panel de verificaciones: revisión manual            | 5   | Por hacer   | No      | SCRUM-64 | SCRUM-99             |
 | 44  | [SCRUM-136](SCRUM-136.md) · E10-H4 · Cuenta profesional activa en la tienda              | 2   | Por hacer   | No      | SCRUM-65 | SCRUM-109, SCRUM-134 |
