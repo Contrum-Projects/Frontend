@@ -9,6 +9,7 @@ import { Skeleton } from '@/compartido/ui/skeleton';
 import { useEsEscritorio } from '@/panel/inventario/consultasStock';
 import { Buscador, ChipsFiltro } from '@/panel/inventario/filtrosInventario';
 import { usePedidosPanel } from './consultasPedidos';
+import { PestanasPedidos } from './pestanasPedidos';
 import {
   EsqueletoPedidos,
   TablaPedidos,
@@ -51,6 +52,8 @@ export function DisenoPedidos({ children }: { children: ReactNode }) {
           />
         </div>
       </div>
+      {/* En el detalle de celular las pestañas no se ven: no se piden sus facturas */}
+      {verLista && <PestanasPedidos actual="todos" />}
       <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_25rem] lg:items-start">
         <section
           aria-label="Lista de pedidos"

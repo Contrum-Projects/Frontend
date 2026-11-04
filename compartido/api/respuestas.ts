@@ -1049,3 +1049,72 @@ export interface PedidoConNuevoEstado {
   codigoPublico: string;
   estado: string;
 }
+
+/**
+ * Cómo va la factura de un pedido que la pidió (E9-H3): `por_emitir` hasta que el personal la
+ * registra con su folio. TODO(SCRUM-127): forma propuesta a SCRUM-55 (ver
+ * docs/historias/SCRUM-127.md).
+ */
+export type EstadoFacturaGestion = 'por_emitir' | 'emitida';
+
+/** Un pedido de la pestaña «Facturas por emitir» (E9-H3). */
+export interface FacturaGestion {
+  codigoPedido: string;
+  razonSocial: string;
+  /** Como lo guarda el backend: 76123456-0. */
+  rut: string;
+  /** Total con IVA, en pesos. */
+  total: number;
+  estado: EstadoFacturaGestion;
+  /** `null` mientras está por emitir. */
+  folio: number | null;
+}
+
+/**
+ * GET /api/gestion/facturas (E9-H3). Los pedidos que pidieron factura y ya se pagaron; cuáles
+ * entran y en qué orden lo decide el backend. TODO(SCRUM-127): pedida a SCRUM-55.
+ */
+export interface ListadoFacturasGestion {
+  items: FacturaGestion[];
+  /** Cuántos quedan por emitir, para la pestaña. */
+  porEmitir: number;
+  total: number;
+  pagina: number;
+  limite: number;
+}
+
+/**
+ * GET /api/gestion/facturas/{codigoPedido} (E9-H3). Los datos para emitirla en el SII: el
+ * receptor (de los datos de facturación del pedido) y los montos del pedido. Ya emitida, los que
+ * copió el documento. TODO(SCRUM-127): pedida a SCRUM-55.
+ */
+export interface DetalleFacturaGestion {
+  codigoPedido: string;
+  estado: EstadoFacturaGestion;
+  receptor: {
+    razonSocial: string;
+    rut: string;
+    giro: string;
+    direccion: string;
+    /** Nombre de la comuna. */
+    comuna: string;
+  };
+  montos: { neto: number; iva: number; total: number };
+  porcentajeIva: number;
+  folio: number | null;
+  /** AAAA-MM-DD; `null` mientras está por emitir. */
+  fechaEmision: string | null;
+}
+
+/**
+ * POST /api/pedidos/{codigoPedido}/factura (E9-H3). Backend `registrar-factura.service.ts` ›
+ * `FacturaRegistrada`. TODO(SCRUM-127): el Swagger no declara la respuesta; pedido a SCRUM-55.
+ */
+export interface FacturaRegistrada {
+  codigoPedido: string;
+  tipo: string;
+  folio: number;
+  /** AAAA-MM-DD. */
+  fechaEmision: string;
+  estado: string;
+}
