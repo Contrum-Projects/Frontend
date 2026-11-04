@@ -36,6 +36,8 @@ Estado al 4-11-2026 (`compartido/api/esquema.d.ts` de `main`): **Sí**. Sin ruta
 
 ## Notas de trabajo
 
+PR: https://github.com/Contrum-Projects/Frontend/pull/61
+
 **4-11-2026**
 
 - **Ruta de confirmación:** `/suscripcion/confirmar?token=`, la que propuso el backend
