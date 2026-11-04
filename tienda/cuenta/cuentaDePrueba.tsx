@@ -7,6 +7,7 @@ import type {
   DireccionCuenta,
 } from '@/compartido/api/respuestas';
 import { guardarSesion } from '@/compartido/sesion/almacen';
+import type { Rol } from '@/compartido/sesion/roles';
 import { DisenoCuenta } from './disenoCuenta';
 import { PantallaMisDatos } from './pantallaMisDatos';
 
@@ -74,7 +75,12 @@ export const simularBackend = (
   const escrituras: PeticionRegistrada[] = [];
   vi.stubGlobal(
     'fetch',
-    vi.fn(async (entrada: Request) => {
+    vi.fn(async (recibida: Request | string, opciones?: RequestInit) => {
+      // La renovación de la sesión llama a fetch con la ruta, no con un Request
+      const entrada =
+        typeof recibida === 'string'
+          ? new Request(new URL(recibida, 'http://tienda.test'), opciones)
+          : recibida;
       const peticion = `${entrada.method} ${new URL(entrada.url).pathname}`;
       const texto = await entrada.clone().text();
       const cuerpo: unknown = texto ? JSON.parse(texto) : undefined;
@@ -101,11 +107,13 @@ export const RUTAS_UBICACIONES: Record<string, () => Response> = {
 
 /**
  * Abre una pantalla de «Mi cuenta» con la sesión iniciada. `cliente` permite reabrirla con la
- * misma caché de consultas (por ejemplo, para volver a un detalle ya visitado).
+ * misma caché de consultas (por ejemplo, para volver a un detalle ya visitado); `rol`, entrar
+ * con otro rol que el de cliente.
  */
 export const mostrarPantallaCuenta = (
   pantalla: ReactNode,
   cliente = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+  rol: Rol = 'cliente',
 ) => {
   act(() =>
     guardarSesion({
@@ -115,7 +123,7 @@ export const mostrarPantallaCuenta = (
         codigoPublico: 'u-1',
         nombre: 'Camila',
         apellido: 'Rojas',
-        rol: 'cliente',
+        rol,
       },
     }),
   );

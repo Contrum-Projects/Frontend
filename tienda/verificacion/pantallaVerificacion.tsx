@@ -2,13 +2,15 @@
 
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { renovarSesion } from '@/compartido/sesion/almacen';
 import { ROLES } from '@/compartido/sesion/roles';
 import { useSesion } from '@/compartido/sesion/sesion';
 import { Button } from '@/compartido/ui/button';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { useMisDatos } from '@/tienda/cuenta/consultasCuenta';
 import { RUTAS } from '@/tienda/diseno/enlaces';
+import { InvitacionPerfil } from '@/tienda/profesional/invitacionPerfil';
 import { useMiSolicitud } from './consultasVerificacion';
 import {
   CuentaProfesionalActiva,
@@ -30,13 +32,28 @@ export function PantallaVerificacion() {
 
   // Lo que se vio al abrir la pantalla: un estado distinto viene de un envío y se enfoca
   const cargado = solicitud.isSuccess && datos.isSuccess;
+  // Aprobada o con el rol profesional es la misma vista: que la sesión se renueve sola (E10-H4)
+  // no mueve el foco
   const vista = cargado
-    ? (solicitud.data?.estado ?? 'sin-solicitud') +
-      (usuario?.rol === ROLES.PROFESIONAL ? '-profesional' : '')
+    ? usuario?.rol === ROLES.PROFESIONAL
+      ? 'aprobada'
+      : (solicitud.data?.estado ?? 'sin-solicitud')
     : null;
   const [vistaInicial, setVistaInicial] = useState<string | null>(null);
   if (vistaInicial === null && vista !== null) setVistaInicial(vista);
   const cambio = vistaInicial !== null && vista !== vistaInicial;
+
+  // E10-H4: el personal aprobó la solicitud con la sesión abierta y el token aún dice «cliente».
+  // Al renovarla llega el rol profesional y la tienda muestra el precio mayorista. Si el backend
+  // siguiera respondiendo «cliente», no se vuelve a pedir mientras la pantalla siga abierta.
+  const aprobadaSinRol =
+    solicitud.data?.estado === 'aprobada' && usuario?.rol === ROLES.CLIENTE;
+  const renovada = useRef(false);
+  useEffect(() => {
+    if (!aprobadaSinRol || renovada.current) return;
+    renovada.current = true;
+    void renovarSesion();
+  }, [aprobadaSinRol]);
 
   return (
     <>
@@ -82,7 +99,12 @@ export function PantallaVerificacion() {
     const actual = solicitud.data;
     const rut = datos.data.rut;
     if (usuario?.rol === ROLES.PROFESIONAL || actual?.estado === 'aprobada') {
-      return <CuentaProfesionalActiva enfocar={cambio} />;
+      return (
+        <>
+          <CuentaProfesionalActiva enfocar={cambio} />
+          <InvitacionPerfil />
+        </>
+      );
     }
     if (actual?.estado === 'revision_manual') {
       return (

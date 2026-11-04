@@ -1,13 +1,11 @@
 'use client';
 
 import { BadgeCheck, Clock, File as IconoArchivo, X } from 'lucide-react';
-import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import type { SolicitudVerificacionCuenta } from '@/compartido/api/respuestas';
 import { formatearFechaLarga } from '@/compartido/formato/fecha';
 import { formatearRut } from '@/compartido/formato/rut';
 import { Button } from '@/compartido/ui/button';
-import { RUTAS } from '@/tienda/diseno/enlaces';
 import { textoTipoDocumento } from './esquemaVerificacion';
 
 /**
@@ -163,8 +161,8 @@ export const SolicitudRechazada = ({
 );
 
 /**
- * La cuenta ya es profesional (E10-H4). Figma no tiene este estado: el título es el asunto del
- * correo de aprobación y el botón, el mismo del correo (decisión de SCRUM-134).
+ * «Cuenta verificada» (Figma 08c, 2038:2666 y 2038:5397; E10-H4). Debajo va la invitación a
+ * completar el perfil profesional, que la pantalla agrega aparte.
  */
 export const CuentaProfesionalActiva = ({
   enfocar = false,
@@ -173,23 +171,20 @@ export const CuentaProfesionalActiva = ({
 }) => (
   <section
     aria-labelledby="titulo-estado"
-    className="flex flex-col items-start gap-3 rounded-lg bg-marca-acento-suave p-4 md:p-6"
+    className="flex items-center gap-3 rounded-lg bg-marca-acento-suave p-4 md:p-6"
   >
-    <div className="flex items-center gap-2">
-      <BadgeCheck
-        aria-hidden
-        className="size-6 shrink-0 text-marca-profundo"
-        strokeWidth={1.75}
-      />
+    <BadgeCheck
+      aria-hidden
+      className="size-6 shrink-0 text-marca-profundo"
+      strokeWidth={1.75}
+    />
+    <div className="flex min-w-0 flex-col gap-1">
       <TituloEstado enfocar={enfocar} className="text-marca-profundo">
-        Tu cuenta profesional está activa
+        Cuenta verificada
       </TituloEstado>
+      <p className="texto-pequeno text-texto-principal">
+        Ya ves el precio profesional en todo el catálogo.
+      </p>
     </div>
-    <p className="texto-pequeno text-texto-principal">
-      Ya ves los precios profesionales en la tienda.
-    </p>
-    <Button asChild size="grande" className="w-full sm:w-auto">
-      <Link href={RUTAS.catalogo}>Ver precios profesionales</Link>
-    </Button>
   </section>
 );

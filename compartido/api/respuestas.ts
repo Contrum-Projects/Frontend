@@ -1148,6 +1148,21 @@ export interface SolicitudVerificacionCuenta {
 }
 
 /**
+ * GET /api/perfil-profesional/yo (E10-H5; 404 si aún no lo completa). Backend
+ * `perfil-profesional.service.ts` › `PerfilProfesionalCuenta`.
+ * TODO(SCRUM-136): el Swagger no declara la respuesta; pedido a SCRUM-66.
+ */
+export interface PerfilProfesionalCuenta {
+  anosExperiencia: number;
+  modalidad: components['schemas']['GuardarPerfilProfesionalDto']['modalidad'];
+  especialidades: components['schemas']['GuardarPerfilProfesionalDto']['especialidades'];
+  nombreLugarTrabajo: string | null;
+  redSocial: string | null;
+  /** ISO 8601. */
+  fechaActualizacion: string;
+}
+
+/**
  * Por qué una solicitud no se aprobó sola: lo que dio la consulta al SII (backend `valores.ts` ›
  * RESULTADOS_CONSULTA_SII sin `aprobado`). `null` si no se consultó.
  */
