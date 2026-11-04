@@ -41,6 +41,8 @@ El Swagger no declara ninguna de las dos respuestas: los tipos están en
 
 <!-- Decisiones, preguntas abiertas y lo que quedó pendiente. Lo completa /historia. -->
 
+**PR:** https://github.com/Contrum-Projects/Frontend/pull/49
+
 ### 4-11-2026 · Implementación
 
 **Decisiones (con el usuario):**
