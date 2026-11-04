@@ -86,6 +86,8 @@ Errores: 401, 403 (sin `pedidos.gestionar`), 404 (el pedido no existe).
 
 ## Notas de trabajo
 
+**PR:** https://github.com/Contrum-Projects/Frontend/pull/52 (En revisión; lista y detalle con API simulada).
+
 **04-11-2026 · implementación (rama `SCRUM-130-panel-pedidos`)**
 
 - **Rutas:** `app/panel/pedidos/layout.tsx` monta la lista (`panel/pedidos/disenoPedidos.tsx`), así
