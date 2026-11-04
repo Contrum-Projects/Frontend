@@ -25,8 +25,7 @@ export const RUTAS = {
   // TODO(SCRUM-139): ofertas por correo
   ofertas: '/cuenta/ofertas' as Route,
   misPedidos: '/cuenta/pedidos' as Route,
-  // TODO(SCRUM-134): verificación profesional
-  verificacion: '/cuenta/verificacion' as Route,
+  verificacion: '/cuenta/verificacion',
   // Sin historia: listado de packs, ayuda, profesionales y legales
   packs: '/packs' as Route,
   precioProfesional: '/precio-profesional' as Route,

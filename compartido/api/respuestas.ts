@@ -1120,3 +1120,29 @@ export interface FacturaRegistrada {
   fechaEmision: string;
   estado: string;
 }
+
+/** Estados de la solicitud de verificación (backend `common/dominio/valores.ts` › ESTADOS_SOLICITUD). */
+export type EstadoSolicitudVerificacion =
+  'pendiente' | 'revision_manual' | 'aprobada' | 'rechazada';
+
+/** Tipos de documento de la verificación (backend `valores.ts` › TIPOS_ANTECEDENTE, E10-H2). */
+export type TipoDocumentoVerificacion = 'titulo' | 'certificado' | 'otro';
+
+/**
+ * GET /api/verificaciones/yo, POST /api/verificaciones y POST /api/verificaciones/yo/documentos
+ * (E10-H1 y E10-H2). Backend `solicitud-verificacion.service.ts` › `SolicitudVerificacionCuenta`.
+ * TODO(SCRUM-134): el Swagger no declara la respuesta; pedido a SCRUM-62.
+ */
+export interface SolicitudVerificacionCuenta {
+  estado: EstadoSolicitudVerificacion;
+  /** ISO 8601. */
+  fechaSolicitud: string;
+  /** ISO 8601; `null` mientras no se resuelve. */
+  fechaResolucion: string | null;
+  /** Solo si fue rechazada. */
+  motivoRechazo: string | null;
+  /** `true` si el SII no la aprobó y falta adjuntar documentos (estado `pendiente`). */
+  requiereDocumentos: boolean;
+  /** Los documentos que adjuntó; vacío mientras no los envíe. */
+  documentos: { tipo: TipoDocumentoVerificacion; nombreArchivo: string }[];
+}
