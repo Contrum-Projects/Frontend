@@ -50,3 +50,4 @@ declara la respuesta, ver TODO(SCRUM-118)).
   backend (antes, la caché global de 30 s podía mostrar el estado anterior).
 - **Pendiente:** `fechaEstimada` no se muestra (Figma no la incluye y hoy el backend no la llena al
   despachar). Si se quiere mostrar «cuándo llegará», hay que definirla con diseño y backend.
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/50
