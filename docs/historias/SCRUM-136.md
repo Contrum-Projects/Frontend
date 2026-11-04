@@ -56,3 +56,5 @@ Estado al 04-11-2026: **Sí**, sin rutas simuladas. SCRUM-65 no agrega rutas; es
 y, al guardar, actualizar la clave `CLAVE_PERFIL_PROFESIONAL` para que la invitación desaparezca.
 
 **Para el backend (SCRUM-66):** declarar en el Swagger la respuesta `PerfilProfesionalCuenta`.
+
+**PR:** https://github.com/Contrum-Projects/Frontend/pull/59 (04-11-2026, En revisión).
