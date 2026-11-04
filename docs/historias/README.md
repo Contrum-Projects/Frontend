@@ -63,7 +63,7 @@ Total: 53 historias, 185 puntos.
 | 45  | [SCRUM-137](SCRUM-137.md) · E10-H5 · Pantalla Perfil profesional                         | 2   | En revisión | Sí      | SCRUM-66 | SCRUM-136            |
 | 46  | [SCRUM-138](SCRUM-138.md) · E12-H1 · Formulario de suscripción a ofertas                 | 2   | En revisión | Sí      | SCRUM-68 | SCRUM-106            |
 | 47  | [SCRUM-139](SCRUM-139.md) · E12-H2 · Pantalla Ofertas por correo y baja                  | 2   | En revisión | No      | SCRUM-69 | SCRUM-97             |
-| 48  | [SCRUM-140](SCRUM-140.md) · E12-H3 · Panel de campañas: redactar, segmentar y enviar     | 8   | Por hacer   | No      | SCRUM-70 | SCRUM-99             |
+| 48  | [SCRUM-140](SCRUM-140.md) · E12-H3 · Panel de campañas: redactar, segmentar y enviar     | 8   | En curso    | No      | SCRUM-70 | SCRUM-99             |
 | 49  | [SCRUM-141](SCRUM-141.md) · E12-H5 · Tarjeta del saludo de cumpleaños                    | 1   | Por hacer   | No      | SCRUM-72 | SCRUM-140            |
 | 50  | [SCRUM-143](SCRUM-143.md) · E14-H2 · Reporte de ventas                                   | 3   | Por hacer   | No      | SCRUM-75 | SCRUM-99             |
 | 51  | [SCRUM-142](SCRUM-142.md) · E14-H1 · Reporte de objetivos OE1 a OE3                      | 3   | Por hacer   | No      | SCRUM-74 | SCRUM-143            |

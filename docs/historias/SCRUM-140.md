@@ -25,11 +25,59 @@ Nodos del archivo de Figma `cl9eSD5YBS9qF4tQXJki68` (ver `docs/pantallas.md`).
 
 ## API
 
-Estado al 26-10-2026 (`compartido/api/esquema.d.ts` de `main`): **No**. Aún no existe en el Swagger.
+Estado al 4-11-2026: **No**. El backend no tiene campañas (no hay endpoint, ni rama de SCRUM-70;
+`src/modulos/marketing/` solo tiene suscripciones). Se avanza con la **API simulada**
+(`compartido/api/simulado/panelCampanas.ts`) y la forma de abajo, **propuesta a SCRUM-70**
+(4-11-2026, por acordar con quien hace la historia backend). Tipos en `compartido/api/respuestas.ts`.
+Todas piden `campanas.gestionar` (solo administrador): sin sesión 401, otro rol 403.
 
-Si falta el endpoint, avanza con la API simulada (`docs/api-simulada.md`) y anota aquí qué
-formato de respuesta acordaste con quien hace la historia backend.
+| Método y ruta                               | Cuerpo                         | Respuesta                                                                                                                                                                                                           |
+| ------------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/gestion/campanas`                 | —                              | `{ contactos: { aceptanPublicidad, cuentasVerificadas, suscriptoresSinCuenta, conRebote }, campanas: [{ codigo, asunto, segmento (texto), destinatarios, estado, fechaEdicion, fechaEnvio, porcentajeApertura }] }` |
+| `GET /api/gestion/campanas/segmentos`       | —                              | `{ tipos: [{ valor, texto, criterios: [{ clave, texto, opciones: [{ valor, texto }] }] }] }`                                                                                                                        |
+| `POST /api/gestion/campanas/vista-previa`   | `{ asunto, cuerpo, segmento }` | `{ remitente, asunto, parrafos[], pie, textoBaja, destinatarios, segmento (texto) }`                                                                                                                                |
+| `POST /api/gestion/campanas`                | `{ asunto, cuerpo, segmento }` | 201 `{ codigo, asunto, cuerpo, segmento, estado: 'borrador', fechaEdicion, fechaEnvio: null }`; 400 con un mensaje por campo                                                                                        |
+| `GET /api/gestion/campanas/{codigo}`        | —                              | La campaña como en POST; 404 si no existe                                                                                                                                                                           |
+| `PUT /api/gestion/campanas/{codigo}`        | `{ asunto, cuerpo, segmento }` | Igual que POST (200); 409 si ya se envió                                                                                                                                                                            |
+| `POST /api/gestion/campanas/{codigo}/envio` | —                              | 202 `{ codigo, estado: 'enviada', destinatarios, fechaEnvio }`; 409 si ya se envió                                                                                                                                  |
+
+- `segmento` = `{ tipo, criterios: [{ clave, valor }] }`, con un valor por criterio como máximo.
+- `estado`: `borrador` | `enviada` (Figma solo dibuja esos dos). `porcentajeApertura` 0 a 100,
+  `null` en un borrador. `codigo` no correlativo (va en la URL).
+- `cuerpo` es **texto simple**: párrafos separados por una línea en blanco y `{nombre}`. El backend
+  arma la vista previa (reemplaza `{nombre}` por un nombre de ejemplo) y el correo real.
+- El backend cuenta los destinatarios con consentimiento (cuenta activa con correo verificado o
+  suscriptor confirmado) y vuelve a revisarlo al enviar; la campaña sale una vez y llega una vez a
+  cada dirección. Remitente y texto del enlace de baja salen de él (RNF-26).
 
 ## Notas de trabajo
 
-<!-- Decisiones, preguntas abiertas y lo que quedó pendiente. Lo completa /historia. -->
+**4-11-2026 (rama `SCRUM-140-panel-campanas`).**
+
+- Pantallas: `/panel/campanas` (P7), `/panel/campanas/nueva` (P7a) y `/panel/campanas/[codigo]`
+  para seguir editando un borrador (la fila de un borrador lo abre; una enviada no tiene detalle,
+  Figma no dibuja esa pantalla). Confirmar envío (P7b) es un `AlertDialog`.
+- Decisiones con el usuario: API simulada con la forma de arriba; los segmentos vienen del
+  backend (la simulación usa Todos / Clientes / Profesionales y especialidad con la propuesta del
+  4-11-2026, por validar); cuerpo en texto simple, **sin la barra de formato** de Figma (B, I,
+  Título, Enlace, Imagen, Producto, Botón), que necesitaría un editor enriquecido; «Guardar
+  borrador» incluido.
+- «Revisar y enviar» guarda el borrador (POST o PUT) y abre la confirmación con el número que
+  devuelve la vista previa para esos datos exactos. Con 0 destinatarios no deja enviar. Un 409 al
+  enviar avisa y vuelve al listado.
+- La vista previa se pide al backend 400 ms después de dejar de escribir y se muestra como texto
+  (sin HTML crudo). El ancho Escritorio/Celular de la vista previa solo cambia el ancho del marco.
+- Celular: pestañas «Editar / Vista previa» (las dos quedan montadas, no se pierde lo escrito);
+  los contadores de contactos también se muestran (el criterio 1 los pide; Figma celular no los
+  dibuja). «Guardar borrador» también en celular.
+- La tarjeta «Saludo de cumpleaños» de P7 queda para SCRUM-141.
+
+**Pendientes / para el backend (SCRUM-70):**
+
+- Acordar la forma de la API de arriba y los largos máximos de asunto y cuerpo (el frontend solo
+  exige que no estén vacíos y muestra el 400 del backend junto al campo).
+- Definir los segmentos (qué tipos y criterios) y si un criterio admite varios valores; está
+  pendiente en `docs/diseno.md`.
+- Si se quiere el formato enriquecido de Figma, definir un formato estructurado (no HTML) y su
+  validación en el backend; sería otra historia o un cambio a esta.
+- Hecha solo cuando se pruebe con el backend real y se borren las rutas simuladas.
