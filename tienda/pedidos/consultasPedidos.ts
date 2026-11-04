@@ -65,6 +65,8 @@ export const useDetallePedido = (codigoPedido: string) =>
   useQuery({
     queryKey: CLAVES_PEDIDOS.detalle(codigoPedido),
     enabled: esCodigoPedido(codigoPedido),
+    // E7-H3 · Al volver a abrir el detalle se pide de nuevo: el estado del envío puede haber cambiado
+    staleTime: 0,
     retry: reintentarSiFallaServidor,
     queryFn: () =>
       conErrorDeApi(async () =>
