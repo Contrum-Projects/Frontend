@@ -912,7 +912,8 @@ export interface DetallePedidoCuenta {
   /** La factura: `null` si pidió boleta o está cancelado (E9-H4). */
   documento: {
     tipo: 'factura';
-    estado: string;
+    /** Backend `facturacion/documento-pedido.ts` › `ESTADOS_DESCARGA_DOCUMENTO`. */
+    estado: 'pendiente' | 'disponible';
     folio: number | null;
     fechaEmision: string | null;
   } | null;

@@ -85,10 +85,11 @@ export const EsqueletoDetalle = () => (
       <Skeleton className="h-5 w-48" />
     </div>
     <Skeleton className="h-60 w-full rounded-xl md:h-32" />
-    <div className="grid gap-4 md:grid-cols-2 md:gap-6">
+    <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
       <Skeleton className="h-28 w-full rounded-lg md:h-32" />
-      {/* «Pago» solo aparece si ya se pagó: en celular no se reserva */}
+      {/* «Documento» y «Pago» dependen del pedido: en celular no se reservan */}
       <Skeleton className="hidden h-32 w-full rounded-lg md:block" />
+      <Skeleton className="hidden h-32 w-full rounded-lg lg:block" />
     </div>
     <Skeleton className="h-64 w-full rounded-lg" />
   </div>

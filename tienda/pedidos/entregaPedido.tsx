@@ -5,6 +5,7 @@ import type {
 } from '@/compartido/api/respuestas';
 import { formatearDiaHora } from '@/compartido/formato/fecha';
 import { cn } from '@/compartido/lib/utils';
+import { DocumentoPedido } from './documentoPedido';
 import { etiquetaEnvio } from './estadoEnvio';
 
 /** «Av. Ejemplo 1234, depto. 56, Ñuñoa», con lo que guardó el pedido. */
@@ -77,15 +78,15 @@ const TarjetaEnvio = ({ envio }: { envio: EnvioPedido }) => {
 };
 
 /**
- * E8-H1, criterio 2 · Cómo se entrega el pedido y, si ya se pagó, cuándo. El comprobante o la
- * factura son de SCRUM-128.
+ * E8-H1, criterio 2 · Cómo se entrega el pedido, su documento (E9-H4) y, si ya se pagó, cuándo.
+ * En escritorio, las tres tarjetas en una fila (Figma 2019:1733).
  */
 export const DatosPedido = ({ pedido }: { pedido: DetallePedidoCuenta }) => {
   // La fecha del pago es la del cambio a «pagado» del historial
   const pago = pedido.historial.find((cambio) => cambio.estado === 'pagado');
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 md:gap-6">
+    <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
       {pedido.envio ? (
         <TarjetaEnvio envio={pedido.envio} />
       ) : (
@@ -93,6 +94,7 @@ export const DatosPedido = ({ pedido }: { pedido: DetallePedidoCuenta }) => {
           <p className="texto-pequeno text-texto-principal">Retiro en tienda</p>
         </TarjetaDato>
       )}
+      <DocumentoPedido pedido={pedido} />
       {pago && (
         <TarjetaDato titulo="Pago">
           <p className="texto-pequeno text-texto-secundario">
