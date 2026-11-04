@@ -41,6 +41,8 @@ Estado al 04-11-2026: **Sí**. El endpoint existe en el Swagger (SCRUM-59, `canc
 
 ## Notas de trabajo
 
+**PR:** https://github.com/Contrum-Projects/Frontend/pull/53 (En revisión; detalle del panel con API simulada).
+
 **04-11-2026 · implementación (rama `SCRUM-131-cancelar-pedido`)**
 
 - **Decisiones del usuario (04-11):**
