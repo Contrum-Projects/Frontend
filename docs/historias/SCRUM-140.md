@@ -52,7 +52,7 @@ Todas piden `campanas.gestionar` (solo administrador): sin sesión 401, otro rol
 
 ## Notas de trabajo
 
-**4-11-2026 (rama `SCRUM-140-panel-campanas`).**
+**4-11-2026 (rama `SCRUM-140-panel-campanas`).** PR: https://github.com/Contrum-Projects/Frontend/pull/63
 
 - Pantallas: `/panel/campanas` (P7), `/panel/campanas/nueva` (P7a) y `/panel/campanas/[codigo]`
   para seguir editando un borrador (la fila de un borrador lo abre; una enviada no tiene detalle,
