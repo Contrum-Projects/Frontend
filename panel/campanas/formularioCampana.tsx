@@ -171,27 +171,28 @@ export function FormularioCampana({
     }
   };
 
-  const acciones = (ancho: boolean) => (
-    <>
-      <Button
-        type="button"
-        variant="contorno"
-        size={ancho ? 'grande' : 'mediano'}
-        onClick={alGuardar}
-        disabled={isSubmitting}
-      >
-        Guardar borrador
-      </Button>
-      <Button
-        type="button"
-        size={ancho ? 'grande' : 'mediano'}
-        onClick={alRevisar}
-        disabled={isSubmitting}
-      >
-        {isSubmitting && <Spinner aria-hidden />}
-        Revisar y enviar
-      </Button>
-    </>
+  const guardarBorradorBoton = (ancho: boolean) => (
+    <Button
+      type="button"
+      variant="contorno"
+      size={ancho ? 'grande' : 'mediano'}
+      onClick={alGuardar}
+      disabled={isSubmitting}
+    >
+      Guardar borrador
+    </Button>
+  );
+
+  const revisarBoton = (ancho: boolean) => (
+    <Button
+      type="button"
+      size={ancho ? 'grande' : 'mediano'}
+      onClick={alRevisar}
+      disabled={isSubmitting}
+    >
+      {isSubmitting && <Spinner aria-hidden />}
+      Revisar y enviar
+    </Button>
   );
 
   return (
@@ -208,7 +209,10 @@ export function FormularioCampana({
           <h1 className="titulo-h2 text-texto-principal">
             {campana ? 'Editar campaña' : 'Nueva campaña'}
           </h1>
-          <div className="flex gap-3 max-lg:hidden">{acciones(false)}</div>
+          <div className="flex gap-3 max-lg:hidden">
+            {guardarBorradorBoton(false)}
+            {revisarBoton(false)}
+          </div>
         </div>
       </div>
       {aviso && (
@@ -236,7 +240,7 @@ export function FormularioCampana({
             className={`${PANEL} lg:col-span-3`}
           >
             <form
-              onSubmit={alRevisar}
+              onSubmit={alGuardar}
               noValidate
               aria-label="Campaña"
               className="flex flex-col gap-4 lg:gap-6"
@@ -259,8 +263,10 @@ export function FormularioCampana({
           </TabsContent>
         </div>
       </Tabs>
-      <div className="flex flex-col-reverse gap-3 lg:hidden">
-        {acciones(true)}
+      {/* En celular, la acción principal primero, también para el foco */}
+      <div className="flex flex-col gap-3 lg:hidden">
+        {revisarBoton(true)}
+        {guardarBorradorBoton(true)}
       </div>
       <ConfirmarEnvio
         envio={envio}

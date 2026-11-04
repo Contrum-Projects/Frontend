@@ -45,7 +45,7 @@ export const ContadoresContactos = ({
     {CONTADORES.map(({ clave, texto }) => (
       <li
         key={clave}
-        className="flex min-w-0 flex-col gap-0.5 rounded-2xl border bg-card p-4"
+        className="flex min-w-0 flex-col gap-1 rounded-lg border bg-card p-4"
       >
         <span className="titulo-h3 text-texto-principal tabular-nums">
           {formatearNumero(contactos[clave])}
@@ -186,7 +186,7 @@ export const ListaCampanasCelular = ({
         key={campana.codigo}
         className="relative flex items-center gap-3 border-t py-3 first:border-t-0"
       >
-        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="flex min-w-0 flex-1 flex-col gap-1">
           <AsuntoCampana campana={campana} />
           <span className="texto-leyenda wrap-break-word text-texto-secundario">
             {detalleCelular(campana)}

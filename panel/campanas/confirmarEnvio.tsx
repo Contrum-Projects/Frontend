@@ -70,14 +70,12 @@ export const ConfirmarEnvio = ({
                 consentimiento ({envio.segmento}).
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <p className="flex items-center gap-2 rounded-lg bg-estado-aviso-fondo px-3 py-3 texto-pequeno text-estado-aviso-texto">
-              <TriangleAlert
-                aria-hidden
-                strokeWidth={1.75}
-                className="size-4.5 shrink-0"
-              />
-              Una campaña se envía una sola vez y no se puede deshacer.
-            </p>
+            <Alert variant="aviso">
+              <TriangleAlert aria-hidden strokeWidth={1.75} />
+              <AlertDescription>
+                Una campaña se envía una sola vez y no se puede deshacer.
+              </AlertDescription>
+            </Alert>
             {sinDestinatarios && (
               <p className="texto-pequeno text-texto-secundario">
                 Este segmento no tiene destinatarios con consentimiento. Elige

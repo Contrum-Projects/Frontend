@@ -605,7 +605,54 @@ describe('Confirmar el envío (SCRUM-140)', () => {
       within(ventana).getByRole('button', { name: 'Enviar a 186' }),
     );
 
-    expect(await within(ventana).findByRole('alert')).toBeInTheDocument();
+    expect(
+      await within(ventana).findByText(
+        'No pudimos completar la acción. Intenta de nuevo en unos minutos.',
+      ),
+    ).toBeInTheDocument();
+    expect(ventana).not.toHaveTextContent('Intenta de nuevo.');
     expect(enrutador.push).not.toHaveBeenCalled();
+  });
+
+  it('E12-H3 FE · CA3 confirmar envío: sin destinatarios con consentimiento no deja enviar', async () => {
+    const usuario = userEvent.setup();
+    const { pedidas } = simularBackend({
+      'POST /api/gestion/campanas/vista-previa': async (peticion) =>
+        Response.json({
+          ...vistaPrevia((await peticion.json()) as DatosCampana),
+          destinatarios: 0,
+        }),
+    });
+    mostrar(<PantallaCampanaNueva />);
+
+    await redactar(usuario);
+    await usuario.click(
+      screen.getAllByRole('button', { name: 'Revisar y enviar' })[0]!,
+    );
+    const ventana = await screen.findByRole('alertdialog');
+
+    expect(
+      within(ventana).getByText(/no tiene destinatarios con consentimiento/),
+    ).toBeInTheDocument();
+    expect(
+      within(ventana).getByRole('button', { name: 'Enviar a 0' }),
+    ).toBeDisabled();
+    expect(
+      pedidas('POST /api/gestion/campanas/CAMPNUEVA001/envio'),
+    ).toHaveLength(0);
+  });
+
+  it('E12-H3 FE · CA2 redactar: Enter en el asunto no abre la confirmación ni envía', async () => {
+    const usuario = userEvent.setup();
+    const { pedidas } = simularBackend();
+    mostrar(<PantallaCampanaNueva />);
+
+    await redactar(usuario);
+    await usuario.type(screen.getByLabelText('Asunto'), '{Enter}');
+
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(
+      pedidas('POST /api/gestion/campanas/CAMPNUEVA001/envio'),
+    ).toHaveLength(0);
   });
 });

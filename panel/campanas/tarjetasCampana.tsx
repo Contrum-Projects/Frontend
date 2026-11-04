@@ -20,7 +20,7 @@ import type { FormularioCampana } from './esquemaCampana';
 import { SelectorSegmento } from './selectorSegmento';
 
 const Tarjeta = ({ children }: { children: ReactNode }) => (
-  <div className="flex flex-col gap-4 lg:rounded-2xl lg:border lg:bg-card lg:p-6">
+  <div className="flex flex-col gap-4 lg:rounded-lg lg:border lg:bg-card lg:p-6">
     {children}
   </div>
 );
@@ -56,6 +56,12 @@ export const TarjetaMensaje = ({
       {(propsControl) => (
         <Textarea
           {...propsControl}
+          aria-describedby={[
+            propsControl['aria-describedby'],
+            `${id}-cuerpo-ayuda`,
+          ]
+            .filter(Boolean)
+            .join(' ')}
           {...register('cuerpo')}
           rows={6}
           autoComplete="off"
@@ -63,7 +69,10 @@ export const TarjetaMensaje = ({
         />
       )}
     </CampoFormulario>
-    <p className="texto-leyenda text-texto-secundario">
+    <p
+      id={`${id}-cuerpo-ayuda`}
+      className="texto-leyenda text-texto-secundario"
+    >
       Separa los párrafos con una línea en blanco. {'{nombre}'} se cambia por el
       nombre de cada destinatario.
     </p>
@@ -123,7 +132,7 @@ export const TarjetaSegmento = ({
       )}
       <p
         role="status"
-        className="flex items-center gap-2 rounded-lg bg-marca-acento-suave px-4 py-3 texto-pequeno text-marca-profundo"
+        className="flex items-center gap-2 rounded-md bg-marca-acento-suave px-4 py-3 texto-pequeno text-marca-profundo"
       >
         <UsersRound
           aria-hidden

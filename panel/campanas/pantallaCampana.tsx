@@ -63,12 +63,18 @@ export const EsqueletoCampana = () => (
   <div aria-hidden className="flex flex-col gap-4 lg:gap-6">
     <Skeleton className="h-10 w-28" />
     <Skeleton className="h-9 w-64 max-w-full" />
+    {/* Pestañas «Editar / Vista previa» de celular */}
+    <Skeleton className="h-12 rounded-full lg:hidden" />
     <div className="grid gap-6 lg:grid-cols-5">
-      <div className="flex flex-col gap-4 lg:col-span-3">
-        <Skeleton className="h-72 rounded-2xl" />
-        <Skeleton className="h-44 rounded-2xl" />
+      <div className="flex flex-col gap-4 lg:col-span-3 lg:gap-6">
+        <Skeleton className="h-72 lg:rounded-lg" />
+        <Skeleton className="h-44 lg:rounded-lg" />
       </div>
-      <Skeleton className="h-96 rounded-xl max-lg:hidden lg:col-span-2" />
+      <Skeleton className="h-96 rounded-lg max-lg:hidden lg:col-span-2" />
+    </div>
+    <div className="flex flex-col gap-3 lg:hidden">
+      <Skeleton className="h-14 rounded-full" />
+      <Skeleton className="h-14 rounded-full" />
     </div>
   </div>
 );

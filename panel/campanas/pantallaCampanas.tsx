@@ -55,7 +55,7 @@ const ContenidoCampanas = () => {
       <ContadoresContactos contactos={contactos} />
       <section
         aria-labelledby="titulo-lista-campanas"
-        className="flex flex-col gap-3 rounded-2xl border bg-card px-4 py-1 lg:p-6"
+        className="flex flex-col gap-3 rounded-lg border bg-card px-4 py-1 lg:p-6"
       >
         <h2
           id="titulo-lista-campanas"
@@ -89,11 +89,20 @@ const EsqueletoCampanas = () => (
   <div aria-hidden className="flex flex-col gap-4 lg:gap-6">
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
       {[0, 1, 2, 3].map((contador) => (
-        <Skeleton key={contador} className="h-20 rounded-2xl" />
+        // Misma caja que cada contador: número (titulo-h3) y texto en una o dos líneas
+        <div
+          key={contador}
+          className="flex flex-col gap-1 rounded-lg border bg-card p-4"
+        >
+          <Skeleton className="h-6 w-16" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-2/3 lg:hidden" />
+        </div>
       ))}
     </div>
-    <div className="flex flex-col rounded-2xl border bg-card px-4 py-1 lg:p-6">
-      <div className="h-12 max-lg:hidden" />
+    <div className="flex flex-col rounded-lg border bg-card px-4 py-1 lg:p-6">
+      {/* Título de la tarjeta y cabecera de la tabla */}
+      <div className="h-16 max-lg:hidden" />
       {FILAS_ESQUELETO.map((fila) => (
         <div
           key={fila}

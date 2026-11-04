@@ -62,7 +62,6 @@ export const SelectorSegmento = ({
     <fieldset
       className="flex flex-col gap-3"
       aria-describedby={error ? `${id}-error` : undefined}
-      aria-invalid={error ? true : undefined}
     >
       <legend className="mb-3 texto-etiqueta text-texto-principal lg:texto-cuerpo-fuerte">
         ¿A quién le llega?
@@ -97,7 +96,7 @@ export const SelectorSegmento = ({
             return (
               <span
                 key={elegido.clave}
-                className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-marca-profundo py-2 pr-2 pl-4 texto-etiqueta text-texto-sobre-oscuro"
+                className="inline-flex min-h-10 items-center gap-1 rounded-full bg-marca-profundo py-2 pr-2 pl-4 texto-etiqueta text-texto-sobre-oscuro"
               >
                 <span>
                   <span className="max-lg:sr-only">{criterio?.texto}: </span>
@@ -107,7 +106,7 @@ export const SelectorSegmento = ({
                   type="button"
                   onClick={() => quitar(elegido.clave)}
                   aria-label={`Quitar ${criterio?.texto ?? 'criterio'}: ${texto}`}
-                  className="inline-flex size-6 cursor-pointer items-center justify-center rounded-full hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-marca-logo"
+                  className="-my-2 -mr-2 inline-flex size-10 cursor-pointer items-center justify-center rounded-full hover:bg-marca-acento-suave/20 focus-visible:outline-2 focus-visible:outline-marca-logo"
                 >
                   <X aria-hidden strokeWidth={1.75} className="size-3.5" />
                 </button>
@@ -118,8 +117,8 @@ export const SelectorSegmento = ({
             <DropdownMenu>
               <DropdownMenuTrigger className="inline-flex min-h-10 cursor-pointer items-center gap-1 rounded-full px-2 texto-etiqueta text-marca-profundo hover:bg-marca-acento-suave focus-visible:outline-2 focus-visible:outline-marca-profundo">
                 <Plus aria-hidden strokeWidth={1.75} className="size-3.5" />
-                <span className="max-lg:hidden">Agregar criterio</span>
-                <span className="lg:hidden">Criterio</span>
+                <span className="max-lg:sr-only">Agregar </span>
+                <span className="lg:lowercase">Criterio</span>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="max-h-80">
                 {libres.map((criterio) => (

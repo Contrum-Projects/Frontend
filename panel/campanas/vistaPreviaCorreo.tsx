@@ -66,7 +66,7 @@ export const VistaPreviaCorreo = ({ vista, error }: VistaPreviaCorreoProps) => {
         <article
           aria-label="Correo"
           className={cn(
-            'w-full self-center overflow-hidden rounded-xl border bg-fondo-superficie',
+            'w-full self-center overflow-hidden rounded-lg border bg-fondo-superficie',
             ancho === 'celular' && 'lg:max-w-xs',
           )}
         >
@@ -79,7 +79,7 @@ export const VistaPreviaCorreo = ({ vista, error }: VistaPreviaCorreoProps) => {
 
 const Correo = ({ vista }: { vista: VistaPreviaCampana }) => (
   <>
-    <header className="flex flex-col gap-0.5 border-b px-4 py-3">
+    <header className="flex flex-col gap-1 border-b px-4 py-3">
       <p className="texto-leyenda text-texto-secundario">
         De: {vista.remitente}
       </p>

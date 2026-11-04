@@ -72,7 +72,18 @@ Todas piden `campanas.gestionar` (solo administrador): sin sesión 401, otro rol
   dibuja). «Guardar borrador» también en celular.
 - La tarjeta «Saludo de cumpleaños» de P7 queda para SCRUM-141.
 
+- Revisiones (4-11-2026): seguridad sin hallazgos que bloqueen; criterios cumplidos; diseño
+  revisado solo contra el código (el revisor no tuvo acceso a Figma). Se corrigieron: aviso de
+  envío único con `Alert` de aviso, orden de foco de los botones en celular, área táctil de
+  «quitar criterio», radios con tokens y esqueletos con las medidas del contenido.
+- Enter en un campo no envía ni abre la confirmación: enviar siempre pasa por el botón.
+
 **Pendientes / para el backend (SCRUM-70):**
+
+- El backend garantiza que la campaña sale una sola vez (atómico e idempotente) y vuelve a
+  revisar el consentimiento al enviar, sin confiar en el número de la vista previa.
+- Exigir `campanas.gestionar` en las 7 rutas, también `segmentos` y `vista-previa`.
+- Ojalá un campo o código en los errores 400 (hoy el frontend ubica el mensaje por sus palabras).
 
 - Acordar la forma de la API de arriba y los largos máximos de asunto y cuerpo (el frontend solo
   exige que no estén vacíos y muestra el 400 del backend junto al campo).
