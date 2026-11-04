@@ -60,7 +60,7 @@ export function CuentaProtegida({
 }
 
 /** Menú lateral, título y las tarjetas de Mis datos con alturas parecidas a las reales. */
-const EsqueletoCuenta = () => (
+export const EsqueletoCuenta = () => (
   <div aria-hidden className="grid gap-4 md:grid-cols-[240px_1fr] md:gap-12">
     <Skeleton className="hidden h-96 md:block" />
     <div className="flex flex-col gap-6">

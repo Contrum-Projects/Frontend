@@ -59,3 +59,27 @@ const soloHora = new Intl.DateTimeFormat('es-CL', {
 /** «10:29», en la hora de Chile. */
 export const formatearHora = (valor: Date | string) =>
   soloHora.format(aFecha(valor));
+
+const fechaLarga = new Intl.DateTimeFormat('es-CL', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: ZONA,
+});
+
+/** «10 de octubre de 2026», en la hora de Chile. */
+export const formatearFechaLarga = (valor: Date | string) =>
+  fechaLarga.format(aFecha(valor));
+
+const diaMesHora = new Intl.DateTimeFormat('es-CL', {
+  day: 'numeric',
+  month: 'short',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+  timeZone: ZONA,
+});
+
+/** «10 oct, 14:32», en la hora de Chile (historial del pedido). */
+export const formatearDiaHora = (valor: Date | string) =>
+  diaMesHora.format(aFecha(valor));
