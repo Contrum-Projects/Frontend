@@ -57,7 +57,7 @@ Total: 53 historias, 185 puntos.
 | 39  | [SCRUM-127](SCRUM-127.md) · E9-H3 · Facturas por emitir y registro de la factura         | 5   | En revisión | Parcial | SCRUM-55 | SCRUM-130            |
 | 40  | [SCRUM-132](SCRUM-132.md) · E4-H1 · Sugerencia de IA en el producto nuevo                | 3   | En revisión | Sí      | SCRUM-60 | SCRUM-100            |
 | 41  | [SCRUM-133](SCRUM-133.md) · E4-H2 · Aceptar, editar o descartar la sugerencia            | 2   | En revisión | Sí      | SCRUM-61 | SCRUM-132            |
-| 42  | [SCRUM-134](SCRUM-134.md) · E10-H1 · Formulario y estados de la verificación profesional | 5   | Por hacer   | No      | SCRUM-62 | SCRUM-97             |
+| 42  | [SCRUM-134](SCRUM-134.md) · E10-H1 · Formulario y estados de la verificación profesional | 5   | En revisión | Sí      | SCRUM-62 | SCRUM-97             |
 | 43  | [SCRUM-135](SCRUM-135.md) · E10-H3 · Panel de verificaciones: revisión manual            | 5   | Por hacer   | No      | SCRUM-64 | SCRUM-99             |
 | 44  | [SCRUM-136](SCRUM-136.md) · E10-H4 · Cuenta profesional activa en la tienda              | 2   | Por hacer   | No      | SCRUM-65 | SCRUM-109, SCRUM-134 |
 | 45  | [SCRUM-137](SCRUM-137.md) · E10-H5 · Pantalla Perfil profesional                         | 2   | Por hacer   | No      | SCRUM-66 | SCRUM-136            |
