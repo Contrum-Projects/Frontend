@@ -4,6 +4,7 @@ import { ArrowRight, BadgeCheck, ChevronLeft, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import type { ComponentProps, ReactNode } from 'react';
 import type { CategoriaTienda } from '@/compartido/api/respuestas';
+import { ROLES } from '@/compartido/sesion/roles';
 import { useSesion } from '@/compartido/sesion/sesion';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { useCerrarSesion } from '@/tienda/cuenta/useCerrarSesion';
@@ -169,7 +170,7 @@ function CuentaMenu({ alElegir }: { alElegir: () => void }) {
         <span className="texto-cuerpo-fuerte text-texto-principal">
           Hola, {usuario.nombre}
         </span>
-        <span className="flex items-center gap-1 texto-pequeno text-texto-secundario">
+        <span className="flex flex-wrap items-center gap-x-1 texto-pequeno text-texto-secundario">
           <Link
             href={RUTAS.misPedidos}
             onClick={alElegir}
@@ -185,6 +186,19 @@ function CuentaMenu({ alElegir }: { alElegir: () => void }) {
           >
             Mis datos
           </Link>
+          {usuario.rol === ROLES.PROFESIONAL && (
+            // El separador va con su enlace: al pasar de línea no queda suelto
+            <span className="flex items-center gap-1 whitespace-nowrap">
+              <span aria-hidden>·</span>
+              <Link
+                href={RUTAS.perfilProfesional}
+                onClick={alElegir}
+                className="inline-flex min-h-10 items-center rounded-md hover:underline"
+              >
+                Perfil profesional
+              </Link>
+            </span>
+          )}
         </span>
       </div>
     </div>

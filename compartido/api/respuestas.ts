@@ -1148,9 +1148,9 @@ export interface SolicitudVerificacionCuenta {
 }
 
 /**
- * GET /api/perfil-profesional/yo (E10-H5; 404 si aún no lo completa). Backend
+ * GET y PUT /api/perfil-profesional/yo (E10-H5; el GET da 404 si aún no lo completa). Backend
  * `perfil-profesional.service.ts` › `PerfilProfesionalCuenta`.
- * TODO(SCRUM-136): el Swagger no declara la respuesta; pedido a SCRUM-66.
+ * TODO(SCRUM-137): el Swagger no declara la respuesta de ninguno de los dos; pedido a SCRUM-66.
  */
 export interface PerfilProfesionalCuenta {
   anosExperiencia: number;

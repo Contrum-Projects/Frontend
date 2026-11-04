@@ -63,7 +63,7 @@ Las páginas internas usan `titulo-h2 md:titulo-h1`, nunca el display.
 | Botón (Primario, Acento, Contorno · Grande, Mediano)          | `compartido/ui/button.tsx`                            | `variant="primario" \| "acento" \| "contorno"`, `size="grande" \| "mediano"`                                                  |
 | Campo                                                         | `compartido/ui/input.tsx` + `label.tsx` / `field.tsx` | Etiqueta `texto-etiqueta`, 6 px sobre la caja                                                                                 |
 | Cantidad                                                      | `compartido/ui/cantidad.tsx`                          | Píldora con − y +; desde 1 para todos (el mínimo del profesional se eliminó, SCRUM-146)                                       |
-| Chip (Activo Sí/No)                                           | por construir                                         | Filtros del catálogo                                                                                                          |
+| Chip seleccionable (radio o casilla)                          | `compartido/ui/chip.tsx`                              | Perfil profesional (08c); sirve para los filtros del catálogo                                                                 |
 | Imagen de producto                                            | `next/image`                                          | Las de Figma son provisorias                                                                                                  |
 | Tarjeta de producto (Minorista/Profesional · Normal/Compacto) | por construir (SCRUM-106/109)                         |                                                                                                                               |
 | Header y Footer (Escritorio, Celular)                         | por construir (SCRUM-106)                             | Ninguna historia los nombra: se arman con el inicio                                                                           |
@@ -111,7 +111,8 @@ Funciona en computador y en celular (RNF-25: 360 px sin desplazamiento horizonta
 - Si la foto del reverso que usa la IA se publica como foto del formato.
 - Permisos de vendedor y bodeguero en el panel (el backend ya tiene `permisos.ts`; las pantallas
   de Figma muestran la vista del administrador).
-- Modalidades y especialidades del perfil profesional, segmentos de campañas y la oferta del saludo
-  de cumpleaños.
+- Segmentos de campañas y la oferta del saludo de cumpleaños. Las modalidades y especialidades del
+  perfil profesional usan la propuesta del 4-11-2026 (`tienda/profesional/opcionesPerfil.ts`),
+  aún por validar con la clienta.
 - Textos de términos y condiciones y política de privacidad.
 - Ícono del sitio: monograma «CP» en turquesa sobre `marca-profundo`, cuadrado (`app/icon.svg`), hecho por el equipo en Illustrator (27-10-2026).
