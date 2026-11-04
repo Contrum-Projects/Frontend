@@ -53,6 +53,7 @@ export const producto = (
   nombre: 'Shampoo reparador',
   descripcion: 'Repara el cabello dañado.',
   origenDescripcion: 'manual',
+  ingredientes: null,
   canalVenta: 'general',
   activo: true,
   marca: { id: 1, nombre: 'Kérastase' },

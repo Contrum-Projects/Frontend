@@ -108,6 +108,7 @@ describe('Producto nuevo (SCRUM-100)', () => {
       {
         nombre: 'Shampoo reparador',
         descripcion: 'Repara el cabello dañado.',
+        ingredientes: null,
         marcaId: 1,
         categoriaId: 4,
         canalVenta: 'profesional',
@@ -154,6 +155,7 @@ describe('Editar producto (SCRUM-100)', () => {
       {
         nombre: 'Shampoo reparador intenso',
         descripcion: 'Repara el cabello dañado.',
+        ingredientes: null,
         marcaId: 1,
         categoriaId: 4,
         canalVenta: 'general',

@@ -48,6 +48,13 @@ export const OrigenDescripcionProducto = ({
   );
 };
 
+/** «Sin descripción aún» del producto nuevo (Figma P3 2029:766), hasta que se escribe o se usa. */
+export const SinDescripcion = () => (
+  <Badge className="bg-fondo-hueso-oscuro texto-leyenda text-texto-principal">
+    Sin descripción aún
+  </Badge>
+);
+
 /** «Activo» o «Inactivo» (Figma 2039:1126 y 2039:1299). */
 export const EstadoProducto = ({ activo }: { activo: boolean }) => (
   <Badge

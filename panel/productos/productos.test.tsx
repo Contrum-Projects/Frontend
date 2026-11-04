@@ -96,6 +96,36 @@ describe('Productos (SCRUM-100)', () => {
     expect(within(segunda).getByText('Inactivo')).toBeInTheDocument();
   });
 
+  it('E4-H2 FE · origen visible: el listado muestra si la descripción es manual, de IA o de IA editada', async () => {
+    simularBackend({
+      'GET /api/catalogo/productos': () =>
+        Response.json(
+          listado([
+            filaListado({ nombre: 'Escrito a mano' }),
+            filaListado({ id: 8, nombre: 'Aceptado', origenDescripcion: 'ia' }),
+            filaListado({
+              id: 9,
+              nombre: 'Corregido',
+              origenDescripcion: 'ia_editada',
+            }),
+          ]),
+        ),
+    });
+    mostrar(<PantallaProductos />);
+
+    const origen = (nombre: string) =>
+      within(filaDe(nombre)).getByText('Descripción:').parentElement;
+    await waitFor(() =>
+      expect(origen('Escrito a mano')).toHaveTextContent('Manual'),
+    );
+    expect(origen('Aceptado')).toHaveTextContent(/^Descripción: IA$/);
+    expect(origen('Corregido')).toHaveTextContent('Descripción: IA editada');
+    // También en la lista de celular
+    expect(
+      within(listaDeProductos()).getAllByText('Descripción:'),
+    ).toHaveLength(3);
+  });
+
   it('E3-H1 FE · listado: en celular cada producto abre su edición', async () => {
     simularBackend({
       'GET /api/catalogo/productos': () => Response.json(listado(FILAS)),

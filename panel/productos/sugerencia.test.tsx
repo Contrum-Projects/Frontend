@@ -2,8 +2,17 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { paths } from '@/compartido/api/esquema';
-import { error, iniciarSesion, mostrar, simularBackend } from './apiDePrueba';
-import { PantallaProductoNuevo } from './pantallaProducto';
+import {
+  error,
+  iniciarSesion,
+  mostrar,
+  producto,
+  simularBackend,
+} from './apiDePrueba';
+import {
+  PantallaEditarProducto,
+  PantallaProductoNuevo,
+} from './pantallaProducto';
 
 // Cliente igual al de la app, con URL absoluta y el fetch simulado de cada prueba
 vi.mock('@/compartido/api/cliente', async (original) => {
@@ -18,8 +27,9 @@ vi.mock('@/compartido/api/cliente', async (original) => {
   return { api, middlewareDeSesion };
 });
 
+const navegacion = vi.hoisted(() => ({ replace: vi.fn(), push: vi.fn() }));
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ replace: vi.fn() }),
+  useRouter: () => navegacion,
 }));
 
 const RUTA = 'POST /api/catalogo/descripciones/sugerencia';
@@ -46,8 +56,54 @@ const generar = () =>
     tarjeta().getByRole('button', { name: 'Generar descripción' }),
   );
 
+const elegir = async (campo: string, opcion: string) => {
+  await userEvent.click(
+    screen.getByRole('combobox', { name: new RegExp(`^${campo}`) }),
+  );
+  await userEvent.click(await screen.findByRole('option', { name: opcion }));
+};
+
+/** Nombre, marca y categoría: lo que falta para guardar además de la descripción. */
+const llenarDatos = async () => {
+  await userEvent.type(screen.getByLabelText(/^Nombre/), 'Shampoo suave');
+  await elegir('Marca', 'Kérastase');
+  await elegir('Categoría', 'Shampoo › Reparación');
+};
+
+/** En jsdom se dibujan los botones del encabezado y los del pie: se usa el primero. */
+const guardar = () =>
+  userEvent.click(
+    screen.getAllByRole('button', { name: 'Guardar producto' })[0],
+  );
+
+const descripcion = () => screen.getByLabelText(/^Descripción del producto/);
+const ingredientes = () => screen.getByLabelText(/^Ingredientes/);
+
+/** Sube la foto, genera y espera la sugerencia. */
+const sugerir = async () => {
+  await subirReverso();
+  await generar();
+  await tarjeta().findByText(SUGERENCIA.descripcion);
+};
+
+const accion = (nombre: 'Usar' | 'Editar' | 'Descartar') =>
+  userEvent.click(tarjeta().getByRole('button', { name: nombre }));
+
+/** ¿El navegador pediría confirmar antes de cerrar o recargar la pestaña? */
+const cerrarPestanaPideConfirmar = () => {
+  const evento = new Event('beforeunload', { cancelable: true });
+  window.dispatchEvent(evento);
+  return evento.defaultPrevented;
+};
+
+const CREAR = 'POST /api/catalogo/productos';
+const creado = () =>
+  Response.json(producto({ id: 12, origenDescripcion: 'ia' }), { status: 201 });
+
 beforeEach(() => {
   iniciarSesion();
+  navegacion.replace.mockReset();
+  navegacion.push.mockReset();
   // jsdom no crea URLs de archivos: la miniatura usa una fija
   vi.stubGlobal(
     'URL',
@@ -182,5 +238,209 @@ describe('Sugerencia de IA en el producto (SCRUM-132)', () => {
     expect(tarjeta().getByRole('alert')).not.toHaveTextContent(
       'Failed to fetch',
     );
+  });
+});
+
+describe('Aceptar, editar o descartar la sugerencia (SCRUM-133)', () => {
+  it('E4-H2 FE · tres acciones: «Usar» pasa la sugerencia al formulario y la envía con su firma', async () => {
+    const { enviados } = simularBackend({
+      [RUTA]: () => Response.json(SUGERENCIA),
+      [CREAR]: creado,
+    });
+    mostrar(<PantallaProductoNuevo />);
+    await llenarDatos();
+    expect(screen.getByText('Sin descripción aún')).toBeInTheDocument();
+
+    await sugerir();
+    await accion('Usar');
+
+    expect(descripcion()).toHaveValue(SUGERENCIA.descripcion);
+    expect(ingredientes()).toHaveValue(SUGERENCIA.ingredientes);
+    expect(screen.queryByText('Sin descripción aún')).not.toBeInTheDocument();
+    // La tarjeta se cierra y queda lista para pedir otra
+    expect(
+      tarjeta().queryByRole('button', { name: 'Usar' }),
+    ).not.toBeInTheDocument();
+    expect(
+      tarjeta().getByRole('button', { name: 'Generar descripción' }),
+    ).toHaveFocus();
+    expect(tarjeta().getByRole('status')).toHaveTextContent(
+      'Pasamos la sugerencia a la descripción.',
+    );
+
+    await guardar();
+
+    await waitFor(() =>
+      expect(navegacion.replace).toHaveBeenCalledWith('/panel/productos/12'),
+    );
+    expect(enviados).toEqual([
+      {
+        nombre: 'Shampoo suave',
+        descripcion: SUGERENCIA.descripcion,
+        sugerencia: {
+          descripcion: SUGERENCIA.descripcion,
+          firma: SUGERENCIA.firma,
+        },
+        ingredientes: SUGERENCIA.ingredientes,
+        marcaId: 1,
+        categoriaId: 4,
+        canalVenta: 'general',
+      },
+    ]);
+  });
+
+  it('E4-H2 FE · tres acciones: «Editar» deja el cursor en la descripción y envía la sugerencia de la que partió', async () => {
+    const { enviados } = simularBackend({
+      [RUTA]: () => Response.json(SUGERENCIA),
+      [CREAR]: creado,
+    });
+    mostrar(<PantallaProductoNuevo />);
+    await llenarDatos();
+
+    await sugerir();
+    await accion('Editar');
+
+    expect(descripcion()).toHaveFocus();
+    await userEvent.type(descripcion(), ' Sin sulfatos.');
+    await guardar();
+
+    await waitFor(() => expect(enviados).toHaveLength(1));
+    // El backend la compara con la sugerida y la deja como «IA editada»
+    expect(enviados[0]).toMatchObject({
+      descripcion: `${SUGERENCIA.descripcion} Sin sulfatos.`,
+      sugerencia: {
+        descripcion: SUGERENCIA.descripcion,
+        firma: SUGERENCIA.firma,
+      },
+    });
+  });
+
+  it('E4-H2 FE · tres acciones: «Descartar» cierra la sugerencia sin tocar lo escrito y se guarda como manual', async () => {
+    const { enviados } = simularBackend({
+      [RUTA]: () => Response.json(SUGERENCIA),
+      [CREAR]: creado,
+    });
+    mostrar(<PantallaProductoNuevo />);
+    await llenarDatos();
+    await userEvent.type(descripcion(), 'Mi texto');
+
+    await sugerir();
+    await accion('Descartar');
+
+    expect(
+      tarjeta().queryByText(SUGERENCIA.descripcion),
+    ).not.toBeInTheDocument();
+    expect(descripcion()).toHaveValue('Mi texto');
+    expect(ingredientes()).toHaveValue('');
+    await guardar();
+
+    await waitFor(() => expect(enviados).toHaveLength(1));
+    expect(enviados[0]).not.toHaveProperty('sugerencia');
+    expect(enviados[0]).toMatchObject({
+      descripcion: 'Mi texto',
+      ingredientes: null,
+    });
+  });
+
+  it('E4-H2 FE · ingredientes: más de 3000 caracteres se avisa junto al campo sin enviar', async () => {
+    const { pedidas } = simularBackend({});
+    mostrar(<PantallaProductoNuevo />);
+    await llenarDatos();
+    await userEvent.type(descripcion(), 'Mi texto');
+    await userEvent.click(ingredientes());
+    await userEvent.paste('a'.repeat(3001));
+
+    await guardar();
+
+    expect(
+      await screen.findByText(
+        'La lista de ingredientes no puede superar los 3000 caracteres.',
+      ),
+    ).toBeInTheDocument();
+    expect(ingredientes()).toHaveAttribute('aria-invalid', 'true');
+    expect(pedidas.some((pedida) => pedida.startsWith('POST'))).toBe(false);
+  });
+
+  it('E4-H2 FE · tres acciones: al editar un producto también envía la sugerencia usada', async () => {
+    const { enviados } = simularBackend({
+      'GET /api/catalogo/productos/7': () => Response.json(producto()),
+      'PATCH /api/catalogo/productos/7': () =>
+        Response.json(
+          producto({
+            descripcion: SUGERENCIA.descripcion,
+            ingredientes: SUGERENCIA.ingredientes,
+            origenDescripcion: 'ia',
+          }),
+        ),
+      [RUTA]: () => Response.json(SUGERENCIA),
+    });
+    mostrar(<PantallaEditarProducto id="7" />);
+    await screen.findByDisplayValue('Repara el cabello dañado.');
+
+    await sugerir();
+    await accion('Usar');
+    await guardar();
+
+    expect(
+      await screen.findByText('Guardamos los cambios de Shampoo reparador.'),
+    ).toBeInTheDocument();
+    expect(enviados[0]).toMatchObject({
+      descripcion: SUGERENCIA.descripcion,
+      sugerencia: {
+        descripcion: SUGERENCIA.descripcion,
+        firma: SUGERENCIA.firma,
+      },
+      ingredientes: SUGERENCIA.ingredientes,
+    });
+    // Guardada: salir ya no avisa
+    expect(cerrarPestanaPideConfirmar()).toBe(false);
+  });
+
+  it('E4-H2 FE · sin publicar sin revisar: al salir con la sugerencia sin guardar avisa que no se guardará', async () => {
+    simularBackend({ [RUTA]: () => Response.json(SUGERENCIA) });
+    mostrar(<PantallaProductoNuevo />);
+
+    await sugerir();
+    await userEvent.click(screen.getAllByRole('link', { name: 'Cancelar' })[0]);
+
+    const aviso = await screen.findByRole('alertdialog', {
+      name: '¿Salir sin guardar?',
+    });
+    expect(
+      within(aviso).getByText('La sugerencia de descripción no se guardará.'),
+    ).toBeInTheDocument();
+
+    await userEvent.click(
+      within(aviso).getByRole('button', { name: 'Seguir editando' }),
+    );
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(navegacion.push).not.toHaveBeenCalled();
+    expect(tarjeta().getByText(SUGERENCIA.descripcion)).toBeInTheDocument();
+
+    await userEvent.click(screen.getAllByRole('link', { name: 'Cancelar' })[0]);
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Salir sin guardar' }),
+    );
+    expect(navegacion.push).toHaveBeenCalledWith('/panel/productos');
+  });
+
+  it('E4-H2 FE · sin publicar sin revisar: con la sugerencia usada y sin guardar, cerrar la pestaña pide confirmación', async () => {
+    simularBackend({ [RUTA]: () => Response.json(SUGERENCIA) });
+    mostrar(<PantallaProductoNuevo />);
+
+    expect(cerrarPestanaPideConfirmar()).toBe(false);
+    await sugerir();
+    await accion('Usar');
+    expect(cerrarPestanaPideConfirmar()).toBe(true);
+  });
+
+  it('E4-H2 FE · sin publicar sin revisar: descartada la sugerencia, salir no avisa', async () => {
+    simularBackend({ [RUTA]: () => Response.json(SUGERENCIA) });
+    mostrar(<PantallaProductoNuevo />);
+
+    await sugerir();
+    await accion('Descartar');
+
+    expect(cerrarPestanaPideConfirmar()).toBe(false);
   });
 });

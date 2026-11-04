@@ -5,6 +5,9 @@ import type {
   ProductoPanel,
 } from '@/compartido/api/respuestas';
 
+/** `LARGO_MAXIMO_INGREDIENTES_IA` de src/modulos/catalogo/cliente-ia.ts del backend. */
+const MAXIMO_INGREDIENTES = 3000;
+
 /**
  * Producto nuevo o editado (E3-H1). Repite los largos y los mensajes de CrearProductoDto del
  * backend (src/modulos/catalogo/dto/crear-producto.dto.ts) solo para marcar lo que falta antes
@@ -27,6 +30,14 @@ export const esquemaProducto = z.object({
       5000,
       'La descripción del producto no puede superar los 5000 caracteres.',
     ),
+  /** Opcional (E4-H2): vacío se guarda como `null`, y en una edición borra la lista. */
+  ingredientes: z
+    .string()
+    .trim()
+    .max(
+      MAXIMO_INGREDIENTES,
+      `La lista de ingredientes no puede superar los ${MAXIMO_INGREDIENTES} caracteres.`,
+    ),
 });
 
 export type FormularioProducto = z.input<typeof esquemaProducto>;
@@ -39,6 +50,7 @@ export const PRODUCTO_VACIO: FormularioProducto = {
   categoriaId: '',
   exclusivo: false,
   descripcion: '',
+  ingredientes: '',
 };
 
 export const productoAFormulario = (
@@ -49,18 +61,39 @@ export const productoAFormulario = (
   categoriaId: String(producto.categoria.id),
   exclusivo: producto.canalVenta === 'profesional',
   descripcion: producto.descripcion,
+  ingredientes: producto.ingredientes ?? '',
 });
 
-/** Cuerpo de POST (nuevo) y PATCH (edición): siempre se envían todos los datos. */
+/** La sugerencia de la IA de la que partió la descripción (E4-H2), con su firma. */
+export type SugerenciaUsada = components['schemas']['SugerenciaUsadaDto'];
+
+type CuerpoProducto = Omit<
+  components['schemas']['CrearProductoDto'],
+  'ingredientes'
+> & { ingredientes: string | null };
+
+/**
+ * Cuerpo de POST (nuevo) y PATCH (edición): siempre se envían todos los datos. Con la
+ * sugerencia de la que partió la descripción, el backend decide el origen (igual: «ia»;
+ * cambiada: «ia_editada»); sin ella, «manual» (E4-H2).
+ */
 export const cuerpoProducto = (
   datos: SalidaProducto,
-): components['schemas']['CrearProductoDto'] => ({
-  nombre: datos.nombre,
-  descripcion: datos.descripcion,
-  marcaId: Number(datos.marcaId),
-  categoriaId: Number(datos.categoriaId),
-  canalVenta: datos.exclusivo ? 'profesional' : 'general',
-});
+  sugerencia: SugerenciaUsada | null,
+): components['schemas']['CrearProductoDto'] => {
+  const cuerpo: CuerpoProducto = {
+    nombre: datos.nombre,
+    descripcion: datos.descripcion,
+    ...(sugerencia && { sugerencia }),
+    ingredientes: datos.ingredientes || null,
+    marcaId: Number(datos.marcaId),
+    categoriaId: Number(datos.categoriaId),
+    canalVenta: datos.exclusivo ? 'profesional' : 'general',
+  };
+  // El Swagger declara `ingredientes` como objeto (falta `type: String` en el DTO del
+  // backend); el DTO recibe un texto o `null`
+  return cuerpo as unknown as components['schemas']['CrearProductoDto'];
+};
 
 /**
  * El backend responde los errores como una lista de mensajes, sin decir a qué campo
@@ -70,6 +103,7 @@ export const cuerpoProducto = (
 const INICIOS_PRODUCTO: [inicio: string, campo: CampoProducto][] = [
   ['El nombre', 'nombre'],
   ['La descripción', 'descripcion'],
+  ['La lista de ingredientes', 'ingredientes'],
   ['La marca', 'marcaId'],
   ['La categoría', 'categoriaId'],
   ['El canal de venta', 'exclusivo'],
