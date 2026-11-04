@@ -66,3 +66,5 @@ El Swagger no declara las respuestas: `SolicitudVerificacionCuenta` está en
 **Para el backend (SCRUM-62/63):** declarar en el Swagger la respuesta `SolicitudVerificacionCuenta`
 de las tres rutas. Si el equipo quiere el historial de Figma, haría falta una ruta con las
 solicitudes anteriores.
+
+**PR:** https://github.com/Contrum-Projects/Frontend/pull/57 (04-11-2026, En revisión).
