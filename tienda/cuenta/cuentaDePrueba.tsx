@@ -99,8 +99,14 @@ export const RUTAS_UBICACIONES: Record<string, () => Response> = {
   ),
 };
 
-/** Abre una pantalla de «Mi cuenta» con la sesión iniciada. */
-export const mostrarPantallaCuenta = (pantalla: ReactNode) => {
+/**
+ * Abre una pantalla de «Mi cuenta» con la sesión iniciada. `cliente` permite reabrirla con la
+ * misma caché de consultas (por ejemplo, para volver a un detalle ya visitado).
+ */
+export const mostrarPantallaCuenta = (
+  pantalla: ReactNode,
+  cliente = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+) => {
   act(() =>
     guardarSesion({
       tokenAcceso: 'token',
@@ -113,12 +119,8 @@ export const mostrarPantallaCuenta = (pantalla: ReactNode) => {
       },
     }),
   );
-  render(
-    <QueryClientProvider
-      client={
-        new QueryClient({ defaultOptions: { queries: { retry: false } } })
-      }
-    >
+  return render(
+    <QueryClientProvider client={cliente}>
       <DisenoCuenta>{pantalla}</DisenoCuenta>
     </QueryClientProvider>,
   );

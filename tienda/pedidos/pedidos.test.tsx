@@ -1,9 +1,11 @@
+import { QueryClient } from '@tanstack/react-query';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { paths } from '@/compartido/api/esquema';
 import type {
   DetallePedidoCuenta,
+  EnvioPedido,
   HistorialPedidos,
   ResumenPedido,
 } from '@/compartido/api/respuestas';
@@ -68,6 +70,20 @@ const historial = (
 
 const CODIGO = 'K7M2Q9XA4BCD';
 
+const ENVIO: EnvioPedido = {
+  servicio: 'Chilexpress',
+  costo: 3990,
+  estado: 'en_transito',
+  codigoSeguimiento: '7891234560',
+  fechaEstimada: null,
+  destinatario: 'Camila Rojas',
+  telefonoContacto: null,
+  calle: 'Av. Ejemplo',
+  numero: '1234',
+  referencia: 'depto. 56',
+  comuna: { codigoCut: '13120', nombre: 'Ñuñoa' },
+};
+
 const detalle = (
   extra: Partial<DetallePedidoCuenta> = {},
 ): DetallePedidoCuenta => ({
@@ -101,19 +117,7 @@ const detalle = (
       subtotal: 11990,
     },
   ],
-  envio: {
-    servicio: 'Chilexpress',
-    costo: 3990,
-    estado: 'en_transito',
-    codigoSeguimiento: '7891234560',
-    fechaEstimada: null,
-    destinatario: 'Camila Rojas',
-    telefonoContacto: null,
-    calle: 'Av. Ejemplo',
-    numero: '1234',
-    referencia: 'depto. 56',
-    comuna: { codigoCut: '13120', nombre: 'Ñuñoa' },
-  },
+  envio: ENVIO,
   documento: null,
   idTransaccionPago: '1234567890',
   historial: [
@@ -320,6 +324,87 @@ describe('Detalle del pedido (SCRUM-129)', () => {
     ).not.toBeInTheDocument();
     expect(screen.queryByText('Despacho')).not.toBeInTheDocument();
     expect(screen.getAllByText('Pendiente de pago')).toHaveLength(2);
+  });
+
+  it('E7-H3 FE · envío registrado: muestra el servicio, el código de seguimiento y el estado del envío', async () => {
+    simularBackend({ [PEDIDO]: () => responder(detalle()) });
+    mostrarPantallaCuenta(<PantallaDetallePedido codigo={CODIGO} />);
+
+    const envio = await screen.findByRole('region', { name: 'Envío' });
+    expect(envio).toHaveTextContent('Chilexpress');
+    // Escritorio: el código en su línea; celular: junto al servicio (jsdom no aplica el CSS)
+    expect(envio).toHaveTextContent('Código de seguimiento: 7891234560');
+    expect(envio).toHaveTextContent('Chilexpress · Código 7891234560');
+    expect(envio).toHaveTextContent('Estado del envío: En tránsito');
+    expect(envio).toHaveTextContent('Av. Ejemplo 1234, depto. 56, Ñuñoa');
+  });
+
+  it('E7-H3 FE · envío registrado: cada estado del envío se muestra con su nombre', async () => {
+    simularBackend({
+      [PEDIDO]: () =>
+        responder(
+          detalle({
+            estado: 'entregado',
+            envio: { ...ENVIO, estado: 'con_problema' },
+          }),
+        ),
+    });
+    mostrarPantallaCuenta(<PantallaDetallePedido codigo={CODIGO} />);
+
+    expect(
+      await screen.findByRole('region', { name: 'Envío' }),
+    ).toHaveTextContent('Estado del envío: Con problema');
+  });
+
+  it('E7-H3 FE · sin despachar: sin código, la tarjeta muestra solo el servicio y la dirección', async () => {
+    simularBackend({
+      [PEDIDO]: () =>
+        responder(
+          detalle({
+            estado: 'en_preparacion',
+            envio: {
+              ...ENVIO,
+              estado: 'pendiente',
+              codigoSeguimiento: null,
+            },
+          }),
+        ),
+    });
+    mostrarPantallaCuenta(<PantallaDetallePedido codigo={CODIGO} />);
+
+    const envio = await screen.findByRole('region', { name: 'Envío' });
+    expect(envio).toHaveTextContent('Chilexpress');
+    expect(envio).toHaveTextContent('Av. Ejemplo 1234, depto. 56, Ñuñoa');
+    expect(envio).not.toHaveTextContent('Código');
+    expect(envio).not.toHaveTextContent('Estado del envío');
+  });
+
+  it('E7-H3 FE · estado actualizado: al volver a abrir el detalle se ve el estado más reciente', async () => {
+    let estadoEnvio = 'en_transito';
+    simularBackend({
+      [PEDIDO]: () =>
+        responder(detalle({ envio: { ...ENVIO, estado: estadoEnvio } })),
+    });
+    // La misma caché que en el navegador, donde las consultas duran 30 s
+    const cliente = new QueryClient({
+      defaultOptions: { queries: { retry: false, staleTime: 30_000 } },
+    });
+    const primera = mostrarPantallaCuenta(
+      <PantallaDetallePedido codigo={CODIGO} />,
+      cliente,
+    );
+    expect(
+      await screen.findByText('Estado del envío: En tránsito'),
+    ).toBeInTheDocument();
+    primera.unmount();
+
+    // Chilexpress informa que va en reparto y el cliente vuelve al detalle
+    estadoEnvio = 'en_reparto';
+    mostrarPantallaCuenta(<PantallaDetallePedido codigo={CODIGO} />, cliente);
+
+    expect(
+      await screen.findByText('Estado del envío: En reparto'),
+    ).toBeInTheDocument();
   });
 
   it('E8-H1 FE · pedido de otra cuenta: la pantalla indica que no existe', async () => {
