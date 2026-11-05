@@ -33,6 +33,7 @@ falta al que menos; lista vacía si no hay.
 
 ## Notas de trabajo
 
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/68
 - **Sin API simulada:** se usa el endpoint real.
 - **Figma P6 no tiene esta sección.** Se reutiliza la tabla (escritorio, P1 2028:682) y la lista
   (celular, P1 2023:206) del aviso del Resumen, extraídas a
