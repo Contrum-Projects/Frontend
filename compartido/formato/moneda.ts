@@ -15,6 +15,17 @@ export function formatearPesos(monto: number | string): string {
   return pesos.format(Math.round(valor));
 }
 
+const compacto = new Intl.NumberFormat('es-CL', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+
+/** Montos abreviados para ejes y etiquetas de gráficos: 2600000 → «$2,6 M», 0 → «$0». */
+export function formatearPesosCompactos(monto: number): string {
+  if (!Number.isFinite(monto)) return '—';
+  return `$${compacto.format(Math.round(monto))}`;
+}
+
 const pesosConDecimales = new Intl.NumberFormat('es-CL', {
   style: 'currency',
   currency: 'CLP',
