@@ -42,7 +42,7 @@ Comprobado el 5-11-2026: el backend solo tiene `TIPOS_CAMPANA.CUMPLEANOS` y
 
 ## Notas de trabajo
 
-**5-11-2026 (rama `SCRUM-141-saludo-cumpleanos`).**
+**5-11-2026 (rama `SCRUM-141-saludo-cumpleanos`).** PR: https://github.com/Contrum-Projects/Frontend/pull/65
 
 - Tarjeta `panel/campanas/tarjetaCumpleanos.tsx` en «Campañas»: a la derecha de la lista en
   escritorio (columna de 20 rem) y sobre la lista en celular. Tiene su propia consulta: se ve
