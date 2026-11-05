@@ -4,6 +4,8 @@ import { useQueries, useQuery } from '@tanstack/react-query';
 import { api } from '@/compartido/api/cliente';
 import { exigir } from '@/compartido/api/errores';
 import type {
+  ReporteCampanas,
+  ReporteCarritos,
   ReporteObjetivos,
   ReporteVentas,
 } from '@/compartido/api/respuestas';
@@ -58,6 +60,45 @@ export const useObjetivosDelPeriodo = ({ desde, hasta }: Fechas) =>
       conErrorDeApi(async () =>
         exigir<ReporteObjetivos>(
           await pedirObjetivos('/api/reportes/objetivos', {
+            params: { query: { desde, hasta } },
+          }),
+        ),
+      ),
+  });
+
+type RutaSimulada = '/api/reportes/carritos' | '/api/reportes/campanas';
+
+/**
+ * TODO(SCRUM-144): `/api/reportes/carritos` y `/api/reportes/campanas` aún no están en el
+ * Swagger (API simulada, pedida a SCRUM-76). Quitar el cast cuando `pnpm api:tipos` las traiga.
+ */
+const pedirReporteSimulado = api.GET as unknown as (
+  ruta: RutaSimulada,
+  opciones: { params: { query: Fechas } },
+) => Promise<{ data?: unknown; error?: unknown; response: Response }>;
+
+/** Carritos abandonados y recuperados por mes del período (E14-H3 criterio 1). */
+export const useCarritosDelPeriodo = ({ desde, hasta }: Fechas) =>
+  useQuery({
+    queryKey: [...CLAVE_REPORTES, 'carritos', desde, hasta],
+    queryFn: () =>
+      conErrorDeApi(async () =>
+        exigir<ReporteCarritos>(
+          await pedirReporteSimulado('/api/reportes/carritos', {
+            params: { query: { desde, hasta } },
+          }),
+        ),
+      ),
+  });
+
+/** Resultados de las campañas enviadas en el período (E14-H3 criterio 2). */
+export const useCampanasDelPeriodo = ({ desde, hasta }: Fechas) =>
+  useQuery({
+    queryKey: [...CLAVE_REPORTES, 'campanas', desde, hasta],
+    queryFn: () =>
+      conErrorDeApi(async () =>
+        exigir<ReporteCampanas>(
+          await pedirReporteSimulado('/api/reportes/campanas', {
             params: { query: { desde, hasta } },
           }),
         ),

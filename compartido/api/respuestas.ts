@@ -1490,3 +1490,61 @@ export interface ReporteObjetivos {
   hasta: string;
   objetivos: IndicadorObjetivo[];
 }
+
+/** Carritos abandonados de un mes (E14-H3). */
+export interface CarritosDelMes {
+  /** AAAA-MM */
+  mes: string;
+  /** Carritos que recibieron al menos un recordatorio en el mes (E12-H4). */
+  abandonados: number;
+  /** De los abandonados, los que terminaron en compra. */
+  recuperados: number;
+  /** 0 a 100, calculado por el backend; `null` si no hubo abandonados. */
+  porcentajeRecuperados: number | null;
+}
+
+/**
+ * GET /api/reportes/carritos?desde&hasta (E14-H3). API SIMULADA: el endpoint aún no existe;
+ * forma propuesta a SCRUM-76 (ver docs/historias/SCRUM-144.md). Un elemento por mes del
+ * período, del más antiguo al más reciente, aunque esté en cero.
+ */
+export interface ReporteCarritos {
+  /** AAAA-MM-DD */
+  desde: string;
+  /** AAAA-MM-DD */
+  hasta: string;
+  meses: CarritosDelMes[];
+}
+
+/** Resultado de una campaña o de un correo automático en el período (E14-H3). */
+export interface ResultadoCampana {
+  codigo: string;
+  /** Asunto de la campaña, o el nombre del correo automático (p. ej. «Saludo de cumpleaños»). */
+  nombre: string;
+  /** Correos automáticos (saludo de cumpleaños): sus envíos del mes, en una fila. */
+  automatica: boolean;
+  /** Campaña: fecha de envío (ISO 8601). Automática: el mes (AAAA-MM). */
+  fecha: string;
+  /** Texto del segmento armado por el backend; `null` en un correo automático. */
+  segmento: string | null;
+  enviados: number;
+  /** 0 a 100, calculados por el backend; `null` si no hubo envíos. */
+  porcentajeAbiertos: number | null;
+  porcentajeClic: number | null;
+  rebotados: number;
+  /** No salieron porque la persona ya no aceptaba publicidad al enviar (E12-H2). */
+  cancelados: number;
+  fallidos: number;
+}
+
+/**
+ * GET /api/reportes/campanas?desde&hasta (E14-H3). API SIMULADA: el endpoint aún no existe;
+ * forma propuesta a SCRUM-76 (ver docs/historias/SCRUM-144.md). Las más recientes primero.
+ */
+export interface ReporteCampanas {
+  /** AAAA-MM-DD */
+  desde: string;
+  /** AAAA-MM-DD */
+  hasta: string;
+  campanas: ResultadoCampana[];
+}

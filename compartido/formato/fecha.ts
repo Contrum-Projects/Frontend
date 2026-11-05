@@ -83,3 +83,13 @@ const diaMesHora = new Intl.DateTimeFormat('es-CL', {
 /** «10 oct, 14:32», en la hora de Chile (historial del pedido). */
 export const formatearDiaHora = (valor: Date | string) =>
   diaMesHora.format(aFecha(valor));
+
+const diaMesCorto = new Intl.DateTimeFormat('es-CL', {
+  day: 'numeric',
+  month: 'short',
+  timeZone: ZONA,
+});
+
+/** «1 oct», en la hora de Chile (envío de una campaña). */
+export const formatearDiaMesCorto = (valor: Date | string) =>
+  diaMesCorto.format(aFecha(valor));
