@@ -10,11 +10,13 @@ import { useEffect, useState } from 'react';
 import { api } from '@/compartido/api/cliente';
 import { ErrorDeApi, exigir } from '@/compartido/api/errores';
 import type {
+  CambioSaludoCumpleanos,
   CampanaEnviada,
   CampanaGestion,
   DatosCampana,
   ListadoCampanas,
   OpcionesSegmentoCampana,
+  SaludoCumpleanos,
   VistaPreviaCampana,
 } from '@/compartido/api/respuestas';
 import { conErrorDeApi } from '@/tienda/cuenta/consultasCuenta';
@@ -23,6 +25,7 @@ export const CLAVE_CAMPANAS = ['panel', 'campanas'] as const;
 
 type RutaCampanas =
   | '/api/gestion/campanas'
+  | '/api/gestion/campanas/cumpleanos'
   | '/api/gestion/campanas/segmentos'
   | '/api/gestion/campanas/vista-previa'
   | '/api/gestion/campanas/{codigo}'
@@ -30,7 +33,7 @@ type RutaCampanas =
 
 interface OpcionesPeticion {
   params?: { path?: { codigo: string } };
-  body?: DatosCampana;
+  body?: DatosCampana | CambioSaludoCumpleanos;
 }
 
 type Resultado = Promise<{
@@ -40,8 +43,9 @@ type Resultado = Promise<{
 }>;
 
 /**
- * TODO(SCRUM-140): las rutas de campañas aún no están en el Swagger (API simulada, pedidas a
- * SCRUM-70). Quitar los casts cuando `pnpm api:tipos` las traiga.
+ * TODO(SCRUM-140, SCRUM-141): las rutas de campañas y del saludo de cumpleaños aún no están en el
+ * Swagger (API simulada, pedidas a SCRUM-70 y SCRUM-72). Quitar los casts cuando `pnpm api:tipos`
+ * las traiga.
  */
 const pedir = api.GET as unknown as (
   ruta: RutaCampanas,
@@ -52,6 +56,10 @@ const crear = api.POST as unknown as (
   opciones?: OpcionesPeticion,
 ) => Resultado;
 const reemplazar = api.PUT as unknown as (
+  ruta: RutaCampanas,
+  opciones?: OpcionesPeticion,
+) => Resultado;
+const modificar = api.PATCH as unknown as (
   ruta: RutaCampanas,
   opciones?: OpcionesPeticion,
 ) => Resultado;
@@ -210,5 +218,37 @@ export const useEnviarCampana = () => {
       ),
     onSettled: () =>
       clienteConsultas.invalidateQueries({ queryKey: CLAVE_CAMPANAS }),
+  });
+};
+
+const CLAVE_SALUDO = [...CLAVE_CAMPANAS, 'cumpleanos'] as const;
+
+/** E12-H5 · Si el saludo de cumpleaños está activo, si lleva oferta y sus cifras. */
+export const useSaludoCumpleanos = () =>
+  useQuery({
+    queryKey: CLAVE_SALUDO,
+    retry: reintentarSiFallaServidor,
+    queryFn: () =>
+      conErrorDeApi(async () =>
+        exigir<SaludoCumpleanos>(
+          await pedir('/api/gestion/campanas/cumpleanos'),
+        ),
+      ),
+  });
+
+/**
+ * E12-H5, criterios 1 y 2 · Activa o desactiva el saludo o su oferta. La respuesta del backend
+ * queda en la caché: la tarjeta muestra lo que quedó guardado.
+ */
+export const useCambiarSaludoCumpleanos = () => {
+  const clienteConsultas = useQueryClient();
+  return useMutation({
+    mutationFn: (cambio: CambioSaludoCumpleanos) =>
+      conErrorDeApi(async () =>
+        exigir<SaludoCumpleanos>(
+          await modificar('/api/gestion/campanas/cumpleanos', { body: cambio }),
+        ),
+      ),
+    onSuccess: (saludo) => clienteConsultas.setQueryData(CLAVE_SALUDO, saludo),
   });
 };

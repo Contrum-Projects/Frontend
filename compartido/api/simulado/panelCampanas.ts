@@ -12,13 +12,40 @@ import type {
   CampanaGestion,
   DatosCampana,
   ListadoCampanas,
+  CambioSaludoCumpleanos,
   OpcionesSegmentoCampana,
+  SaludoCumpleanos,
   VistaPreviaCampana,
 } from '@/compartido/api/respuestas';
 import { GRUPOS_ESPECIALIDADES } from '@/tienda/profesional/opcionesPerfil';
 import { errorSimulado, json, type RutaSimulada } from './index';
 
 const HISTORIA = 'SCRUM-140';
+const HISTORIA_CUMPLEANOS = 'SCRUM-141';
+
+/** SCRUM-141 · Saludo de cumpleaños (SCRUM-72 aún no existe). Conteos fijos. */
+const SALUDO: SaludoCumpleanos = {
+  activo: true,
+  incluyeOferta: false,
+  asunto: 'Feliz cumpleaños, {nombre}',
+  programadosEsteMes: 87,
+  porcentajeAperturaUltimoMes: 63,
+};
+
+const leerCambioSaludo = async (
+  peticion: Request,
+): Promise<CambioSaludoCumpleanos | null> => {
+  try {
+    const cambio = (await peticion.json()) as CambioSaludoCumpleanos;
+    const valido = (valor: unknown) =>
+      valor === undefined || typeof valor === 'boolean';
+    return valido(cambio.activo) && valido(cambio.incluyeOferta)
+      ? cambio
+      : null;
+  } catch {
+    return null;
+  }
+};
 
 const LISTADO: ListadoCampanas = {
   contactos: {
@@ -179,6 +206,29 @@ export const rutasPanelCampanas: RutaSimulada[] = [
     ruta: '/gestion/campanas/segmentos',
     historia: HISTORIA,
     responder: () => json(SEGMENTOS),
+  },
+  // Antes de `/gestion/campanas/:codigo`, que también calzaría con «cumpleanos»
+  {
+    metodo: 'GET',
+    ruta: '/gestion/campanas/cumpleanos',
+    historia: HISTORIA_CUMPLEANOS,
+    responder: () => json(SALUDO),
+  },
+  {
+    metodo: 'PATCH',
+    ruta: '/gestion/campanas/cumpleanos',
+    historia: HISTORIA_CUMPLEANOS,
+    // Nada se guarda: responde lo pedido sobre los datos fijos
+    responder: async ({ peticion }) => {
+      const cambio = await leerCambioSaludo(peticion);
+      if (!cambio) return errorSimulado(400, 'Datos del saludo inválidos.');
+      // Solo los dos campos que se pueden cambiar; el resto lo decide el backend
+      return json({
+        ...SALUDO,
+        activo: cambio.activo ?? SALUDO.activo,
+        incluyeOferta: cambio.incluyeOferta ?? SALUDO.incluyeOferta,
+      });
+    },
   },
   {
     metodo: 'POST',

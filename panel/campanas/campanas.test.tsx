@@ -127,6 +127,14 @@ const simularBackend = (rutas: Record<string, Manejador> = {}) => {
   const base: Record<string, Manejador> = {
     'GET /api/gestion/campanas': () => Response.json(LISTADO),
     'GET /api/gestion/campanas/segmentos': () => Response.json(SEGMENTOS),
+    'GET /api/gestion/campanas/cumpleanos': () =>
+      Response.json({
+        activo: true,
+        incluyeOferta: false,
+        asunto: 'Feliz cumpleaños, {nombre}',
+        programadosEsteMes: 87,
+        porcentajeAperturaUltimoMes: 63,
+      }),
     'POST /api/gestion/campanas/vista-previa': async (peticion) =>
       Response.json(vistaPrevia((await peticion.json()) as DatosCampana)),
     'POST /api/gestion/campanas': async (peticion) =>
@@ -305,6 +313,37 @@ describe('Listado de campañas (SCRUM-140)', () => {
     expect(puedeAbrir('administrador', '/panel/campanas/nueva')).toBe(true);
     expect(puedeAbrir('vendedor', '/panel/campanas')).toBe(false);
     expect(puedeAbrir('bodeguero', '/panel/campanas/nueva')).toBe(false);
+  });
+});
+
+describe('Saludo de cumpleaños en Campañas (SCRUM-141)', () => {
+  it('E12-H5 FE · CA1 activar: al abrir Campañas se ve la tarjeta del saludo con su interruptor', async () => {
+    simularBackend();
+    mostrar(<PantallaCampanas />);
+
+    const tarjeta = await screen.findByRole('region', {
+      name: 'Saludo de cumpleaños',
+    });
+    expect(
+      await within(tarjeta).findByRole('switch', {
+        name: 'Saludo de cumpleaños',
+      }),
+    ).toBeChecked();
+  });
+
+  it('E12-H5 FE · CA1 activar: si la lista de campañas falla, la tarjeta del saludo sigue visible', async () => {
+    simularBackend({
+      'GET /api/gestion/campanas': () =>
+        error(400, 'No se pudo cargar la lista.'),
+    });
+    mostrar(<PantallaCampanas />);
+
+    expect(
+      await screen.findByText('No se pudo cargar la lista.'),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByRole('switch', { name: 'Saludo de cumpleaños' }),
+    ).toBeInTheDocument();
   });
 });
 
