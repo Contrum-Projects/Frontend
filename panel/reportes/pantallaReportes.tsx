@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { Chip } from '@/compartido/ui/chip';
+import { ObjetivosDelPeriodo } from './objetivosDelPeriodo';
 import { VentasDelPeriodo } from './ventasDelPeriodo';
 import {
   hoyEnChile,
@@ -49,7 +50,7 @@ const SelectorPeriodo = ({
   </fieldset>
 );
 
-/** «Reportes» (Figma P6 2041:1229 y 2042:1010, E14). Por ahora, las ventas (E14-H2). */
+/** «Reportes» (Figma P6 2041:1229 y 2042:1010, E14). Objetivos (E14-H1) y ventas (E14-H2). */
 export function PantallaReportes() {
   const [periodo, setPeriodo] = useState<Periodo>(PERIODO_INICIAL);
   // El día se fija al abrir la pantalla: así las consultas no cambian de clave en cada render
@@ -62,6 +63,7 @@ export function PantallaReportes() {
         <h1 className="titulo-h2 text-texto-principal">Reportes</h1>
         <SelectorPeriodo periodo={periodo} alCambiar={setPeriodo} />
       </div>
+      <ObjetivosDelPeriodo rango={rango} />
       <VentasDelPeriodo rango={rango} />
     </div>
   );

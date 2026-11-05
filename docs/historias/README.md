@@ -66,7 +66,7 @@ Total: 53 historias, 185 puntos.
 | 48  | [SCRUM-140](SCRUM-140.md) · E12-H3 · Panel de campañas: redactar, segmentar y enviar     | 8   | En revisión | No      | SCRUM-70 | SCRUM-99             |
 | 49  | [SCRUM-141](SCRUM-141.md) · E12-H5 · Tarjeta del saludo de cumpleaños                    | 1   | En revisión | No      | SCRUM-72 | SCRUM-140            |
 | 50  | [SCRUM-143](SCRUM-143.md) · E14-H2 · Reporte de ventas                                   | 3   | En revisión | Sí      | SCRUM-75 | SCRUM-99             |
-| 51  | [SCRUM-142](SCRUM-142.md) · E14-H1 · Reporte de objetivos OE1 a OE3                      | 3   | Por hacer   | No      | SCRUM-74 | SCRUM-143            |
+| 51  | [SCRUM-142](SCRUM-142.md) · E14-H1 · Reporte de objetivos OE1 a OE3                      | 3   | En curso    | No      | SCRUM-74 | SCRUM-143            |
 | 52  | [SCRUM-144](SCRUM-144.md) · E14-H3 · Reporte de carritos y campañas                      | 3   | Por hacer   | No      | SCRUM-76 | SCRUM-143            |
 | 53  | [SCRUM-145](SCRUM-145.md) · E14-H4 · Reporte de formatos con stock bajo                  | 1   | Por hacer   | No      | SCRUM-77 | SCRUM-115, SCRUM-143 |
 
