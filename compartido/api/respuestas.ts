@@ -1409,6 +1409,27 @@ export interface CampanaEnviada {
 }
 
 /**
+ * GET y PATCH /api/gestion/campanas/cumpleanos (E12-H5). TODO(SCRUM-72): el backend aún no lo
+ * tiene; forma propuesta en docs/historias/SCRUM-141.md (API simulada). Permiso
+ * `campanas.gestionar`. Qué es la oferta del saludo sigue por definir.
+ */
+export interface SaludoCumpleanos {
+  activo: boolean;
+  incluyeOferta: boolean;
+  /** Asunto del correo, con `{nombre}` sin reemplazar. */
+  asunto: string;
+  /** Saludos que saldrán en el mes en curso, contados por el backend. */
+  programadosEsteMes: number;
+  /** 0 a 100; `null` si el mes anterior no salió ninguno. */
+  porcentajeAperturaUltimoMes: number | null;
+}
+
+/** Cuerpo de PATCH /api/gestion/campanas/cumpleanos: solo lo que cambia. */
+export type CambioSaludoCumpleanos = Partial<
+  Pick<SaludoCumpleanos, 'activo' | 'incluyeOferta'>
+>;
+
+/**
  * Pedidos y montos de un tipo de cliente en el reporte de ventas (E14-H2). Montos en pesos,
  * cerrados del pedido y con el despacho incluido. Backend:
  * src/modulos/reportes/reporte-ventas.service.ts (`TotalesVentas`).
