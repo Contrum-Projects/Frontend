@@ -5,8 +5,12 @@ import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { paths } from '@/compartido/api/esquema';
 import type {
+  CarritosDelMes,
   IndicadorObjetivo,
+  ReporteCampanas,
+  ReporteCarritos,
   ReporteObjetivos,
+  ResultadoCampana,
   ReporteVentas,
   TotalesVentas,
 } from '@/compartido/api/respuestas';
@@ -155,12 +159,103 @@ const responderObjetivos =
   (desde, hasta) =>
     Response.json({ desde, hasta, objetivos } satisfies ReporteObjetivos);
 
+/** El backend cuenta; aquí, cifras fijas por mes (Figma P6 2041:1429). */
+const carritos = (
+  mes: string,
+  abandonados: number,
+  recuperados: number,
+  porcentajeRecuperados: number | null,
+): CarritosDelMes => ({ mes, abandonados, recuperados, porcentajeRecuperados });
+
+const CARRITOS_SEIS_MESES = [
+  carritos('2026-04', 82, 13, 16),
+  carritos('2026-05', 90, 17, 19),
+  carritos('2026-06', 87, 15, 17),
+  carritos('2026-07', 99, 21, 21),
+  carritos('2026-08', 95, 22, 23),
+  carritos('2026-09', 110, 27, 25),
+];
+
+const responderCarritos =
+  (meses: CarritosDelMes[]): Responder =>
+  (desde, hasta) =>
+    Response.json({ desde, hasta, meses } satisfies ReporteCarritos);
+
+const campana = (
+  datos: Partial<ResultadoCampana> &
+    Pick<ResultadoCampana, 'codigo' | 'nombre' | 'fecha'>,
+): ResultadoCampana => ({
+  automatica: false,
+  segmento: 'Todos los suscritos',
+  enviados: 0,
+  porcentajeAbiertos: null,
+  porcentajeClic: null,
+  rebotados: 0,
+  cancelados: 0,
+  fallidos: 0,
+  ...datos,
+});
+
+/** Las más recientes primero, como las ordena el backend. */
+const CAMPANAS = [
+  campana({
+    codigo: 'CMP-12',
+    nombre: 'Mascarillas 20% dcto.',
+    // 1 de septiembre, 10:00 en Chile
+    fecha: '2026-09-01T14:00:00.000Z',
+    enviados: 2140,
+    porcentajeAbiertos: 41,
+    porcentajeClic: 9,
+    rebotados: 38,
+    cancelados: 12,
+    fallidos: 4,
+  }),
+  campana({
+    codigo: 'CMP-11',
+    nombre: 'Novedades para peluqueros',
+    fecha: '2026-08-18T14:00:00.000Z',
+    segmento: 'Profesionales',
+    enviados: 312,
+    porcentajeAbiertos: 58,
+    porcentajeClic: 17,
+    rebotados: 6,
+    cancelados: 1,
+  }),
+  campana({
+    codigo: 'CUMPLEANOS-2026-08',
+    nombre: 'Saludo de cumpleaños',
+    automatica: true,
+    fecha: '2026-08',
+    segmento: null,
+    enviados: 87,
+    porcentajeAbiertos: 63,
+    porcentajeClic: 21,
+    rebotados: 2,
+  }),
+];
+
+const responderCampanas =
+  (campanas: ResultadoCampana[]): Responder =>
+  (desde, hasta) =>
+    Response.json({ desde, hasta, campanas } satisfies ReporteCampanas);
+
+interface OtrosReportes {
+  carritos?: Responder;
+  campanas?: Responder;
+}
+
 const simularBackend = (
   responder: Responder = conDatos,
   responderObjetivosDe: Responder = objetivosConDatos,
+  {
+    carritos: responderCarritosDe = responderCarritos(CARRITOS_SEIS_MESES),
+    campanas: responderCampanasDe = responderCampanas(CAMPANAS),
+  }: OtrosReportes = {},
 ) => {
   const pedidas: string[] = [];
   const objetivosPedidos: string[] = [];
+  const carritosPedidos: string[] = [];
+  const campanasPedidas: string[] = [];
   const fetch = vi.fn(async (peticion: Request) => {
     const url = new URL(peticion.url);
     const desde = url.searchParams.get('desde') ?? '';
@@ -169,6 +264,14 @@ const simularBackend = (
       objetivosPedidos.push(`${desde}|${hasta}`);
       return responderObjetivosDe(desde, hasta);
     }
+    if (url.pathname === '/api/reportes/carritos') {
+      carritosPedidos.push(`${desde}|${hasta}`);
+      return responderCarritosDe(desde, hasta);
+    }
+    if (url.pathname === '/api/reportes/campanas') {
+      campanasPedidas.push(`${desde}|${hasta}`);
+      return responderCampanasDe(desde, hasta);
+    }
     if (url.pathname !== '/api/reportes/ventas') {
       throw new Error(`Petición no simulada: ${url.pathname}`);
     }
@@ -176,7 +279,7 @@ const simularBackend = (
     return responder(desde, hasta);
   });
   vi.stubGlobal('fetch', fetch);
-  return { pedidas, objetivosPedidos };
+  return { pedidas, objetivosPedidos, carritosPedidos, campanasPedidas };
 };
 
 const mostrar = () =>
@@ -480,6 +583,223 @@ describe('Reporte de objetivos (SCRUM-142)', () => {
     expect(screen.queryByText(/%/)).not.toBeInTheDocument();
     expect(
       screen.queryByRole('heading', { level: 3, name: /^OE1/ }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+const seccion = async (nombre: string | RegExp) =>
+  within(await screen.findByRole('region', { name: nombre }));
+
+const cifras = (tarjeta: ReturnType<typeof within>) =>
+  tarjeta
+    .getAllByRole('definition')
+    .map((cifra: HTMLElement) => cifra.textContent);
+
+describe('Reporte de carritos y campañas (SCRUM-144)', () => {
+  it('E14-H3 FE · CA1 carritos: muestra por mes los abandonados y los recuperados', async () => {
+    const { carritosPedidos } = simularBackend();
+    mostrar();
+
+    const tarjeta = await seccion('Carritos abandonados');
+    expect(carritosPedidos).toEqual(['2026-04-01|2026-09-15']);
+    const meses = within(
+      tarjeta.getByRole('list', { name: 'Carritos por mes' }),
+    ).getAllByRole('listitem');
+    expect(meses).toHaveLength(6);
+    expect(meses[0]).toHaveTextContent(
+      'Abril: 82 carritos abandonados, 13 terminaron en compra (16%).',
+    );
+    expect(meses[5]).toHaveTextContent(
+      'Septiembre: 110 carritos abandonados, 27 terminaron en compra (25%).',
+    );
+    // Bajo el gráfico, el último mes (Figma 2041:1454)
+    expect(
+      tarjeta.getByText(
+        'Sep: 110 carritos abandonados, 27 terminaron en compra (25%).',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('E14-H3 FE · CA1 carritos: en celular, las cifras del último mes', async () => {
+    simularBackend();
+    mostrar();
+
+    const tarjeta = await seccion('Carritos abandonados');
+    expect(cifras(tarjeta)).toEqual(['110', '27', '25%']);
+    expect(
+      tarjeta.getAllByRole('term').map((termino) => termino.textContent),
+    ).toEqual(['abandonados (sep)', 'con compra', 'recuperados']);
+  });
+
+  it('E14-H3 FE · CA1 carritos: al cambiar el período, se piden sus meses', async () => {
+    const usuario = userEvent.setup();
+    const { carritosPedidos } = simularBackend(conDatos, objetivosConDatos, {
+      carritos: (desde, hasta) =>
+        responderCarritos(
+          desde === '2026-09-01'
+            ? [carritos('2026-09', 3, 1, 33)]
+            : CARRITOS_SEIS_MESES,
+        )(desde, hasta),
+    });
+    mostrar();
+    await seccion('Carritos abandonados');
+
+    await usuario.click(screen.getByRole('radio', { name: 'Este mes' }));
+
+    expect(
+      await screen.findByText(
+        'Sep: 3 carritos abandonados, 1 terminó en compra (33%).',
+      ),
+    ).toBeInTheDocument();
+    expect(carritosPedidos).toContain('2026-09-01|2026-09-15');
+  });
+
+  it('E14-H3 FE · CA1 carritos: sin abandonos en el período, lo dice', async () => {
+    simularBackend(conDatos, objetivosConDatos, {
+      carritos: responderCarritos([
+        carritos('2026-08', 0, 0, null),
+        carritos('2026-09', 0, 0, null),
+      ]),
+    });
+    mostrar();
+
+    const tarjeta = await seccion('Carritos abandonados');
+    expect(
+      tarjeta.getByText('No hay carritos abandonados en el período.'),
+    ).toBeInTheDocument();
+    expect(tarjeta.queryByRole('definition')).not.toBeInTheDocument();
+  });
+
+  it('E14-H3 FE · CA1 carritos: sin porcentaje del backend, no lo inventa', async () => {
+    simularBackend(conDatos, objetivosConDatos, {
+      carritos: responderCarritos([
+        carritos('2026-08', 4, 1, 25),
+        carritos('2026-09', 0, 0, null),
+      ]),
+    });
+    mostrar();
+
+    const tarjeta = await seccion('Carritos abandonados');
+    expect(
+      tarjeta.getByText('Sep: 0 carritos abandonados, 0 terminaron en compra.'),
+    ).toBeInTheDocument();
+    expect(cifras(tarjeta)).toEqual(['0', '0', '–']);
+  });
+
+  it('E14-H3 FE · CA2 campañas: muestra enviados, abiertos, con clic, rebotados, cancelados y fallidos', async () => {
+    const { campanasPedidas } = simularBackend();
+    mostrar();
+
+    const tarjeta = await seccion(/Resultados de campañas/);
+    expect(campanasPedidas).toEqual(['2026-04-01|2026-09-15']);
+    const tabla = within(tarjeta.getByRole('table'));
+    expect(
+      tabla.getAllByRole('columnheader').map((celda) => celda.textContent),
+    ).toEqual([
+      'Campaña',
+      'Enviados',
+      'Abiertos',
+      'Con clic',
+      'Rebotados',
+      'Cancelados',
+      'Fallidos',
+    ]);
+    const filas = tabla.getAllByRole('row');
+    expect(filas).toHaveLength(4);
+    expect(
+      within(filas[1])
+        .getAllByRole('cell')
+        .map((celda) => celda.textContent),
+    ).toEqual([
+      'Mascarillas 20% dcto.1 sept · Todos los suscritos',
+      '2.140',
+      '41%',
+      '9%',
+      '38',
+      '12',
+      '4',
+    ]);
+    expect(filas[2]).toHaveTextContent('18 ago · Profesionales');
+    // El saludo de cumpleaños: el mes y «Automático»
+    expect(filas[3]).toHaveTextContent('Saludo de cumpleaños');
+    expect(filas[3]).toHaveTextContent('Agosto · Automático');
+  });
+
+  it('E14-H3 FE · CA2 campañas: en celular, la última campaña con sus seis cifras', async () => {
+    simularBackend();
+    mostrar();
+
+    const tarjeta = await seccion(/Última campaña/);
+    expect(
+      tarjeta.getByText('Mascarillas 20% dcto. · 1 sept'),
+    ).toBeInTheDocument();
+    expect(cifras(tarjeta)).toEqual(['2.140', '41%', '9%', '38', '12', '4']);
+    expect(
+      tarjeta.getAllByRole('term').map((termino) => termino.textContent),
+    ).toEqual([
+      'enviados',
+      'abiertos',
+      'con clic',
+      'rebotados',
+      'cancelados',
+      'fallidos',
+    ]);
+    expect(
+      tarjeta.getByRole('link', { name: 'Ver todas las campañas' }),
+    ).toHaveAttribute('href', '/panel/campanas');
+  });
+
+  it('E14-H3 FE · CA2 campañas: sin campañas enviadas en el período, lo dice', async () => {
+    simularBackend(conDatos, objetivosConDatos, {
+      campanas: responderCampanas([]),
+    });
+    mostrar();
+
+    const tarjeta = await seccion(/Última campaña/);
+    expect(
+      tarjeta.getByText('No hay campañas enviadas en el período.'),
+    ).toBeInTheDocument();
+    expect(tarjeta.queryByRole('table')).not.toBeInTheDocument();
+  });
+
+  it('E14-H3 FE · si falla una consulta, muestra el mensaje del backend y lo demás sigue', async () => {
+    simularBackend(conDatos, objetivosConDatos, {
+      carritos: () =>
+        Response.json(
+          {
+            statusCode: 403,
+            message: 'No tienes permiso para ver los reportes.',
+          },
+          { status: 403 },
+        ),
+    });
+    mostrar();
+
+    expect(
+      await screen.findByText('No tienes permiso para ver los reportes.'),
+    ).toBeInTheDocument();
+    expect(await seccion(/Última campaña/)).toBeTruthy();
+    expect(
+      screen.queryByRole('region', { name: 'Carritos abandonados' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('E14-H3 FE · si fallan las campañas, muestra el mensaje del backend y los carritos siguen', async () => {
+    simularBackend(conDatos, objetivosConDatos, {
+      campanas: () =>
+        Response.json(
+          { statusCode: 400, message: 'El período no es válido.' },
+          { status: 400 },
+        ),
+    });
+    mostrar();
+
+    expect(
+      await screen.findByText('El período no es válido.'),
+    ).toBeInTheDocument();
+    expect(await seccion('Carritos abandonados')).toBeTruthy();
+    expect(
+      screen.queryByRole('region', { name: /Última campaña/ }),
     ).not.toBeInTheDocument();
   });
 });

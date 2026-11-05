@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import { Chip } from '@/compartido/ui/chip';
+import { CampanasDelPeriodo } from './campanasDelPeriodo';
+import { CarritosDelPeriodo } from './carritosDelPeriodo';
 import { ObjetivosDelPeriodo } from './objetivosDelPeriodo';
 import { VentasDelPeriodo } from './ventasDelPeriodo';
 import {
@@ -50,7 +52,10 @@ const SelectorPeriodo = ({
   </fieldset>
 );
 
-/** «Reportes» (Figma P6 2041:1229 y 2042:1010, E14). Objetivos (E14-H1) y ventas (E14-H2). */
+/**
+ * «Reportes» (Figma P6 2041:1229 y 2042:1010, E14): objetivos (E14-H1), ventas (E14-H2) y
+ * carritos y campañas (E14-H3), todos del mismo período.
+ */
 export function PantallaReportes() {
   const [periodo, setPeriodo] = useState<Periodo>(PERIODO_INICIAL);
   // El día se fija al abrir la pantalla: así las consultas no cambian de clave en cada render
@@ -65,6 +70,10 @@ export function PantallaReportes() {
       </div>
       <ObjetivosDelPeriodo rango={rango} />
       <VentasDelPeriodo rango={rango} />
+      <div className="flex flex-col gap-4 lg:gap-6 min-[85rem]:flex-row min-[85rem]:items-start min-[85rem]:gap-4">
+        <CarritosDelPeriodo rango={rango} />
+        <CampanasDelPeriodo rango={rango} />
+      </div>
     </div>
   );
 }
