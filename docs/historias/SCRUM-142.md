@@ -79,3 +79,5 @@ GET /api/reportes/objetivos?desde=AAAA-MM-DD&hasta=AAAA-MM-DD     (permiso repor
 
 - ¿El período filtra por fecha de la solicitud (OE1 y OE2) y de creación del producto (OE3)?
   Lo define el backend.
+
+**PR:** https://github.com/Contrum-Projects/Frontend/pull/66 (En revisión, 05-11-2026).
