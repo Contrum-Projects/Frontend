@@ -110,3 +110,5 @@ GET /api/reportes/campanas?desde=AAAA-MM-DD&hasta=AAAA-MM-DD     (permiso report
   compra llega en el mes siguiente? Lo define el backend.
 - ¿Las aperturas y clics se cuentan sobre los enviados o sobre los entregados (sin rebotes)? Lo
   define el backend.
+
+**PR:** https://github.com/Contrum-Projects/Frontend/pull/67 (En revisión, 05-11-2026).
