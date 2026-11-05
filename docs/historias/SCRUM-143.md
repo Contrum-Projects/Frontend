@@ -71,3 +71,5 @@ total }]`). Hoy «Últimos 6 meses» hace 7 peticiones; con el detalle sería un
 - Fecha de lanzamiento para «Desde el lanzamiento».
 - En celular, ¿hace falta ver los montos de cada mes, por ejemplo tocando el mes? Figma no los
   muestra.
+
+**PR:** https://github.com/Contrum-Projects/Frontend/pull/64 (En revisión, 04-11-2026).
