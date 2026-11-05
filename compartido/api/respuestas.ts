@@ -744,8 +744,10 @@ export interface ListadoPacksPanel {
 }
 
 /**
- * Un elemento de GET /api/inventario/stock/bajo-minimo (E11-H6, SCRUM-41). El Swagger no
- * declara la respuesta: backend `src/modulos/inventario/stock-bajo.service.ts` ›
+ * Un elemento de GET /api/inventario/stock/bajo-minimo (E11-H6, SCRUM-41) y de
+ * GET /api/reportes/stock-bajo-minimo (E14-H4, SCRUM-77, backend
+ * `src/modulos/reportes/reporte-stock-bajo.controller.ts`). El Swagger no declara la
+ * respuesta: backend `src/modulos/inventario/stock-bajo.service.ts` ›
  * `FormatoBajoMinimo`. Viene ordenada del que más falta al que menos; el stock es el total de
  * todas las ubicaciones.
  */

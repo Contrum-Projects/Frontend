@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Chip } from '@/compartido/ui/chip';
 import { CampanasDelPeriodo } from './campanasDelPeriodo';
 import { CarritosDelPeriodo } from './carritosDelPeriodo';
+import { FormatosPorReponer } from './formatosPorReponer';
 import { ObjetivosDelPeriodo } from './objetivosDelPeriodo';
 import { VentasDelPeriodo } from './ventasDelPeriodo';
 import {
@@ -54,7 +55,8 @@ const SelectorPeriodo = ({
 
 /**
  * «Reportes» (Figma P6 2041:1229 y 2042:1010, E14): objetivos (E14-H1), ventas (E14-H2) y
- * carritos y campañas (E14-H3), todos del mismo período.
+ * carritos y campañas (E14-H3), todos del mismo período; al final, los formatos por reponer
+ * (E14-H4), que no dependen del período.
  */
 export function PantallaReportes() {
   const [periodo, setPeriodo] = useState<Periodo>(PERIODO_INICIAL);
@@ -74,6 +76,7 @@ export function PantallaReportes() {
         <CarritosDelPeriodo rango={rango} />
         <CampanasDelPeriodo rango={rango} />
       </div>
+      <FormatosPorReponer />
     </div>
   );
 }
