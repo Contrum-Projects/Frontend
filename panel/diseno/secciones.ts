@@ -77,8 +77,7 @@ export const SECCIONES: readonly SeccionPanel[] = [
   },
   {
     texto: 'Reportes',
-    // TODO(SCRUM-143): reportes
-    href: '/panel/reportes' as Route,
+    href: '/panel/reportes',
     icono: ChartNoAxesColumn,
     permiso: PERMISOS.REPORTES_VER,
   },

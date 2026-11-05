@@ -1407,3 +1407,33 @@ export interface CampanaEnviada {
   /** ISO 8601. */
   fechaEnvio: string;
 }
+
+/**
+ * Pedidos y montos de un tipo de cliente en el reporte de ventas (E14-H2). Montos en pesos,
+ * cerrados del pedido y con el despacho incluido. Backend:
+ * src/modulos/reportes/reporte-ventas.service.ts (`TotalesVentas`).
+ */
+export interface TotalesVentas {
+  pedidos: number;
+  montoNeto: number;
+  montoIva: number;
+  montoTotal: number;
+}
+
+/**
+ * GET /api/reportes/ventas?desde&hasta (E14-H2): pedidos pagados del período (ambos días
+ * incluidos, hora de Chile), separados por el precio que se aplicó al comprar. Sin pedidos, todo
+ * en cero. El Swagger no declara la respuesta. Backend:
+ * src/modulos/reportes/reporte-ventas.service.ts (`ReporteVentas`).
+ */
+export interface ReporteVentas {
+  /** AAAA-MM-DD */
+  desde: string;
+  /** AAAA-MM-DD */
+  hasta: string;
+  /** Compras a precio minorista: «Cliente» en el panel. */
+  minorista: TotalesVentas;
+  /** Compras a precio mayorista: «Profesional» en el panel. */
+  mayorista: TotalesVentas;
+  total: TotalesVentas;
+}
