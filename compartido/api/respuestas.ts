@@ -1458,3 +1458,35 @@ export interface ReporteVentas {
   mayorista: TotalesVentas;
   total: TotalesVentas;
 }
+
+/** Objetivos específicos del proyecto (E14-H1). */
+export type CodigoObjetivo = 'OE1' | 'OE2' | 'OE3';
+
+/** Lo decide el backend al comparar el porcentaje con la meta (RNF-03). */
+export type EstadoObjetivo = 'sobre-la-meta' | 'bajo-la-meta' | 'sin-datos';
+
+export interface IndicadorObjetivo {
+  codigo: CodigoObjetivo;
+  /** Meta en porcentaje: 30, 70 u 80. */
+  meta: number;
+  /** De 0 a 100; `null` cuando no hay registros en el período. */
+  porcentaje: number | null;
+  /** Registros que cumplen (OE1: cuentas verificadas que compraron a precio mayorista). */
+  cumplen: number;
+  /** Registros considerados (OE1: cuentas con solicitud). */
+  total: number;
+  estado: EstadoObjetivo;
+}
+
+/**
+ * GET /api/reportes/objetivos?desde&hasta (E14-H1). API SIMULADA: el endpoint aún no existe;
+ * forma propuesta a SCRUM-74 (ver docs/historias/SCRUM-142.md). El backend calcula porcentaje,
+ * meta y estado; el frontend solo los muestra.
+ */
+export interface ReporteObjetivos {
+  /** AAAA-MM-DD */
+  desde: string;
+  /** AAAA-MM-DD */
+  hasta: string;
+  objetivos: IndicadorObjetivo[];
+}

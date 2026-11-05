@@ -3,7 +3,10 @@
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { api } from '@/compartido/api/cliente';
 import { exigir } from '@/compartido/api/errores';
-import type { ReporteVentas } from '@/compartido/api/respuestas';
+import type {
+  ReporteObjetivos,
+  ReporteVentas,
+} from '@/compartido/api/respuestas';
 import { conErrorDeApi } from '@/tienda/cuenta/consultasCuenta';
 import type { MesDelPeriodo } from './periodos';
 
@@ -37,3 +40,26 @@ export const useVentasDelPeriodo = (fechas: Fechas) =>
  */
 export const useVentasPorMes = (meses: MesDelPeriodo[]) =>
   useQueries({ queries: meses.map(consultaVentas) });
+
+/**
+ * TODO(SCRUM-142): `/api/reportes/objetivos` aún no está en el Swagger (API simulada, pedida a
+ * SCRUM-74). Quitar el cast cuando `pnpm api:tipos` la traiga.
+ */
+const pedirObjetivos = api.GET as unknown as (
+  ruta: '/api/reportes/objetivos',
+  opciones: { params: { query: Fechas } },
+) => Promise<{ data?: unknown; error?: unknown; response: Response }>;
+
+/** Indicadores OE1 a OE3 del período (E14-H1 criterios 1 y 2). */
+export const useObjetivosDelPeriodo = ({ desde, hasta }: Fechas) =>
+  useQuery({
+    queryKey: [...CLAVE_REPORTES, 'objetivos', desde, hasta],
+    queryFn: () =>
+      conErrorDeApi(async () =>
+        exigir<ReporteObjetivos>(
+          await pedirObjetivos('/api/reportes/objetivos', {
+            params: { query: { desde, hasta } },
+          }),
+        ),
+      ),
+  });

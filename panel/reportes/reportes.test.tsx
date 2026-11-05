@@ -4,7 +4,12 @@ import userEvent from '@testing-library/user-event';
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { paths } from '@/compartido/api/esquema';
-import type { ReporteVentas, TotalesVentas } from '@/compartido/api/respuestas';
+import type {
+  IndicadorObjetivo,
+  ReporteObjetivos,
+  ReporteVentas,
+  TotalesVentas,
+} from '@/compartido/api/respuestas';
 import { crearClienteDeConsultas } from '@/compartido/proveedores';
 import {
   guardarSesion,
@@ -115,20 +120,63 @@ const conDatos: Responder = (desde, hasta) => {
       );
 };
 
-const simularBackend = (responder: Responder = conDatos) => {
+const objetivo = (
+  codigo: IndicadorObjetivo['codigo'],
+  meta: number,
+  porcentaje: number | null,
+  cumplen: number,
+  total: number,
+  estado: IndicadorObjetivo['estado'],
+): IndicadorObjetivo => ({ codigo, meta, porcentaje, cumplen, total, estado });
+
+/** El backend calcula porcentaje y estado; aquí, valores fijos. */
+const OBJETIVOS_SEIS_MESES = [
+  objetivo('OE1', 30, 24, 41, 171, 'bajo-la-meta'),
+  objetivo('OE2', 70, 78, 112, 144, 'sobre-la-meta'),
+  objetivo('OE3', 80, 85, 34, 40, 'sobre-la-meta'),
+];
+
+const OBJETIVOS_ESTE_MES = [
+  objetivo('OE1', 30, 33, 10, 30, 'sobre-la-meta'),
+  objetivo('OE2', 70, 60, 12, 20, 'bajo-la-meta'),
+  objetivo('OE3', 80, 90, 9, 10, 'sobre-la-meta'),
+];
+
+const objetivosConDatos: Responder = (desde, hasta) =>
+  Response.json({
+    desde,
+    hasta,
+    objetivos:
+      desde === '2026-09-01' ? OBJETIVOS_ESTE_MES : OBJETIVOS_SEIS_MESES,
+  } satisfies ReporteObjetivos);
+
+const responderObjetivos =
+  (objetivos: IndicadorObjetivo[]): Responder =>
+  (desde, hasta) =>
+    Response.json({ desde, hasta, objetivos } satisfies ReporteObjetivos);
+
+const simularBackend = (
+  responder: Responder = conDatos,
+  responderObjetivosDe: Responder = objetivosConDatos,
+) => {
   const pedidas: string[] = [];
+  const objetivosPedidos: string[] = [];
   const fetch = vi.fn(async (peticion: Request) => {
     const url = new URL(peticion.url);
+    const desde = url.searchParams.get('desde') ?? '';
+    const hasta = url.searchParams.get('hasta') ?? '';
+    if (url.pathname === '/api/reportes/objetivos') {
+      objetivosPedidos.push(`${desde}|${hasta}`);
+      return responderObjetivosDe(desde, hasta);
+    }
     if (url.pathname !== '/api/reportes/ventas') {
       throw new Error(`Petición no simulada: ${url.pathname}`);
     }
-    const desde = url.searchParams.get('desde') ?? '';
-    const hasta = url.searchParams.get('hasta') ?? '';
     pedidas.push(`${desde}|${hasta}`);
     return responder(desde, hasta);
   });
   vi.stubGlobal('fetch', fetch);
-  return { pedidas };
+  return { pedidas, objetivosPedidos };
 };
 
 const mostrar = () =>
@@ -276,6 +324,163 @@ describe('Reporte de ventas (SCRUM-143)', () => {
     expect(puedeAbrir('administrador', '/panel/reportes')).toBe(true);
     expect(puedeAbrir('vendedor', '/panel/reportes')).toBe(false);
     expect(puedeAbrir('bodeguero', '/panel/reportes')).toBe(false);
+  });
+});
+
+/** La tarjeta (o fila, en el celular) del objetivo, por su título. */
+const tarjetaObjetivo = async (titulo: string) => {
+  const encabezado = await screen.findByRole('heading', {
+    level: 3,
+    name: titulo,
+  });
+  const tarjeta = encabezado.closest('li');
+  if (!tarjeta) throw new Error(`Sin tarjeta para ${titulo}`);
+  return within(tarjeta);
+};
+
+describe('Reporte de objetivos (SCRUM-142)', () => {
+  it('E14-H1 FE · CA1 indicadores: muestra OE1, OE2 y OE3 con valor, meta, barra y estado', async () => {
+    simularBackend();
+    mostrar();
+
+    const oe1 = await tarjetaObjetivo('OE1 · Peluqueros que compran');
+    expect(oe1.getByText('24%')).toBeInTheDocument();
+    expect(oe1.getByText('meta 30%')).toBeInTheDocument();
+    const barra = oe1.getByRole('meter', { name: 'Avance de OE1' });
+    expect(barra).toHaveAttribute('aria-valuenow', '24');
+    expect(barra).toHaveAttribute('aria-valuetext', '24%, meta 30%');
+    expect(oe1.getByText('Bajo la meta')).toBeInTheDocument();
+    expect(
+      oe1.getByText(
+        '41 de 171 cuentas con solicitud están verificadas y compraron a precio mayorista',
+      ),
+    ).toBeInTheDocument();
+
+    const oe2 = await tarjetaObjetivo('OE2 · Verificaciones en 48 horas');
+    expect(oe2.getByText('78%')).toBeInTheDocument();
+    expect(oe2.getByText('meta 70%')).toBeInTheDocument();
+    expect(oe2.getByText('Sobre la meta')).toBeInTheDocument();
+    expect(
+      oe2.getByText('112 de 144 solicitudes resueltas dentro de 48 horas'),
+    ).toBeInTheDocument();
+
+    const oe3 = await tarjetaObjetivo('OE3 · Descripciones con IA');
+    expect(oe3.getByText('85%')).toBeInTheDocument();
+    expect(oe3.getByText('meta 80%')).toBeInTheDocument();
+    expect(oe3.getByText('Sobre la meta')).toBeInTheDocument();
+    expect(
+      oe3.getByText(
+        '34 de 40 productos nuevos usan la descripción de IA o IA editada',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('E14-H1 FE · CA1 indicadores: el estado es el que entrega el backend', async () => {
+    // 50 supera la meta, pero el frontend no compara: muestra el estado recibido (RNF-03)
+    simularBackend(
+      conDatos,
+      responderObjetivos([objetivo('OE1', 30, 50, 5, 10, 'bajo-la-meta')]),
+    );
+    mostrar();
+
+    const oe1 = await tarjetaObjetivo('OE1 · Peluqueros que compran');
+    expect(oe1.getByText('Bajo la meta')).toBeInTheDocument();
+  });
+
+  it('E14-H1 FE · CA2 período: al cambiar el período, los indicadores se actualizan', async () => {
+    const usuario = userEvent.setup();
+    const { objetivosPedidos } = simularBackend();
+    mostrar();
+
+    const oe1 = await tarjetaObjetivo('OE1 · Peluqueros que compran');
+    expect(oe1.getByText('24%')).toBeInTheDocument();
+    expect(objetivosPedidos).toEqual(['2026-04-01|2026-09-15']);
+
+    await usuario.click(screen.getByRole('radio', { name: 'Este mes' }));
+
+    expect(await screen.findByText('33%')).toBeInTheDocument();
+    expect(objetivosPedidos).toContain('2026-09-01|2026-09-15');
+    const actualizado = await tarjetaObjetivo('OE1 · Peluqueros que compran');
+    expect(actualizado.getByText('Sobre la meta')).toBeInTheDocument();
+    const oe2 = await tarjetaObjetivo('OE2 · Verificaciones en 48 horas');
+    expect(oe2.getByText('60%')).toBeInTheDocument();
+    expect(oe2.getByText('Bajo la meta')).toBeInTheDocument();
+  });
+
+  it('E14-H1 FE · CA3 sin datos: lo indica en vez de un valor', async () => {
+    simularBackend(
+      conDatos,
+      responderObjetivos([
+        objetivo('OE1', 30, null, 0, 0, 'sin-datos'),
+        objetivo('OE2', 70, null, 0, 0, 'sin-datos'),
+        objetivo('OE3', 80, null, 0, 0, 'sin-datos'),
+      ]),
+    );
+    mostrar();
+
+    const oe1 = await tarjetaObjetivo('OE1 · Peluqueros que compran');
+    expect(oe1.getByText('Sin datos en el período')).toBeInTheDocument();
+    expect(oe1.queryByText(/^\d+%$/)).not.toBeInTheDocument();
+    expect(oe1.getByText('meta 30%')).toBeInTheDocument();
+    expect(oe1.queryByText(/la meta$/)).not.toBeInTheDocument();
+    expect(
+      oe1.getByText('No hay cuentas con solicitud en el período.'),
+    ).toBeInTheDocument();
+    // Sin valor no hay avance que medir: la barra vacía solo se ve
+    expect(oe1.queryByRole('meter')).not.toBeInTheDocument();
+
+    const oe3 = await tarjetaObjetivo('OE3 · Descripciones con IA');
+    expect(
+      oe3.getByText('No hay productos nuevos en el período.'),
+    ).toBeInTheDocument();
+  });
+
+  it('E14-H1 FE · si falla la consulta, muestra el mensaje del backend y las ventas siguen', async () => {
+    simularBackend(conDatos, () =>
+      Response.json(
+        { statusCode: 400, message: 'El período no es válido.' },
+        { status: 400 },
+      ),
+    );
+    mostrar();
+
+    expect(
+      await screen.findByText('El período no es válido.'),
+    ).toBeInTheDocument();
+    expect(await resumen()).toBeTruthy();
+  });
+
+  it('E14-H1 FE · sin permiso: muestra el mensaje del backend y no los indicadores', async () => {
+    simularBackend(conDatos, () =>
+      Response.json(
+        {
+          statusCode: 403,
+          message: 'No tienes permiso para ver los reportes.',
+        },
+        { status: 403 },
+      ),
+    );
+    mostrar();
+
+    expect(
+      await screen.findByText('No tienes permiso para ver los reportes.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { level: 3, name: /^OE1/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('E14-H1 FE · mientras carga muestra el esqueleto, sin porcentajes', () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => new Promise<Response>(() => {})),
+    );
+    mostrar();
+
+    expect(screen.queryByText(/%/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { level: 3, name: /^OE1/ }),
+    ).not.toBeInTheDocument();
   });
 });
 
