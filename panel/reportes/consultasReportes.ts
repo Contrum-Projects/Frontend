@@ -4,6 +4,7 @@ import { useQueries, useQuery } from '@tanstack/react-query';
 import { api } from '@/compartido/api/cliente';
 import { exigir } from '@/compartido/api/errores';
 import type {
+  FormatoBajoMinimo,
   ReporteCampanas,
   ReporteCarritos,
   ReporteObjetivos,
@@ -101,6 +102,22 @@ export const useCampanasDelPeriodo = ({ desde, hasta }: Fechas) =>
           await pedirReporteSimulado('/api/reportes/campanas', {
             params: { query: { desde, hasta } },
           }),
+        ),
+      ),
+  });
+
+/**
+ * Formatos bajo su stock mínimo, del que más falta al que menos (E14-H4). No depende del
+ * período: es el stock de ahora.
+ */
+export const useReporteStockBajo = () =>
+  useQuery({
+    queryKey: [...CLAVE_REPORTES, 'stock-bajo-minimo'],
+    queryFn: () =>
+      conErrorDeApi(async () =>
+        // El Swagger no declara la respuesta (ver FormatoBajoMinimo en respuestas.ts)
+        exigir<FormatoBajoMinimo[]>(
+          await api.GET('/api/reportes/stock-bajo-minimo'),
         ),
       ),
   });

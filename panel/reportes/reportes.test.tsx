@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { paths } from '@/compartido/api/esquema';
 import type {
   CarritosDelMes,
+  FormatoBajoMinimo,
   IndicadorObjetivo,
   ReporteCampanas,
   ReporteCarritos,
@@ -242,6 +243,7 @@ const responderCampanas =
 interface OtrosReportes {
   carritos?: Responder;
   campanas?: Responder;
+  stockBajo?: () => Response;
 }
 
 const simularBackend = (
@@ -250,6 +252,7 @@ const simularBackend = (
   {
     carritos: responderCarritosDe = responderCarritos(CARRITOS_SEIS_MESES),
     campanas: responderCampanasDe = responderCampanas(CAMPANAS),
+    stockBajo: responderStockBajo = () => Response.json([]),
   }: OtrosReportes = {},
 ) => {
   const pedidas: string[] = [];
@@ -267,6 +270,9 @@ const simularBackend = (
     if (url.pathname === '/api/reportes/carritos') {
       carritosPedidos.push(`${desde}|${hasta}`);
       return responderCarritosDe(desde, hasta);
+    }
+    if (url.pathname === '/api/reportes/stock-bajo-minimo') {
+      return responderStockBajo();
     }
     if (url.pathname === '/api/reportes/campanas') {
       campanasPedidas.push(`${desde}|${hasta}`);
@@ -801,6 +807,116 @@ describe('Reporte de carritos y campañas (SCRUM-144)', () => {
     expect(
       screen.queryByRole('region', { name: /Última campaña/ }),
     ).not.toBeInTheDocument();
+  });
+});
+
+/** Del que más falta al que menos, como los ordena el backend. */
+const FORMATOS_BAJO_MINIMO: FormatoBajoMinimo[] = [
+  {
+    formatoId: 7,
+    sku: 'MAS-500',
+    producto: 'Mascarilla Nutritiva',
+    nombreFormato: '500 ml',
+    activo: true,
+    stockTotal: 2,
+    stockMinimo: 10,
+    faltante: 8,
+  },
+  {
+    formatoId: 3,
+    sku: 'SHA-1000',
+    producto: 'Shampoo Hidratante',
+    nombreFormato: '1 L',
+    activo: true,
+    stockTotal: 1,
+    stockMinimo: 5,
+    faltante: 4,
+  },
+];
+
+describe('Reporte de formatos con stock bajo (SCRUM-145)', () => {
+  it('E14-H4 FE · CA1 con formatos: muestra cada formato con su stock actual y su mínimo', async () => {
+    simularBackend(undefined, undefined, {
+      stockBajo: () => Response.json(FORMATOS_BAJO_MINIMO),
+    });
+    mostrar();
+
+    const tabla = await screen.findByRole('table', {
+      name: 'Formatos por reponer',
+    });
+    const filas = within(tabla).getAllByRole('row');
+    expect(filas).toHaveLength(3);
+    expect(filas[1]).toHaveTextContent(
+      /Mascarilla Nutritiva · 500 ml\s*2 \(bajo el mínimo\)\s*10/,
+    );
+    expect(filas[2]).toHaveTextContent(
+      /Shampoo Hidratante · 1 L\s*1 \(bajo el mínimo\)\s*5/,
+    );
+  });
+
+  it('E14-H4 FE · CA1 con formatos: en celular, cada formato con «stock / mín.»', async () => {
+    simularBackend(undefined, undefined, {
+      stockBajo: () => Response.json(FORMATOS_BAJO_MINIMO),
+    });
+    mostrar();
+
+    const lista = await screen.findByRole('list', {
+      name: 'Formatos por reponer',
+    });
+    const filas = within(lista).getAllByRole('listitem');
+    expect(filas).toHaveLength(2);
+    expect(filas[0]).toHaveTextContent('Mascarilla Nutritiva');
+    expect(filas[0]).toHaveTextContent('500 ml');
+    expect(filas[0]).toHaveTextContent('2 / mín. 10');
+  });
+
+  it('E14-H4 FE · CA1 con formatos: muestra todos, no solo los primeros', async () => {
+    const muchos = Array.from({ length: 8 }, (_, i) => ({
+      ...FORMATOS_BAJO_MINIMO[0],
+      formatoId: 100 + i,
+      nombreFormato: `${i + 1} ml`,
+    }));
+    simularBackend(undefined, undefined, {
+      stockBajo: () => Response.json(muchos),
+    });
+    mostrar();
+
+    const lista = await screen.findByRole('list', {
+      name: 'Formatos por reponer',
+    });
+    expect(within(lista).getAllByRole('listitem')).toHaveLength(8);
+  });
+
+  it('E14-H4 FE · CA2 sin formatos: indica que no hay formatos por reponer', async () => {
+    simularBackend();
+    mostrar();
+
+    const seccion = await screen.findByRole('region', {
+      name: 'Formatos por reponer',
+    });
+    expect(
+      within(seccion).getByText('No hay formatos por reponer.'),
+    ).toBeVisible();
+    expect(within(seccion).queryByRole('table')).not.toBeInTheDocument();
+  });
+
+  it('E14-H4 FE · si falla la consulta, muestra el mensaje del backend y las ventas siguen', async () => {
+    simularBackend(undefined, undefined, {
+      stockBajo: () =>
+        Response.json(
+          {
+            statusCode: 403,
+            message: 'No tienes permiso para ver los reportes.',
+          },
+          { status: 403 },
+        ),
+    });
+    mostrar();
+
+    expect(
+      await screen.findByText('No tienes permiso para ver los reportes.'),
+    ).toBeVisible();
+    expect(await resumen()).toBeDefined();
   });
 });
 

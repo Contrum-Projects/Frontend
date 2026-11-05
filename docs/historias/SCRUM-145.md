@@ -1,6 +1,6 @@
 # SCRUM-145 · E14-H4 · Reporte de formatos con stock bajo
 
-**Orden:** 53 de 53 · **Puntos:** 1 · **Historia backend:** SCRUM-77 · **API:** No
+**Orden:** 53 de 53 · **Puntos:** 1 · **Historia backend:** SCRUM-77 · **API:** Sí
 
 **Necesita antes (frontend):** [SCRUM-115](SCRUM-115.md), [SCRUM-143](SCRUM-143.md)  
 **La necesitan después:** ninguna
@@ -24,11 +24,24 @@ Nodos del archivo de Figma `cl9eSD5YBS9qF4tQXJki68` (ver `docs/pantallas.md`).
 
 ## API
 
-Estado al 26-10-2026 (`compartido/api/esquema.d.ts` de `main`): **No**. Aún no existe en el Swagger.
-
-Si falta el endpoint, avanza con la API simulada (`docs/api-simulada.md`) y anota aquí qué
-formato de respuesta acordaste con quien hace la historia backend.
+Estado al 5-11-2026 (`compartido/api/esquema.d.ts` de `main`): **Sí**.
+`GET /api/reportes/stock-bajo-minimo` (permiso `reportes.ver`, backend
+`src/modulos/reportes/reporte-stock-bajo.controller.ts`). El Swagger no declara la respuesta:
+es `FormatoBajoMinimo[]` (`src/modulos/inventario/stock-bajo.service.ts`), el mismo tipo del
+aviso del Resumen (SCRUM-115), ya en `compartido/api/respuestas.ts`. Viene ordenada del que más
+falta al que menos; lista vacía si no hay.
 
 ## Notas de trabajo
 
-<!-- Decisiones, preguntas abiertas y lo que quedó pendiente. Lo completa /historia. -->
+- **PR:** https://github.com/Contrum-Projects/Frontend/pull/68
+- **Sin API simulada:** se usa el endpoint real.
+- **Figma P6 no tiene esta sección.** Se reutiliza la tabla (escritorio, P1 2028:682) y la lista
+  (celular, P1 2023:206) del aviso del Resumen, extraídas a
+  `panel/inventario/formatosBajoMinimo.tsx`; el Resumen se ve igual.
+- **Decisiones aprobadas por el usuario (5-11-2026):** tarjeta al final de Reportes a todo el
+  ancho; título «Formatos por reponer»; texto vacío «No hay formatos por reponer.»; se muestran
+  todos los formatos (el Resumen muestra 5); no se muestran `faltante` ni `activo` (el criterio
+  pide stock y mínimo).
+- No depende del período: los chips no cambian su consulta.
+- **Pendiente:** validar con el equipo de diseño si la sección debe agregarse a P6 en Figma.
+- **Backend:** el Swagger debería declarar la respuesta de `/api/reportes/stock-bajo-minimo`.
