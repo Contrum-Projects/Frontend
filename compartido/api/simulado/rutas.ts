@@ -6,7 +6,6 @@
  * esquema.d.ts: si sigue aquí, tapa al backend real mientras API_SIMULADA=1.
  */
 import type { RutaSimulada } from './index';
-import { rutasPanelCampanas } from './panelCampanas';
 import { rutasPanelCatalogo } from './panelCatalogo';
 import { rutasPanelFacturas } from './panelFacturas';
 import { rutasPanelInventario } from './panelInventario';
@@ -22,6 +21,5 @@ export const rutasSimuladas: readonly RutaSimulada[] = [
   ...rutasPanelStock,
   ...rutasPanelPedidos,
   ...rutasPanelFacturas,
-  ...rutasPanelCampanas,
   ...rutasPanelReportes,
 ];

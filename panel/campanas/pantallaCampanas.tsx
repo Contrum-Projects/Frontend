@@ -14,6 +14,7 @@ import {
   TablaCampanas,
 } from './listaCampanas';
 import { TarjetaCumpleanos } from './tarjetaCumpleanos';
+import { useNombresCatalogo } from './textoSegmento';
 
 export const RUTA_CAMPANAS: Route = '/panel/campanas';
 export const RUTA_CAMPANA_NUEVA: Route = '/panel/campanas/nueva';
@@ -46,6 +47,7 @@ const CLASE_SALUDO = 'lg:col-start-2 lg:row-start-3';
 
 const ContenidoCampanas = () => {
   const consulta = useCampanas();
+  const nombres = useNombresCatalogo();
   // El saludo tiene su propia consulta: se ve aunque la lista falle o siga cargando
   const saludo = (
     <div key="saludo" className={CLASE_SALUDO}>
@@ -72,7 +74,7 @@ const ContenidoCampanas = () => {
       </>
     );
   }
-  const { contactos, campanas } = consulta.data;
+  const { contactos, items: campanas } = consulta.data;
   return (
     <>
       <div className="col-span-full">
@@ -99,10 +101,10 @@ const ContenidoCampanas = () => {
         ) : (
           <>
             <div className="max-lg:hidden">
-              <TablaCampanas campanas={campanas} />
+              <TablaCampanas campanas={campanas} nombres={nombres} />
             </div>
             <div className="lg:hidden">
-              <ListaCampanasCelular campanas={campanas} />
+              <ListaCampanasCelular campanas={campanas} nombres={nombres} />
             </div>
           </>
         )}

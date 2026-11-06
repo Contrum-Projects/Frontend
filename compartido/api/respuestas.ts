@@ -1316,116 +1316,40 @@ export interface PreferenciaOfertas {
 }
 
 /*
- * Campañas del panel (E12-H3). TODO(SCRUM-70): el backend aún no las tiene; forma propuesta en
- * docs/historias/SCRUM-140.md (API simulada). Permiso `campanas.gestionar`. Quién cuenta como
- * destinatario (consentimiento, rebotes) y los textos del segmento los decide el backend.
+ * Campañas del panel (E12-H3), en `/api/marketing/campanas` (SCRUM-70; alineadas en SCRUM-150).
+ * Permiso `campanas.gestionar`. Se identifican por `id`. Quién cuenta como destinatario
+ * (consentimiento, rebotes) lo decide el backend.
  */
 
+/** Borrador o enviada: el backend dice `enviada`. Figma solo dibuja esos dos. */
 export type EstadoCampana = 'borrador' | 'enviada';
 
 /** Contactos con consentimiento: los contadores de «Campañas». */
-export interface ContactosCampanas {
-  aceptanPublicidad: number;
-  cuentasVerificadas: number;
-  suscriptoresSinCuenta: number;
-  conRebote: number;
-}
+export type ContactosCampanas = components['schemas']['ContactosCampanasDto'];
 
-/** Una fila de GET /api/gestion/campanas. */
-export interface CampanaListada {
-  codigo: string;
-  asunto: string;
-  /** Texto del segmento armado por el backend, p. ej. «Profesionales · Colorimetría». */
-  segmento: string;
-  /** Borrador: los que recibirían hoy; enviada: a cuántos salió. */
-  destinatarios: number;
-  estado: EstadoCampana;
-  /** ISO 8601. */
-  fechaEdicion: string;
-  /** ISO 8601; `null` en un borrador. */
-  fechaEnvio: string | null;
-  /** 0 a 100; `null` en un borrador. */
-  porcentajeApertura: number | null;
-}
+/** Una fila de GET /api/marketing/campanas, con destinatarios y apertura. */
+export type CampanaListada = components['schemas']['CampanaListadaDto'];
 
-/** GET /api/gestion/campanas. */
-export interface ListadoCampanas {
-  contactos: ContactosCampanas;
-  /** En el orden del backend (las más recientes primero). */
-  campanas: CampanaListada[];
-}
+/** GET /api/marketing/campanas: los contadores y una página de campañas (las más nuevas primero). */
+export type ListadoCampanas = components['schemas']['ListadoCampanasDto'];
 
-export interface OpcionSegmento {
-  valor: string;
-  texto: string;
-}
+/** El segmento guardado: tipos de destinatario y, si hay, categorías y marcas compradas. */
+export type SegmentoCampana = components['schemas']['SegmentoGuardadoDto'];
 
-/** Criterio extra de un tipo de segmento, p. ej. especialidad para «Profesionales». */
-export interface CriterioSegmento {
-  clave: string;
-  texto: string;
-  opciones: OpcionSegmento[];
-}
+/** Cuerpo de POST /api/marketing/campanas y PATCH …/{id}. */
+export type DatosCampana = components['schemas']['CrearCampanaDto'];
 
-export interface TipoSegmento extends OpcionSegmento {
-  criterios: CriterioSegmento[];
-}
+/** GET /api/marketing/campanas/{id}, y respuesta de POST y PATCH. */
+export type CampanaGestion = components['schemas']['DetalleCampanaDto'];
 
-/** GET /api/gestion/campanas/segmentos: lo que se puede elegir en «¿A quién le llega?». */
-export interface OpcionesSegmentoCampana {
-  tipos: TipoSegmento[];
-}
+/** POST /api/marketing/campanas/vista-previa: el correo en vivo, sin guardar ni contar. */
+export type CorreoCampana = components['schemas']['CorreoCampanaDto'];
 
-/** El segmento elegido, como se envía y se guarda. */
-export interface SegmentoCampana {
-  tipo: string;
-  /** Un valor por criterio como máximo. */
-  criterios: { clave: string; valor: string }[];
-}
+/** POST /api/marketing/campanas/{id}/vista-previa: con destinatarios y la `confirmacion` del envío. */
+export type VistaPreviaCampana = components['schemas']['VistaPreviaCampanaDto'];
 
-/** Cuerpo de POST /api/gestion/campanas, PUT …/{codigo} y POST …/vista-previa. */
-export interface DatosCampana {
-  asunto: string;
-  /** Texto simple: párrafos separados por una línea en blanco; `{nombre}` se reemplaza. */
-  cuerpo: string;
-  segmento: SegmentoCampana;
-}
-
-/** GET /api/gestion/campanas/{codigo}, y respuesta de POST y PUT. */
-export interface CampanaGestion extends DatosCampana {
-  codigo: string;
-  estado: EstadoCampana;
-  /** ISO 8601. */
-  fechaEdicion: string;
-  /** ISO 8601; `null` en un borrador. */
-  fechaEnvio: string | null;
-}
-
-/** POST /api/gestion/campanas/vista-previa: el correo como lo verá quien lo recibe. */
-export interface VistaPreviaCampana {
-  /** Nombre del remitente (RNF-26). */
-  remitente: string;
-  asunto: string;
-  /** El cuerpo en párrafos, con `{nombre}` ya reemplazado por un nombre de ejemplo. */
-  parrafos: string[];
-  /** Por qué le llega, p. ej. «Recibes este correo porque aceptaste ofertas…». */
-  pie: string;
-  /** Texto del enlace de baja que lleva cada correo (RNF-26). */
-  textoBaja: string;
-  /** Destinatarios con consentimiento del segmento, contados por el backend. */
-  destinatarios: number;
-  /** Texto del segmento, como en el listado. */
-  segmento: string;
-}
-
-/** POST /api/gestion/campanas/{codigo}/envio (202). Sale una sola vez; otra vez, 409. */
-export interface CampanaEnviada {
-  codigo: string;
-  estado: 'enviada';
-  destinatarios: number;
-  /** ISO 8601. */
-  fechaEnvio: string;
-}
+/** POST /api/marketing/campanas/{id}/envio (202). Sale una sola vez; otra vez, 409. */
+export type CampanaEnviada = components['schemas']['CampanaEnviadaDto'];
 
 /**
  * GET y PUT /api/marketing/cumpleanos (E12-H5): si el saludo está activo, su asunto, saludo y

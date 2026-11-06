@@ -10,111 +10,56 @@ import { useEffect, useState } from 'react';
 import { api } from '@/compartido/api/cliente';
 import { ErrorDeApi, exigir } from '@/compartido/api/errores';
 import type {
-  CampanaEnviada,
-  CampanaGestion,
   DatosCampana,
-  ListadoCampanas,
-  OpcionesSegmentoCampana,
   GuardarSaludoCumpleanos,
   SaludoCumpleanos,
-  VistaPreviaCampana,
 } from '@/compartido/api/respuestas';
 import { conErrorDeApi } from '@/tienda/cuenta/consultasCuenta';
 
 export const CLAVE_CAMPANAS = ['panel', 'campanas'] as const;
 
-type RutaCampanas =
-  | '/api/gestion/campanas'
-  | '/api/gestion/campanas/segmentos'
-  | '/api/gestion/campanas/vista-previa'
-  | '/api/gestion/campanas/{codigo}'
-  | '/api/gestion/campanas/{codigo}/envio';
-
-interface OpcionesPeticion {
-  params?: { path?: { codigo: string } };
-  body?: DatosCampana;
-}
-
-type Resultado = Promise<{
-  data?: unknown;
-  error?: unknown;
-  response: Response;
-}>;
-
-/**
- * TODO(SCRUM-140, SCRUM-141): las rutas de campañas y del saludo de cumpleaños aún no están en el
- * Swagger (API simulada, pedidas a SCRUM-70 y SCRUM-72). Quitar los casts cuando `pnpm api:tipos`
- * las traiga.
- */
-const pedir = api.GET as unknown as (
-  ruta: RutaCampanas,
-  opciones?: OpcionesPeticion,
-) => Resultado;
-const crear = api.POST as unknown as (
-  ruta: RutaCampanas,
-  opciones?: OpcionesPeticion,
-) => Resultado;
-const reemplazar = api.PUT as unknown as (
-  ruta: RutaCampanas,
-  opciones?: OpcionesPeticion,
-) => Resultado;
-
 /** Solo vale la pena reintentar una falla de red o del servidor, no un 4xx. */
 const reintentarSiFallaServidor = (intentos: number, error: Error) =>
   !(error instanceof ErrorDeApi && error.estado < 500) && intentos < 2;
 
-/** E12-H3, criterio 1 · Contactos con consentimiento y campañas, en el orden del backend. */
+/** Las campañas que se muestran: la página más grande que admite el backend. */
+const LIMITE_LISTA = 100;
+
+/**
+ * E12-H3, criterio 1 · Contactos con consentimiento y campañas, con sus destinatarios y apertura,
+ * en el orden del backend (las más nuevas primero). Todo lo cuenta el backend (SCRUM-150).
+ */
 export const useCampanas = () =>
   useQuery({
     queryKey: [...CLAVE_CAMPANAS, 'lista'],
     retry: reintentarSiFallaServidor,
     queryFn: () =>
       conErrorDeApi(async () =>
-        exigir<ListadoCampanas>(await pedir('/api/gestion/campanas')),
-      ),
-  });
-
-/** Lo que se puede elegir en «¿A quién le llega?»: lo define el backend. */
-export const useSegmentosCampana = () =>
-  useQuery({
-    queryKey: [...CLAVE_CAMPANAS, 'segmentos'],
-    staleTime: 5 * 60_000,
-    retry: reintentarSiFallaServidor,
-    queryFn: () =>
-      conErrorDeApi(async () =>
-        exigir<OpcionesSegmentoCampana>(
-          await pedir('/api/gestion/campanas/segmentos'),
-        ),
-      ),
-  });
-
-/** Un borrador para seguir editándolo. Sin código (campaña nueva) no se pide nada. */
-export const useCampana = (codigo: string | null) =>
-  useQuery({
-    queryKey: [...CLAVE_CAMPANAS, 'detalle', codigo],
-    enabled: codigo !== null,
-    // Otra persona del personal puede haberla enviado
-    staleTime: 0,
-    retry: reintentarSiFallaServidor,
-    queryFn: () =>
-      conErrorDeApi(async () =>
-        exigir<CampanaGestion>(
-          await pedir('/api/gestion/campanas/{codigo}', {
-            params: { path: { codigo: codigo ?? '' } },
+        exigir(
+          await api.GET('/api/marketing/campanas', {
+            params: { query: { limite: LIMITE_LISTA } },
           }),
         ),
       ),
   });
 
-const claveVistaPrevia = (datos: DatosCampana) =>
-  [...CLAVE_CAMPANAS, 'vista-previa', datos] as const;
-
-const pedirVistaPrevia = (datos: DatosCampana) =>
-  conErrorDeApi(async () =>
-    exigir<VistaPreviaCampana>(
-      await crear('/api/gestion/campanas/vista-previa', { body: datos }),
-    ),
-  );
+/** Un borrador para seguir editándolo. Sin id (campaña nueva) no se pide nada. */
+export const useCampana = (id: number | null) =>
+  useQuery({
+    queryKey: [...CLAVE_CAMPANAS, 'detalle', id],
+    enabled: id !== null,
+    // Otra persona del personal puede haberla enviado
+    staleTime: 0,
+    retry: reintentarSiFallaServidor,
+    queryFn: () =>
+      conErrorDeApi(async () =>
+        exigir(
+          await api.GET('/api/marketing/campanas/{id}', {
+            params: { path: { id: id ?? 0 } },
+          }),
+        ),
+      ),
+  });
 
 /** Espera a que la persona deje de escribir para no pedir una vista previa por tecla. */
 const useValorEstable = <T>(valor: T, espera: number): T => {
@@ -133,60 +78,73 @@ const useValorEstable = <T>(valor: T, espera: number): T => {
 
 export const ESPERA_VISTA_PREVIA = 400;
 
+/** Lo que se ve en el correo: la vista previa en vivo no necesita el segmento. */
+export interface TextoCampana {
+  asunto: string;
+  cuerpo: string;
+}
+
 /**
- * E12-H3, criterio 2 · El correo como lo verá quien lo recibe (remitente y enlace de baja) y
- * cuántos destinatarios con consentimiento tiene el segmento. Lo arma el backend; mientras se
- * pide la nueva, se sigue mostrando la anterior. Con `habilitada` en falso (aún sin segmento) no
- * pide nada.
+ * E12-H3, criterio 2 · El correo como lo verá quien lo recibe, armado por el backend con lo que se
+ * está escribiendo (`POST /vista-previa`, decisión del 6 nov, SCRUM-150): no guarda nada, no cuenta
+ * destinatarios ni sirve para enviar. Mientras se pide la nueva, se sigue mostrando la anterior.
+ * Sin asunto o sin mensaje no pide nada (el backend no arma un correo vacío).
  */
-export const useVistaPrevia = (datos: DatosCampana, habilitada = true) => {
-  const estables = useValorEstable(datos, ESPERA_VISTA_PREVIA);
+export const useVistaPrevia = (texto: TextoCampana) => {
+  const estable = useValorEstable(
+    { asunto: texto.asunto.trim(), cuerpo: texto.cuerpo.trim() },
+    ESPERA_VISTA_PREVIA,
+  );
   return useQuery({
-    queryKey: claveVistaPrevia(estables),
-    enabled: habilitada,
+    queryKey: [...CLAVE_CAMPANAS, 'vista-previa', estable],
+    enabled: estable.asunto !== '' && estable.cuerpo !== '',
     placeholderData: keepPreviousData,
     retry: reintentarSiFallaServidor,
-    queryFn: () => pedirVistaPrevia(estables),
+    queryFn: () =>
+      conErrorDeApi(async () =>
+        exigir(
+          await api.POST('/api/marketing/campanas/vista-previa', {
+            body: estable,
+          }),
+        ),
+      ),
   });
 };
 
-/** La vista previa justo de estos datos (al confirmar el envío): usa la guardada si ya está. */
-export const useObtenerVistaPrevia = () => {
-  const clienteConsultas = useQueryClient();
-  return (datos: DatosCampana) =>
-    clienteConsultas.fetchQuery({
-      queryKey: claveVistaPrevia(datos),
-      queryFn: () => pedirVistaPrevia(datos),
-    });
-};
+/**
+ * La vista previa del borrador guardado, que cuenta los destinatarios y entrega la `confirmacion`
+ * que exige el envío (vence a la hora). Siempre se pide de nuevo: es la que confirma.
+ */
+export const usePedirConfirmacion = () => (id: number) =>
+  conErrorDeApi(async () =>
+    exigir(
+      await api.POST('/api/marketing/campanas/{id}/vista-previa', {
+        params: { path: { id } },
+      }),
+    ),
+  );
 
 /**
- * Guarda el borrador: lo crea (POST) si aún no tiene código o lo reemplaza (PUT). Si el backend
- * rechaza, lanza `ErrorDeApi`.
+ * Guarda el borrador: lo crea (POST) si aún no tiene id o lo edita (PATCH). Si el backend rechaza,
+ * lanza `ErrorDeApi`.
  */
 export const useGuardarCampana = () => {
   const clienteConsultas = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      codigo,
-      datos,
-    }: {
-      codigo: string | null;
-      datos: DatosCampana;
-    }) =>
+    mutationFn: ({ id, datos }: { id: number | null; datos: DatosCampana }) =>
       conErrorDeApi(async () =>
-        exigir<CampanaGestion>(
-          codigo
-            ? await reemplazar('/api/gestion/campanas/{codigo}', {
-                params: { path: { codigo } },
+        exigir(
+          id
+            ? await api.PATCH('/api/marketing/campanas/{id}', {
+                params: { path: { id } },
                 body: datos,
               })
-            : await crear('/api/gestion/campanas', { body: datos }),
+            : await api.POST('/api/marketing/campanas', { body: datos }),
         ),
       ),
     onSuccess: (campana) => {
       clienteConsultas.setQueryData(
-        [...CLAVE_CAMPANAS, 'detalle', campana.codigo],
+        [...CLAVE_CAMPANAS, 'detalle', campana.id],
         campana,
       );
       return clienteConsultas.invalidateQueries({
@@ -197,17 +155,19 @@ export const useGuardarCampana = () => {
 };
 
 /**
- * E12-H3, criterio 3 · Envía la campaña (sale una sola vez). El backend vuelve a revisar el
- * consentimiento de cada destinatario; si ya se envió, responde 409.
+ * E12-H3, criterio 3 · Envía la campaña (sale una sola vez) con la confirmación de su vista previa.
+ * El backend vuelve a revisar el consentimiento de cada destinatario; si ya se envió, si cambió
+ * después de la vista previa o esta venció, responde 409.
  */
 export const useEnviarCampana = () => {
   const clienteConsultas = useQueryClient();
   return useMutation({
-    mutationFn: (codigo: string) =>
+    mutationFn: ({ id, confirmacion }: { id: number; confirmacion: string }) =>
       conErrorDeApi(async () =>
-        exigir<CampanaEnviada>(
-          await crear('/api/gestion/campanas/{codigo}/envio', {
-            params: { path: { codigo } },
+        exigir(
+          await api.POST('/api/marketing/campanas/{id}/envio', {
+            params: { path: { id } },
+            body: { confirmacion },
           }),
         ),
       ),

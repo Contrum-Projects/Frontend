@@ -17,8 +17,12 @@ import { Spinner } from '@/compartido/ui/spinner';
 
 export interface EnvioPorConfirmar {
   asunto: string;
+  /** El texto del segmento, armado con los nombres del catálogo. */
   segmento: string;
+  /** Los que contó el backend para el borrador guardado. */
   destinatarios: number;
+  /** La que exige el envío: la entrega la vista previa del borrador. */
+  confirmacion: string;
 }
 
 interface ConfirmarEnvioProps {

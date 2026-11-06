@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { VistaPreviaCampana } from '@/compartido/api/respuestas';
+import type { CorreoCampana } from '@/compartido/api/respuestas';
 import { cn } from '@/compartido/lib/utils';
 import { Logo } from '@/compartido/marca/logo';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
@@ -15,17 +15,37 @@ const ANCHOS: { valor: Ancho; texto: string }[] = [
 ];
 
 interface VistaPreviaCorreoProps {
-  vista: VistaPreviaCampana | undefined;
+  vista: CorreoCampana | undefined;
   /** Mensaje de error del backend, si no se pudo armar. */
   error?: string;
+  /** Aún falta el asunto o el mensaje: no hay correo que armar. */
+  incompleta: boolean;
 }
+
+/** El remitente de todo correo de la tienda (RNF-26). La respuesta no lo trae: es la tienda. */
+const REMITENTE = 'Cabello Perfecto';
+
+/**
+ * Los párrafos del texto plano que arma el backend (asunto, cuerpo, pie y enlace de baja,
+ * separados por una línea en blanco), sin el asunto, que va en la cabecera.
+ */
+const parrafosDe = ({ asunto, texto }: CorreoCampana) => {
+  const parrafos = texto.split(/\n\s*\n/).map((parrafo) => parrafo.trim());
+  return (parrafos[0] === asunto ? parrafos.slice(1) : parrafos).filter(
+    Boolean,
+  );
+};
 
 /**
  * E12-H3, criterio 2 · El correo como lo verá quien lo recibe (P7a 2046:1781): remitente, asunto,
  * cuerpo y el pie con el enlace de baja que lleva todo correo publicitario (RNF-26). Lo arma el
- * backend; aquí solo se muestra, como texto (sin HTML crudo).
+ * backend (decisión del 6 nov, SCRUM-150); aquí se muestra su versión en texto (sin HTML crudo).
  */
-export const VistaPreviaCorreo = ({ vista, error }: VistaPreviaCorreoProps) => {
+export const VistaPreviaCorreo = ({
+  vista,
+  error,
+  incompleta,
+}: VistaPreviaCorreoProps) => {
   const [ancho, setAncho] = useState<Ancho>('escritorio');
 
   return (
@@ -70,52 +90,43 @@ export const VistaPreviaCorreo = ({ vista, error }: VistaPreviaCorreoProps) => {
             ancho === 'celular' && 'lg:max-w-xs',
           )}
         >
-          {vista ? <Correo vista={vista} /> : <EsqueletoCorreo />}
+          {incompleta ? (
+            <p className="px-4 py-6 texto-pequeno text-texto-secundario">
+              Escribe el asunto y el mensaje para ver el correo.
+            </p>
+          ) : vista ? (
+            <Correo vista={vista} />
+          ) : (
+            <EsqueletoCorreo />
+          )}
         </article>
       )}
     </section>
   );
 };
 
-const Correo = ({ vista }: { vista: VistaPreviaCampana }) => (
+const Correo = ({ vista }: { vista: CorreoCampana }) => (
   <>
     <header className="flex flex-col gap-1 border-b px-4 py-3">
-      <p className="texto-leyenda text-texto-secundario">
-        De: {vista.remitente}
-      </p>
+      <p className="texto-leyenda text-texto-secundario">De: {REMITENTE}</p>
       <p className="texto-etiqueta wrap-break-word text-texto-principal">
-        {vista.asunto || (
-          <span className="text-texto-secundario">Sin asunto</span>
-        )}
+        {vista.asunto}
       </p>
     </header>
     <div className="flex flex-col items-center gap-3 bg-fondo-hueso px-6 py-6">
       <Logo aria-hidden className="h-14 w-24 text-marca-logo" />
       <div className="flex w-full flex-col gap-3">
-        {vista.parrafos.length === 0 ? (
-          <p className="texto-pequeno text-texto-secundario">
-            Aquí se verá el mensaje.
+        {parrafosDe(vista).map((parrafo, indice) => (
+          <p
+            // Los párrafos no tienen id y su orden es el del texto
+            key={indice}
+            className="texto-pequeno wrap-break-word whitespace-pre-line text-texto-principal"
+          >
+            {parrafo}
           </p>
-        ) : (
-          vista.parrafos.map((parrafo, indice) => (
-            <p
-              // Los párrafos no tienen id y su orden es el del texto
-              key={indice}
-              className="texto-pequeno wrap-break-word whitespace-pre-line text-texto-principal"
-            >
-              {parrafo}
-            </p>
-          ))
-        )}
+        ))}
       </div>
     </div>
-    <footer className="flex flex-col gap-1 px-4 py-3">
-      <p className="texto-leyenda text-texto-secundario">{vista.pie}</p>
-      {/* En la vista previa no lleva a ninguna parte: cada correo trae su propio enlace */}
-      <span className="texto-leyenda text-marca-profundo underline underline-offset-2">
-        {vista.textoBaja}
-      </span>
-    </footer>
   </>
 );
 

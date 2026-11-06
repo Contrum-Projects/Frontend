@@ -8,14 +8,9 @@ import {
   type FieldErrors,
   type UseFormRegister,
 } from 'react-hook-form';
-import type { VistaPreviaCampana } from '@/compartido/api/respuestas';
-import { formatearNumero } from '@/compartido/formato/numero';
-import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Input } from '@/compartido/ui/input';
-import { Skeleton } from '@/compartido/ui/skeleton';
 import { Textarea } from '@/compartido/ui/textarea';
 import { CampoFormulario } from '@/tienda/cuenta/campoFormulario';
-import { useSegmentosCampana } from './consultasCampanas';
 import type { FormularioCampana } from './esquemaCampana';
 import { SelectorSegmento } from './selectorSegmento';
 
@@ -79,72 +74,38 @@ export const TarjetaMensaje = ({
   </Tarjeta>
 );
 
-/** «¿A quién le llega?» (P7a 2046:1755) con el conteo de destinatarios del backend. */
+/**
+ * «¿A quién le llega?» (P7a 2046:1755). La vista previa en vivo no cuenta destinatarios (decisión
+ * del 6 nov, SCRUM-150): el número lo da el backend al revisar el envío, con el borrador guardado.
+ */
 export const TarjetaSegmento = ({
   id,
   control,
-  vista,
-  errorVista,
 }: {
   id: string;
   control: Control<FormularioCampana>;
-  vista: VistaPreviaCampana | undefined;
-  errorVista?: string;
-}) => {
-  const segmentos = useSegmentosCampana();
-
-  return (
-    <Tarjeta>
-      {segmentos.isPending ? (
-        <div aria-hidden className="flex flex-col gap-3">
-          <Skeleton className="h-6 w-40" />
-          <div className="flex gap-2">
-            {[0, 1, 2].map((chip) => (
-              <Skeleton key={chip} className="h-10 w-24 rounded-full" />
-            ))}
-          </div>
-        </div>
-      ) : segmentos.isError ? (
-        <Alert variant="destructive">
-          <AlertDescription>{segmentos.error.message}</AlertDescription>
-        </Alert>
-      ) : (
-        <Controller
-          control={control}
-          name="segmento"
-          render={({ field, fieldState }) => (
-            <SelectorSegmento
-              id={`${id}-segmento`}
-              tipos={segmentos.data.tipos}
-              valor={field.value}
-              alCambiar={field.onChange}
-              error={
-                fieldState.error?.message ??
-                // El error de un campo hijo (segmento.tipo) también va aquí
-                (
-                  fieldState.error as
-                    { tipo?: { message?: string } } | undefined
-                )?.tipo?.message
-              }
-            />
-          )}
+}) => (
+  <Tarjeta>
+    <Controller
+      control={control}
+      name="segmento"
+      render={({ field, formState: { errors } }) => (
+        <SelectorSegmento
+          id={`${id}-segmento`}
+          valor={field.value}
+          alCambiar={field.onChange}
+          errores={{
+            tipos: errors.segmento?.tipos?.message ?? errors.segmento?.message,
+            categorias: errors.segmento?.categorias?.message,
+            marcas: errors.segmento?.marcas?.message,
+          }}
         />
       )}
-      <p
-        role="status"
-        className="flex items-center gap-2 rounded-md bg-marca-acento-suave px-4 py-3 texto-pequeno text-marca-profundo"
-      >
-        <UsersRound
-          aria-hidden
-          strokeWidth={1.75}
-          className="size-5 shrink-0"
-        />
-        {vista
-          ? `${formatearNumero(vista.destinatarios)} destinatarios con consentimiento.`
-          : errorVista
-            ? 'No pudimos contar los destinatarios.'
-            : 'Contando destinatarios…'}
-      </p>
-    </Tarjeta>
-  );
-};
+    />
+    <p className="flex items-center gap-2 rounded-md bg-marca-acento-suave px-4 py-3 texto-pequeno text-marca-profundo">
+      <UsersRound aria-hidden strokeWidth={1.75} className="size-5 shrink-0" />
+      Al revisar el envío verás a cuántas direcciones con consentimiento les
+      llega.
+    </p>
+  </Tarjeta>
+);

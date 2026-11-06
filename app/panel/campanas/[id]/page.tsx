@@ -7,17 +7,20 @@ import {
 
 export const metadata: Metadata = { title: 'Campaña' };
 
-/** Como Editar pack: con un código dinámico la página depende de la sesión. */
+/** Como Editar pack: con un id dinámico la página depende de la sesión. */
 export const instant = false;
 
-/** El código es dato de la petición: se lee dentro de <Suspense> (Cache Components). */
+/**
+ * El id es dato de la petición: se lee dentro de <Suspense> (Cache Components). Las campañas se
+ * identifican por id (decisión del 6 nov, SCRUM-150).
+ */
 export default function PaginaCampana({
   params,
-}: PageProps<'/panel/campanas/[codigo]'>) {
+}: PageProps<'/panel/campanas/[id]'>) {
   return (
     <Suspense fallback={<EsqueletoCampana />}>
-      {params.then(({ codigo }) => (
-        <PantallaEditarCampana codigo={codigo} />
+      {params.then(({ id }) => (
+        <PantallaEditarCampana id={id} />
       ))}
     </Suspense>
   );
