@@ -7,7 +7,7 @@ import type { TipoDocumentoVerificacion } from '@/compartido/api/respuestas';
  * vuelve a validar y reconoce el formato por el contenido, no por el nombre.
  */
 export const MAXIMO_DOCUMENTOS = 5;
-export const MAXIMO_BYTES = 5 * 1024 * 1024;
+export const MAXIMO_BYTES = 4 * 1024 * 1024;
 const FORMATOS = ['application/pdf', 'image/jpeg', 'image/png'];
 export const ACEPTA =
   '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png';
@@ -28,7 +28,7 @@ export const textoTipoDocumento = (tipo: string) =>
 export const problemaDeArchivo = (archivo: File): string | null => {
   if (!FORMATOS.includes(archivo.type))
     return `«${archivo.name}» no es PDF, JPG ni PNG.`;
-  if (archivo.size > MAXIMO_BYTES) return `«${archivo.name}» supera los 5 MB.`;
+  if (archivo.size > MAXIMO_BYTES) return `«${archivo.name}» supera los 4 MB.`;
   return null;
 };
 

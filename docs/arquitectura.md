@@ -95,6 +95,10 @@ texto del mensaje: el backend puede reescribirlo.
 
 - **Vercel** (lo que propone la Guía de Fase 1): variables `API_URL` (URL pública del backend) y,
   si se usan imágenes del catálogo, `URL_IMAGENES` y `NEXT_PUBLIC_URL_SITIO`.
+  Sus funciones aceptan cuerpos de unos 4,5 MB: por eso cada archivo que se sube pesa hasta
+  **4 MB** (decisión del 6 nov, SCRUM-150). **Deuda técnica:** subir directo a R2 con una URL
+  prefirmada; hasta entonces, la verificación profesional con varios documentos en un solo envío
+  puede pasar del límite del proxy aunque cada archivo lo cumpla.
 - **Docker** (`Dockerfile`): imagen `standalone` en el puerto 3001. `URL_IMAGENES` y
   `NEXT_PUBLIC_URL_SITIO` se fijan al compilar (`--build-arg`); `API_URL` al ejecutar.
 - En el backend, `URL_TIENDA` debe ser la URL pública de la tienda (enlaces de los correos).

@@ -26,7 +26,7 @@ const MINIATURAS_VISIBLES = 3;
  * que será rechazado; el backend los vuelve a revisar (el tipo, por el contenido).
  */
 export const TIPOS_FOTO = ['image/jpeg', 'image/png', 'image/webp'];
-const TAMANO_MAXIMO_FOTO = 5 * 1024 * 1024;
+const TAMANO_MAXIMO_FOTO = 4 * 1024 * 1024;
 
 /** El mismo mensaje que responde el backend, o `null` si el archivo se puede enviar. */
 export const problemaDelArchivo = (archivo: File) => {
@@ -34,7 +34,7 @@ export const problemaDelArchivo = (archivo: File) => {
     return 'La imagen debe ser JPEG, PNG o WebP.';
   }
   if (archivo.size > TAMANO_MAXIMO_FOTO) {
-    return 'La imagen no puede superar los 5 MB.';
+    return 'La imagen no puede superar los 4 MB.';
   }
   return null;
 };

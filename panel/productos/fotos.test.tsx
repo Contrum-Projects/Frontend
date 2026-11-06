@@ -113,7 +113,7 @@ describe('Fotos por formato (SCRUM-102)', () => {
   it('E3-H3 FE · subir foto: un rechazo del backend se muestra en el panel', async () => {
     conFotos(fotos(1), {
       [`POST ${RUTA_FOTOS}`]: () =>
-        error(413, 'La imagen no puede superar los 5 MB.'),
+        error(413, 'La imagen no puede superar los 4 MB.'),
     });
     mostrar(<PantallaEditarProducto id="7" />);
     const panel = await abrirFotos();
@@ -124,7 +124,7 @@ describe('Fotos por formato (SCRUM-102)', () => {
     );
 
     expect(
-      await panel.findByText('La imagen no puede superar los 5 MB.'),
+      await panel.findByText('La imagen no puede superar los 4 MB.'),
     ).toBeInTheDocument();
     expect(fotosDelPanel(panel)).toHaveLength(1);
   });

@@ -243,7 +243,7 @@ describe('E10-H1 FE · Verificación profesional', () => {
     expect(escrituras).toEqual([]);
   });
 
-  it('E10-H1 FE · formulario: no agrega archivos que no son PDF, JPG ni PNG o que superan 5 MB, y deja quitar uno', async () => {
+  it('E10-H1 FE · formulario: no agrega archivos que no son PDF, JPG ni PNG o que superan 4 MB, y deja quitar uno', async () => {
     const usuario = userEvent.setup({ applyAccept: false });
     simular(conDatos());
     abrir();
@@ -251,12 +251,12 @@ describe('E10-H1 FE · Verificación profesional', () => {
     await subir(
       usuario,
       new File(['x'], 'notas.docx', { type: 'application/msword' }),
-      pdf('grande.pdf', 5 * 1024 * 1024 + 1),
+      pdf('grande.pdf', 4 * 1024 * 1024 + 1),
       pdf('titulo.pdf'),
     );
     expect(
       screen.getByText(
-        '«notas.docx» no es PDF, JPG ni PNG. «grande.pdf» supera los 5 MB.',
+        '«notas.docx» no es PDF, JPG ni PNG. «grande.pdf» supera los 4 MB.',
       ),
     ).toBeInTheDocument();
     const lista = screen.getByRole('list', { name: 'Documentos elegidos' });
@@ -380,7 +380,7 @@ describe('E10-H1 FE · Verificación profesional', () => {
     const usuario = userEvent.setup();
     let documentos = () =>
       responder(
-        { statusCode: 413, message: 'Cada documento puede pesar hasta 5 MB.' },
+        { statusCode: 413, message: 'Cada documento puede pesar hasta 4 MB.' },
         413,
       );
     const escrituras = simular({
@@ -402,7 +402,7 @@ describe('E10-H1 FE · Verificación profesional', () => {
     await enviar(usuario);
 
     expect(
-      await screen.findByText('Cada documento puede pesar hasta 5 MB.'),
+      await screen.findByText('Cada documento puede pesar hasta 4 MB.'),
     ).toBeInTheDocument();
     expect(screen.getByText('certificado-peluqueria.pdf')).toBeInTheDocument();
 
@@ -423,7 +423,7 @@ describe('E10-H1 FE · Verificación profesional', () => {
       responder({ statusCode: 404, message: 'No tienes solicitudes.' }, 404);
     let documentos = () =>
       responder(
-        { statusCode: 413, message: 'Cada documento puede pesar hasta 5 MB.' },
+        { statusCode: 413, message: 'Cada documento puede pesar hasta 4 MB.' },
         413,
       );
     const escrituras = simular({
@@ -442,7 +442,7 @@ describe('E10-H1 FE · Verificación profesional', () => {
     await enviar(usuario);
 
     expect(
-      await screen.findByText('Cada documento puede pesar hasta 5 MB.'),
+      await screen.findByText('Cada documento puede pesar hasta 4 MB.'),
     ).toBeInTheDocument();
     expect(
       await screen.findByText(/No pudimos verificarte con el SII/),

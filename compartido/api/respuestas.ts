@@ -1073,8 +1073,9 @@ export interface PedidoConNuevoEstado {
 
 /**
  * Cómo va la factura de un pedido que la pidió (E9-H3): `por_emitir` hasta que el personal la
- * registra con su folio. TODO(SCRUM-127): forma propuesta a SCRUM-55 (ver
- * docs/historias/SCRUM-127.md).
+ * registra con su folio. backend: src/common/dominio/valores.ts › ESTADOS_FACTURA_GESTION
+ * (decisión del 6 nov, SCRUM-150). El endpoint sigue pendiente en SCRUM-55: sin factura
+ * registrada, su campo `factura` vendrá `null`.
  */
 export type EstadoFacturaGestion = 'por_emitir' | 'emitida';
 
