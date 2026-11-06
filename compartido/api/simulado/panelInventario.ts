@@ -1,10 +1,11 @@
 /**
  * Rutas simuladas del inventario del panel.
  *
- * SCRUM-111 · `GET /inventario/entradas` y `GET /inventario/ubicaciones`: el backend solo tiene
- * el POST de entradas. Devuelven datos fijos con la forma pedida a SCRUM-37 (ver
- * docs/historias/SCRUM-111.md); los filtros solo eligen filas de esa lista, no calculan nada.
- * El POST va al backend real: necesita que las ubicaciones simuladas existan en la base.
+ * SCRUM-111 · `GET /inventario/entradas`: el backend solo tiene el POST de entradas. Devuelve
+ * datos fijos con la forma pedida a SCRUM-37 (ver docs/historias/SCRUM-111.md); los filtros solo
+ * eligen filas de esa lista, no calculan nada. `GET /inventario/ubicaciones` ya es real
+ * (SCRUM-150): `UBICACIONES` solo arma las filas simuladas de entradas, stock y movimientos, y sus
+ * ids no tienen por qué existir en la base.
  */
 import 'server-only';
 import type {
@@ -101,12 +102,6 @@ const filtrar = (consulta: URLSearchParams) => {
 };
 
 export const rutasPanelInventario: RutaSimulada[] = [
-  {
-    metodo: 'GET',
-    ruta: '/inventario/ubicaciones',
-    historia: 'SCRUM-111',
-    responder: () => json(UBICACIONES),
-  },
   {
     metodo: 'GET',
     ruta: '/inventario/entradas',

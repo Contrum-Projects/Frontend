@@ -32,7 +32,7 @@ Estado al 01-11-2026 (`compartido/api/esquema.d.ts` de `main` y repo del backend
 | Registrar ajuste (CA1, CA3)           | `POST /api/inventario/ajustes` (`CrearAjusteDto`)               | Real. El Swagger no declara la respuesta (`AjusteRegistrado` de `ajustes.service.ts`, en `respuestas.ts`)               |
 | Registrar transferencia (CA2, CA3)    | `POST /api/inventario/transferencias` (`CrearTransferenciaDto`) | Real. El Swagger no declara la respuesta (`TransferenciaRegistrada` de `transferencias.service.ts`, en `respuestas.ts`) |
 | Ubicaciones con stock del formato     | `GET /api/inventario/stock/formatos/{id}`                       | Real (E11-H5). Respuesta en `respuestas.ts` (`StockFormato`)                                                            |
-| Ubicaciones activas (destino, ajuste) | `GET /api/inventario/ubicaciones`                               | **Simulado** desde SCRUM-111 (pedido a SCRUM-37)                                                                        |
+| Ubicaciones activas (destino, ajuste) | `GET /api/inventario/ubicaciones`                               | Real desde SCRUM-150 (`inventario.consultar`)                                                                           |
 | Buscar formatos                       | `GET /api/catalogo/formatos?buscar=`                            | Real desde SCRUM-150 (`catalogo.gestionar` o `inventario.registrar`)                                                    |
 
 ## Notas de trabajo

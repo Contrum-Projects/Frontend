@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 92.
+ * Versión de la API: 0.1.0. Rutas: 93.
  */
 
 export interface paths {
@@ -521,6 +521,26 @@ export interface paths {
          * @description Devuelve las unidades del formato en cada ubicación que tiene stock (también las desactivadas, marcadas como inactivas), el total y el proveedor y costo unitario neto de su entrada de recepción más reciente. Si el formato nunca se ha recibido, el total es 0 y la última entrada es nula.
          */
         get: operations["StockController_consultar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inventario/ubicaciones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar las ubicaciones activas (E11)
+         * @description Ubicaciones activas de bodegas activas, ordenadas por bodega y código: el destino de una entrada, un ajuste o una transferencia, y el filtro por bodega del inventario.
+         */
+        get: operations["UbicacionesController_listar"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2201,6 +2221,19 @@ export interface components {
             cantidad: number;
             /** @example Reposición de la góndola */
             observacion?: Record<string, never> | null;
+        };
+        BodegaDeUbicacionDto: {
+            /** @example 1 */
+            id: number;
+            /** @example Bodega principal */
+            nombre: string;
+        };
+        UbicacionInventarioDto: {
+            /** @example 3 */
+            id: number;
+            /** @example A-01 */
+            codigo: string;
+            bodega: components["schemas"]["BodegaDeUbicacionDto"];
         };
         CrearMarcaDto: {
             /** @example L'Oréal Professionnel */
@@ -4391,6 +4424,40 @@ export interface operations {
             };
             /** @description El formato no existe. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UbicacionesController_listar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ubicaciones activas. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UbicacionInventarioDto"][];
+                };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de consultar inventario. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

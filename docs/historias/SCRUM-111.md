@@ -31,7 +31,7 @@ Estado al 31-10-2026 (Swagger local y `main` del backend): **Parcial**.
 | ----------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | Registrar entrada (CA2, CA3)              | `POST /api/inventario/entradas` (`CrearEntradaDto`) | Real. El Swagger no declara la respuesta (`EntradaRegistrada` de `entradas.service.ts`, tipo en `respuestas.ts`) |
 | Lista de entradas (CA1)                   | `GET /api/inventario/entradas`                      | **Simulado** (`compartido/api/simulado/panelInventario.ts`)                                                      |
-| Ubicaciones de destino y filtro de bodega | `GET /api/inventario/ubicaciones`                   | **Simulado**                                                                                                     |
+| Ubicaciones de destino y filtro de bodega | `GET /api/inventario/ubicaciones`                   | Real desde SCRUM-150 (`inventario.consultar`)                                                                    |
 | Buscar formatos                           | `GET /api/catalogo/formatos?buscar=`                | Real desde SCRUM-150 (`catalogo.gestionar` o `inventario.registrar`)                                             |
 | Proveedores activos                       | `GET /api/inventario/proveedores`                   | Real                                                                                                             |
 
@@ -70,6 +70,8 @@ registradoPor: { nombre } }], total, pagina, limite }`, de la más reciente a la
 - **Ubicaciones:** la semilla del backend no crea bodegas ni ubicaciones y no hay endpoint para
   crearlas; con la API simulada (ids 1–4) el POST real solo funciona si esas ubicaciones existen
   en la base local. **Pedido a SCRUM-37:** el GET de ubicaciones y ubicaciones en la semilla.
+  **06-11-2026 (SCRUM-150):** el GET existe y se borró su ruta simulada; la semilla sigue sin
+  bodegas ni ubicaciones.
 - El selector de proveedor usa `GET /inventario/proveedores`, que pide `proveedores.gestionar`.
   Hoy todo rol con `inventario.registrar` también lo tiene; si eso cambia, confirmar con SCRUM-37.
 - `BuscadorFormatos` (packs) acepta ahora `destino` y `aviso` para reutilizarlo aquí.

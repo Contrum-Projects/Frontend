@@ -314,15 +314,11 @@ export interface UbicacionResumen {
 }
 
 /**
- * GET /api/inventario/ubicaciones: ubicaciones activas de bodegas activas, donde se puede
- * guardar stock. TODO(SCRUM-111): no existe en el backend; simulado y pedido a SCRUM-37 (ver
- * docs/historias/SCRUM-111.md).
+ * backend: src/modulos/inventario/dto/ubicacion-inventario.dto.ts. GET /api/inventario/ubicaciones:
+ * ubicaciones activas de bodegas activas, donde se puede guardar stock (SCRUM-150).
  */
-export interface UbicacionInventario {
-  id: number;
-  codigo: string;
-  bodega: { id: number; nombre: string };
-}
+export type UbicacionInventario =
+  components['schemas']['UbicacionInventarioDto'];
 
 /**
  * backend: src/modulos/inventario/entradas.service.ts › EntradaRegistrada (respuesta del POST
