@@ -32,7 +32,7 @@ Estado al 31-10-2026 (Swagger local y `main` del backend): **Parcial**.
 | Registrar entrada (CA2, CA3)              | `POST /api/inventario/entradas` (`CrearEntradaDto`) | Real. El Swagger no declara la respuesta (`EntradaRegistrada` de `entradas.service.ts`, tipo en `respuestas.ts`) |
 | Lista de entradas (CA1)                   | `GET /api/inventario/entradas`                      | **Simulado** (`compartido/api/simulado/panelInventario.ts`)                                                      |
 | Ubicaciones de destino y filtro de bodega | `GET /api/inventario/ubicaciones`                   | **Simulado**                                                                                                     |
-| Buscar formatos                           | `GET /api/catalogo/formatos?buscar=`                | Simulado desde SCRUM-105                                                                                         |
+| Buscar formatos                           | `GET /api/catalogo/formatos?buscar=`                | Real desde SCRUM-150 (`catalogo.gestionar` o `inventario.registrar`)                                             |
 | Proveedores activos                       | `GET /api/inventario/proveedores`                   | Real                                                                                                             |
 
 Forma simulada (propuesta del frontend; pedirla a SCRUM-37):

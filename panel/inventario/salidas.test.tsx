@@ -49,6 +49,9 @@ const MASCARILLA: FormatoParaPack = {
   nombreFormato: '500 g',
   producto: { id: 4, nombre: 'Mascarilla nutritiva' },
   canalVenta: 'general',
+  stockTotal: 0,
+  precioMinoristaNeto: null,
+  precioMinoristaConIva: null,
 };
 
 const STOCK: StockFormato = {

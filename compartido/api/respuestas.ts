@@ -675,31 +675,15 @@ export interface PreciosArticulo {
 }
 
 /**
- * Formato que se puede agregar a un pack (E3-H6 criterio 2). **Simulado** (SCRUM-105): el backend
- * no tiene una búsqueda de formatos; forma pedida a SCRUM-31 (ver docs/historias/SCRUM-105.md).
- * Solo formatos activos de productos activos, nunca packs.
+ * backend: src/modulos/catalogo/dto/formato-buscado.dto.ts › FormatoBuscadoDto. Formato que se
+ * puede agregar a un pack (E3-H6 criterio 2) o registrar en inventario: solo formatos activos de
+ * productos activos, nunca packs (SCRUM-150).
  */
-export interface FormatoParaPack {
-  formatoId: number;
-  sku: string;
-  nombreFormato: string;
-  producto: { id: number; nombre: string };
-  /** Canal del producto: un pack general no admite formatos exclusivos. */
-  canalVenta: CanalVenta;
-  /** Unidades en bodegas activas. Opcional mientras se simula: la simulación no lo inventa. */
-  stockTotal?: number;
-  precioMinoristaNeto?: number | null;
-  /** En pesos enteros, como en la tienda. */
-  precioMinoristaConIva?: number | null;
-}
+export type FormatoParaPack = components['schemas']['FormatoBuscadoDto'];
 
-/** GET /api/catalogo/formatos?buscar= (panel). Simulado (SCRUM-105), ver `FormatoParaPack`. */
-export interface ListadoFormatosParaPack {
-  items: FormatoParaPack[];
-  total: number;
-  pagina: number;
-  limite: number;
-}
+/** GET /api/catalogo/formatos?buscar= (panel, catálogo e inventario). */
+export type ListadoFormatosParaPack =
+  components['schemas']['ListadoFormatosBuscadosDto'];
 
 /**
  * backend: src/modulos/catalogo/packs.service.ts › ComponentePackPanel. `stockTotal` y los

@@ -61,15 +61,6 @@ export const usePack = (id: number) =>
   });
 
 /**
- * TODO(SCRUM-105): GET /catalogo/formatos aún no está en el Swagger (API simulada, pedido a
- * SCRUM-31). Quitar el cast cuando `pnpm api:tipos` lo traiga.
- */
-const pedirFormatos = api.GET as unknown as (
-  ruta: '/api/catalogo/formatos',
-  opciones: { params: { query: { buscar?: string } } },
-) => Promise<{ data?: unknown; error?: unknown; response: Response }>;
-
-/**
  * Formatos que se pueden agregar a un pack (E3-H6 criterio 2): el backend devuelve solo formatos
  * de producto, nunca packs. Mientras se escribe sigue a la vista el resultado anterior.
  */
@@ -79,7 +70,7 @@ export const useFormatosParaPack = (buscar: string, habilitado: boolean) =>
     queryFn: () =>
       conErrorDeApi(async () =>
         exigir<ListadoFormatosParaPack>(
-          await pedirFormatos('/api/catalogo/formatos', {
+          await api.GET('/api/catalogo/formatos', {
             params: { query: buscar ? { buscar } : {} },
           }),
         ),

@@ -59,6 +59,9 @@ const SHAMPOO: FormatoParaPack = {
   nombreFormato: '300 ml',
   producto: { id: 1, nombre: 'Shampoo reparador' },
   canalVenta: 'general',
+  stockTotal: 0,
+  precioMinoristaNeto: null,
+  precioMinoristaConIva: null,
 };
 const TINTE: FormatoParaPack = {
   formatoId: 12,
@@ -66,6 +69,9 @@ const TINTE: FormatoParaPack = {
   nombreFormato: 'Tono 7.1',
   producto: { id: 2, nombre: 'Tinte permanente' },
   canalVenta: 'general',
+  stockTotal: 0,
+  precioMinoristaNeto: null,
+  precioMinoristaConIva: null,
 };
 
 const ENTRADA: EntradaListado = {

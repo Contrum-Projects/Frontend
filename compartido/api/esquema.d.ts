@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 91.
+ * Versión de la API: 0.1.0. Rutas: 92.
  */
 
 export interface paths {
@@ -680,6 +680,26 @@ export interface paths {
          * @description Guarda el formato activo, con su SKU, código de barras, contenido, peso, medidas, stock mínimo y fecha de vencimiento opcional. Nace sin precios (se fijan en E3-H5). El primer formato del producto queda como predeterminado.
          */
         post: operations["FormatosController_crear"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/catalogo/formatos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Buscar formatos de venta (E3-H6 y registro de inventario)
+         * @description Solo formatos activos de productos activos, nunca packs, por nombre del producto, nombre del formato o SKU, ordenados por producto y formato. Lleva el stock en ubicaciones activas y el precio minorista (neto y con IVA). La usan quienes gestionan el catálogo (armar packs) y quienes registran inventario (entradas, salidas, ajustes y transferencias).
+         */
+        get: operations["FormatosController_buscar"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2314,6 +2334,50 @@ export interface components {
             largoCm: number;
             /** @description Con `true` queda como el único predeterminado del producto. El primer formato de un producto siempre lo es. */
             esPredeterminado?: boolean;
+        };
+        ProductoDelFormatoDto: {
+            /** @example 7 */
+            id: number;
+            /** @example Shampoo reparador */
+            nombre: string;
+        };
+        FormatoBuscadoDto: {
+            /** @example 21 */
+            formatoId: number;
+            /** @example SH-REP-300 */
+            sku: string;
+            /** @example 300 ml */
+            nombreFormato: string;
+            producto: components["schemas"]["ProductoDelFormatoDto"];
+            /**
+             * @description Canal del producto: un pack general no admite formatos exclusivos.
+             * @enum {string}
+             */
+            canalVenta: "general" | "profesional";
+            /**
+             * @description Unidades en ubicaciones activas de bodegas activas.
+             * @example 2
+             */
+            stockTotal: number;
+            /**
+             * @description Precio minorista neto; `null` si aún no tiene.
+             * @example 10916
+             */
+            precioMinoristaNeto: number | null;
+            /**
+             * @description Precio minorista con IVA en pesos enteros, como en la tienda.
+             * @example 12990
+             */
+            precioMinoristaConIva: number | null;
+        };
+        ListadoFormatosBuscadosDto: {
+            items: components["schemas"]["FormatoBuscadoDto"][];
+            /** @example 1 */
+            total: number;
+            /** @example 1 */
+            pagina: number;
+            /** @example 20 */
+            limite: number;
         };
         ActualizarFormatoDto: {
             /** @example SHA-REP-300 */
@@ -4887,6 +4951,52 @@ export interface operations {
             };
             /** @description El SKU o el código de barras ya pertenece a otro artículo. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FormatosController_buscar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+                /** @description Texto contenido en el nombre del producto, el del formato o el SKU, sin distinguir mayúsculas. */
+                buscar?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Formatos encontrados, paginados. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListadoFormatosBuscadosDto"];
+                };
+            };
+            /** @description Búsqueda o paginación inválidas. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no gestiona el catálogo ni registra inventario. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
