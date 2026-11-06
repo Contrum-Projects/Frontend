@@ -10,12 +10,12 @@ import { useEffect, useState } from 'react';
 import { api } from '@/compartido/api/cliente';
 import { ErrorDeApi, exigir } from '@/compartido/api/errores';
 import type {
-  CambioSaludoCumpleanos,
   CampanaEnviada,
   CampanaGestion,
   DatosCampana,
   ListadoCampanas,
   OpcionesSegmentoCampana,
+  GuardarSaludoCumpleanos,
   SaludoCumpleanos,
   VistaPreviaCampana,
 } from '@/compartido/api/respuestas';
@@ -25,7 +25,6 @@ export const CLAVE_CAMPANAS = ['panel', 'campanas'] as const;
 
 type RutaCampanas =
   | '/api/gestion/campanas'
-  | '/api/gestion/campanas/cumpleanos'
   | '/api/gestion/campanas/segmentos'
   | '/api/gestion/campanas/vista-previa'
   | '/api/gestion/campanas/{codigo}'
@@ -33,7 +32,7 @@ type RutaCampanas =
 
 interface OpcionesPeticion {
   params?: { path?: { codigo: string } };
-  body?: DatosCampana | CambioSaludoCumpleanos;
+  body?: DatosCampana;
 }
 
 type Resultado = Promise<{
@@ -56,10 +55,6 @@ const crear = api.POST as unknown as (
   opciones?: OpcionesPeticion,
 ) => Resultado;
 const reemplazar = api.PUT as unknown as (
-  ruta: RutaCampanas,
-  opciones?: OpcionesPeticion,
-) => Resultado;
-const modificar = api.PATCH as unknown as (
   ruta: RutaCampanas,
   opciones?: OpcionesPeticion,
 ) => Resultado;
@@ -230,23 +225,37 @@ export const useSaludoCumpleanos = () =>
     retry: reintentarSiFallaServidor,
     queryFn: () =>
       conErrorDeApi(async () =>
-        exigir<SaludoCumpleanos>(
-          await pedir('/api/gestion/campanas/cumpleanos'),
-        ),
+        exigir(await api.GET('/api/marketing/cumpleanos')),
       ),
   });
 
+/** El cuerpo del PUT: el saludo completo, con lo que se cambió (decisión del 6 nov, SCRUM-150). */
+const cuerpoSaludo = ({
+  activo,
+  asunto,
+  cuerpo,
+  oferta,
+}: SaludoCumpleanos): GuardarSaludoCumpleanos => ({
+  activo,
+  asunto,
+  cuerpo,
+  oferta: { activa: oferta.activa, texto: oferta.texto },
+});
+
 /**
- * E12-H5, criterios 1 y 2 · Activa o desactiva el saludo o su oferta. La respuesta del backend
- * queda en la caché: la tarjeta muestra lo que quedó guardado.
+ * E12-H5, criterios 1 y 2 · Activa o desactiva el saludo o su oferta. Se envía el saludo completo
+ * (el PUT reemplaza todo) y la respuesta del backend queda en la caché: la tarjeta muestra lo que
+ * quedó guardado, con sus cifras.
  */
 export const useCambiarSaludoCumpleanos = () => {
   const clienteConsultas = useQueryClient();
   return useMutation({
-    mutationFn: (cambio: CambioSaludoCumpleanos) =>
+    mutationFn: (pedido: SaludoCumpleanos) =>
       conErrorDeApi(async () =>
-        exigir<SaludoCumpleanos>(
-          await modificar('/api/gestion/campanas/cumpleanos', { body: cambio }),
+        exigir(
+          await api.PUT('/api/marketing/cumpleanos', {
+            body: cuerpoSaludo(pedido),
+          }),
         ),
       ),
     onSuccess: (saludo) => clienteConsultas.setQueryData(CLAVE_SALUDO, saludo),

@@ -5,7 +5,7 @@ import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { paths } from '@/compartido/api/esquema';
 import type {
-  CambioSaludoCumpleanos,
+  GuardarSaludoCumpleanos,
   SaludoCumpleanos,
 } from '@/compartido/api/respuestas';
 import { crearClienteDeConsultas } from '@/compartido/proveedores';
@@ -28,24 +28,41 @@ vi.mock('@/compartido/api/cliente', async (original) => {
   return { api, middlewareDeSesion };
 });
 
-const RUTA = '/api/gestion/campanas/cumpleanos';
+const RUTA = '/api/marketing/cumpleanos';
 
 const SALUDO: SaludoCumpleanos = {
   activo: false,
-  incluyeOferta: false,
   asunto: 'Feliz cumpleaños, {nombre}',
+  cuerpo: 'Te deseamos un gran día.',
+  oferta: { activa: false, texto: '20 % en toda la tienda' },
+  configurado: true,
   programadosEsteMes: 87,
   porcentajeAperturaUltimoMes: 63,
 };
 
-type Manejador = (cambio: CambioSaludoCumpleanos) => Response;
+/** Lo que se envía con el saludo de arriba y esos cambios: siempre completo (PUT). */
+const cuerpo = (
+  cambios: Partial<Pick<SaludoCumpleanos, 'activo'>> & {
+    ofertaActiva?: boolean;
+  } = {},
+): GuardarSaludoCumpleanos => ({
+  activo: cambios.activo ?? SALUDO.activo,
+  asunto: SALUDO.asunto,
+  cuerpo: SALUDO.cuerpo,
+  oferta: {
+    activa: cambios.ofertaActiva ?? SALUDO.oferta.activa,
+    texto: SALUDO.oferta.texto,
+  },
+});
 
-/** GET responde `inicial`; PATCH, lo que diga `alCambiar` (por omisión, lo pedido aplicado). */
+type Manejador = (cambio: GuardarSaludoCumpleanos) => Response;
+
+/** GET responde `inicial`; PUT, lo que diga `alCambiar` (por omisión, lo guardado con sus cifras). */
 const simularBackend = (
   inicial: SaludoCumpleanos,
   alCambiar: Manejador = (cambio) => Response.json({ ...inicial, ...cambio }),
 ) => {
-  const cambios: CambioSaludoCumpleanos[] = [];
+  const cambios: GuardarSaludoCumpleanos[] = [];
   vi.stubGlobal(
     'fetch',
     vi.fn(async (peticion: Request) => {
@@ -53,7 +70,8 @@ const simularBackend = (
       if (pathname !== RUTA)
         throw new Error(`Petición no simulada: ${pathname}`);
       if (peticion.method === 'GET') return Response.json(inicial);
-      const cambio = (await peticion.json()) as CambioSaludoCumpleanos;
+      expect(peticion.method).toBe('PUT');
+      const cambio = (await peticion.json()) as GuardarSaludoCumpleanos;
       cambios.push(cambio);
       return alCambiar(cambio);
     }),
@@ -102,7 +120,8 @@ describe('Saludo de cumpleaños (SCRUM-141)', () => {
 
     await usuario.click(saludo);
 
-    expect(cambios).toEqual([{ activo: true }]);
+    // E12-H5 · PUT completo (SCRUM-150): el saludo entero, con el cambio
+    expect(cambios).toEqual([cuerpo({ activo: true })]);
     await waitFor(() => expect(saludo).toBeChecked());
     await waitFor(() => expect(saludo).not.toHaveAttribute('aria-disabled'));
     expect(saludo).toHaveFocus();
@@ -159,8 +178,8 @@ describe('Saludo de cumpleaños (SCRUM-141)', () => {
     await waitFor(() => expect(oferta).not.toBeChecked());
 
     expect(cambios).toEqual([
-      { incluyeOferta: true },
-      { incluyeOferta: false },
+      cuerpo({ activo: true, ofertaActiva: true }),
+      cuerpo({ activo: true, ofertaActiva: false }),
     ]);
   });
 

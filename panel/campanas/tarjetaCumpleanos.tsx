@@ -1,10 +1,7 @@
 'use client';
 
 import { type ReactNode, useId } from 'react';
-import type {
-  CambioSaludoCumpleanos,
-  SaludoCumpleanos,
-} from '@/compartido/api/respuestas';
+import type { SaludoCumpleanos } from '@/compartido/api/respuestas';
 import {
   formatearNumero,
   formatearPorcentaje,
@@ -54,12 +51,10 @@ const ContenidoCumpleanos = ({ saludo }: { saludo: SaludoCumpleanos }) => {
   const id = useId();
   const cambio = useCambiarSaludoCumpleanos();
   // Mientras guarda muestra lo pedido; si el backend lo rechaza, vuelve a lo guardado
-  const mostrado = cambio.isPending
-    ? { ...saludo, ...cambio.variables }
-    : saludo;
+  const mostrado = cambio.isPending ? cambio.variables : saludo;
   const error = cambio.isError ? `${id}-error` : undefined;
   // Mientras guarda no se usa `disabled`: sacaría el foco del interruptor recién tocado
-  const guardar = (pedido: CambioSaludoCumpleanos) => {
+  const guardar = (pedido: SaludoCumpleanos) => {
     if (!cambio.isPending) cambio.mutate(pedido);
   };
 
@@ -77,7 +72,7 @@ const ContenidoCumpleanos = ({ saludo }: { saludo: SaludoCumpleanos }) => {
           aria-labelledby={`${id}-titulo`}
           checked={mostrado.activo}
           aria-disabled={cambio.isPending || undefined}
-          onCheckedChange={(activo) => guardar({ activo })}
+          onCheckedChange={(activo) => guardar({ ...saludo, activo })}
           aria-describedby={[`${id}-descripcion`, error]
             .filter(Boolean)
             .join(' ')}
@@ -106,10 +101,12 @@ const ContenidoCumpleanos = ({ saludo }: { saludo: SaludoCumpleanos }) => {
         </label>
         <Switch
           id={`${id}-oferta`}
-          checked={mostrado.incluyeOferta}
+          checked={mostrado.oferta.activa}
           disabled={!mostrado.activo}
           aria-disabled={cambio.isPending || undefined}
-          onCheckedChange={(incluyeOferta) => guardar({ incluyeOferta })}
+          onCheckedChange={(activa) =>
+            guardar({ ...saludo, oferta: { ...saludo.oferta, activa } })
+          }
           aria-describedby={error}
         />
       </div>

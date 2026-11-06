@@ -127,11 +127,13 @@ const simularBackend = (rutas: Record<string, Manejador> = {}) => {
   const base: Record<string, Manejador> = {
     'GET /api/gestion/campanas': () => Response.json(LISTADO),
     'GET /api/gestion/campanas/segmentos': () => Response.json(SEGMENTOS),
-    'GET /api/gestion/campanas/cumpleanos': () =>
+    'GET /api/marketing/cumpleanos': () =>
       Response.json({
         activo: true,
-        incluyeOferta: false,
         asunto: 'Feliz cumpleaños, {nombre}',
+        cuerpo: 'Te deseamos un gran día.',
+        oferta: { activa: false, texto: null },
+        configurado: true,
         programadosEsteMes: 87,
         porcentajeAperturaUltimoMes: 63,
       }),

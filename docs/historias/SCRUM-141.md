@@ -42,6 +42,13 @@ Comprobado el 5-11-2026: el backend solo tiene `TIPOS_CAMPANA.CUMPLEANOS` y
 
 ## Notas de trabajo
 
+**6-11-2026 (SCRUM-150, alineación con el backend).** La tarjeta usa la API real: `GET` y `PUT
+/api/marketing/cumpleanos` (SCRUM-72), sin la API simulada. El `PUT` reemplaza todo: se envía el
+saludo completo (`activo`, `asunto`, `cuerpo`, `oferta: { activa, texto }`) con el cambio. `activo`
+nace en `true` (como se enviaba antes de poder apagarlo). El backend cuenta `programadosEsteMes` y
+`porcentajeAperturaUltimoMes`. Activar la oferta sin un texto guardado responde 400 y la tarjeta
+muestra el mensaje: no hay pantalla para escribir la oferta (sigue por definir).
+
 **5-11-2026 (rama `SCRUM-141-saludo-cumpleanos`).** PR: https://github.com/Contrum-Projects/Frontend/pull/65
 
 - Tarjeta `panel/campanas/tarjetaCumpleanos.tsx` en «Campañas»: a la derecha de la lista en

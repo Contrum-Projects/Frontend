@@ -2932,7 +2932,7 @@ export interface components {
              * @description Texto plano de la oferta. Obligatorio si está activa; si no, se guarda para activarla después.
              * @example 20 % de descuento en toda la tienda durante tu semana de cumpleaños.
              */
-            texto?: Record<string, never> | null;
+            texto?: string | null;
         };
         ConfigurarCumpleanosDto: {
             /**

@@ -1428,25 +1428,15 @@ export interface CampanaEnviada {
 }
 
 /**
- * GET y PATCH /api/gestion/campanas/cumpleanos (E12-H5). TODO(SCRUM-72): el backend aún no lo
- * tiene; forma propuesta en docs/historias/SCRUM-141.md (API simulada). Permiso
- * `campanas.gestionar`. Qué es la oferta del saludo sigue por definir.
+ * GET y PUT /api/marketing/cumpleanos (E12-H5): si el saludo está activo, su asunto, saludo y
+ * oferta, y las cifras que cuenta el backend (programados de este mes, apertura del anterior).
  */
-export interface SaludoCumpleanos {
-  activo: boolean;
-  incluyeOferta: boolean;
-  /** Asunto del correo, con `{nombre}` sin reemplazar. */
-  asunto: string;
-  /** Saludos que saldrán en el mes en curso, contados por el backend. */
-  programadosEsteMes: number;
-  /** 0 a 100; `null` si el mes anterior no salió ninguno. */
-  porcentajeAperturaUltimoMes: number | null;
-}
+export type SaludoCumpleanos =
+  components['schemas']['ConfiguracionCumpleanosDto'];
 
-/** Cuerpo de PATCH /api/gestion/campanas/cumpleanos: solo lo que cambia. */
-export type CambioSaludoCumpleanos = Partial<
-  Pick<SaludoCumpleanos, 'activo' | 'incluyeOferta'>
->;
+/** Cuerpo de PUT /api/marketing/cumpleanos: el saludo completo (reemplaza el anterior). */
+export type GuardarSaludoCumpleanos =
+  components['schemas']['ConfigurarCumpleanosDto'];
 
 /**
  * Pedidos y montos de un tipo de cliente en el reporte de ventas (E14-H2). Montos en pesos,
