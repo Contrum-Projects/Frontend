@@ -14,10 +14,8 @@ import 'server-only';
 import type {
   CarritosDelMes,
   IndicadorObjetivo,
-  ReporteCampanas,
   ReporteCarritos,
   ReporteObjetivos,
-  ResultadoCampana,
 } from '@/compartido/api/respuestas';
 import { errorSimulado, json, type RutaSimulada } from './index';
 
@@ -115,48 +113,6 @@ const mesesEntre = (desde: string, hasta: string) => {
   }
 };
 
-const CAMPANAS_FIJAS: ResultadoCampana[] = [
-  {
-    codigo: 'CMP-0012',
-    nombre: 'Mascarillas 20% dcto.',
-    automatica: false,
-    fecha: '2026-11-02T13:00:00.000Z',
-    segmento: 'Todos los suscritos',
-    enviados: 2140,
-    porcentajeAbiertos: 41,
-    porcentajeClic: 9,
-    rebotados: 38,
-    cancelados: 12,
-    fallidos: 4,
-  },
-  {
-    codigo: 'CMP-0011',
-    nombre: 'Novedades para peluqueros',
-    automatica: false,
-    fecha: '2026-10-18T14:30:00.000Z',
-    segmento: 'Profesionales',
-    enviados: 312,
-    porcentajeAbiertos: 58,
-    porcentajeClic: 17,
-    rebotados: 6,
-    cancelados: 1,
-    fallidos: 0,
-  },
-  {
-    codigo: 'CUMPLEANOS-2026-10',
-    nombre: 'Saludo de cumpleaños',
-    automatica: true,
-    fecha: '2026-10',
-    segmento: null,
-    enviados: 87,
-    porcentajeAbiertos: 63,
-    porcentajeClic: 21,
-    rebotados: 2,
-    cancelados: 0,
-    fallidos: 0,
-  },
-];
-
 export const rutasPanelReportes: RutaSimulada[] = [
   {
     metodo: 'GET',
@@ -214,28 +170,6 @@ export const rutasPanelReportes: RutaSimulada[] = [
               },
         ),
       };
-      return json(reporte);
-    },
-  },
-  {
-    metodo: 'GET',
-    ruta: '/reportes/campanas',
-    historia: 'SCRUM-144',
-    responder: ({ peticion, url }) => {
-      const noAutorizado = sinSesion(peticion);
-      if (noAutorizado) return noAutorizado;
-      const desde = url.searchParams.get('desde') ?? '';
-      const hasta = url.searchParams.get('hasta') ?? '';
-      if (!FECHA.test(desde) || !FECHA.test(hasta) || hasta < desde) {
-        return errorSimulado(400, 'El período no es válido.');
-      }
-      // Enero 2026: sin campañas. Un solo mes («Este mes»): solo la última
-      const campanas = desde.startsWith('2026-01')
-        ? []
-        : desde.slice(0, 7) === hasta.slice(0, 7)
-          ? CAMPANAS_FIJAS.slice(0, 1)
-          : CAMPANAS_FIJAS;
-      const reporte: ReporteCampanas = { desde, hasta, campanas };
       return json(reporte);
     },
   },

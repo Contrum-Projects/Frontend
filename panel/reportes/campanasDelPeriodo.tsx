@@ -19,6 +19,11 @@ import {
   TableRow,
 } from '@/compartido/ui/table';
 import { Cifra, TARJETA_REPORTE } from './cifra';
+import {
+  type NombresCatalogo,
+  textoSegmento,
+  useNombresCatalogo,
+} from '@/panel/campanas/textoSegmento';
 import { useCampanasDelPeriodo } from './consultasReportes';
 import { nombreMes, type RangoDelPeriodo } from './periodos';
 
@@ -71,61 +76,71 @@ const fechaCampana = (campana: ResultadoCampana) =>
     ? nombreMes(campana.fecha.slice(0, 7))
     : formatearDiaMesCorto(campana.fecha);
 
-/** «1 oct · Todos los suscritos» o «Septiembre · Automático». */
-const detalleCampana = (campana: ResultadoCampana) =>
-  [fechaCampana(campana), campana.automatica ? 'Automático' : campana.segmento]
-    .filter(Boolean)
-    .join(' · ');
+/** «1 oct · Profesionales» o «Septiembre · Automático». */
+const detalleCampana = (campana: ResultadoCampana, nombres: NombresCatalogo) =>
+  [
+    fechaCampana(campana),
+    campana.automatica || !campana.segmento
+      ? 'Automático'
+      : textoSegmento(campana.segmento, nombres),
+  ].join(' · ');
+
+/** Una fila por campaña, y una por mes del saludo (que comparte el id del saludo). */
+const claveCampana = (campana: ResultadoCampana) =>
+  campana.automatica ? `saludo-${campana.fecha}` : `campana-${campana.id}`;
 
 const CABECERA = 'h-auto px-0 pb-1 texto-leyenda text-texto-secundario';
 const CELDA = 'px-0 py-3 texto-pequeno';
 
 /** Escritorio: «Resultados de campañas» (Figma 2041:1455). */
-const TablaCampanas = ({ campanas }: { campanas: ResultadoCampana[] }) => (
-  <Table>
-    <TableHeader className="[&_tr]:border-0">
-      <TableRow className="hover:bg-transparent">
-        <TableHead className={CABECERA}>Campaña</TableHead>
-        {CIFRAS.map((cifra) => (
-          <TableHead
-            key={cifra.titulo}
-            className={cn(CABECERA, 'w-18 pl-2 text-right')}
-          >
-            {cifra.titulo}
-          </TableHead>
-        ))}
-      </TableRow>
-    </TableHeader>
-    <TableBody>
-      {campanas.map((campana) => (
-        <TableRow
-          key={campana.codigo}
-          className="border-t border-b-0 hover:bg-transparent"
-        >
-          <TableCell className={CELDA}>
-            <span className="block texto-etiqueta whitespace-normal text-texto-principal">
-              {campana.nombre}
-            </span>
-            <span className="block texto-leyenda whitespace-normal text-texto-secundario">
-              {detalleCampana(campana)}
-            </span>
-          </TableCell>
+const TablaCampanas = ({ campanas }: { campanas: ResultadoCampana[] }) => {
+  const nombres = useNombresCatalogo();
+  return (
+    <Table>
+      <TableHeader className="[&_tr]:border-0">
+        <TableRow className="hover:bg-transparent">
+          <TableHead className={CABECERA}>Campaña</TableHead>
           {CIFRAS.map((cifra) => (
-            <TableCell
+            <TableHead
               key={cifra.titulo}
-              className={cn(
-                CELDA,
-                'pl-2 text-right text-texto-principal tabular-nums',
-              )}
+              className={cn(CABECERA, 'w-18 pl-2 text-right')}
             >
-              {cifra.valor(campana)}
-            </TableCell>
+              {cifra.titulo}
+            </TableHead>
           ))}
         </TableRow>
-      ))}
-    </TableBody>
-  </Table>
-);
+      </TableHeader>
+      <TableBody>
+        {campanas.map((campana) => (
+          <TableRow
+            key={claveCampana(campana)}
+            className="border-t border-b-0 hover:bg-transparent"
+          >
+            <TableCell className={CELDA}>
+              <span className="block texto-etiqueta whitespace-normal text-texto-principal">
+                {campana.nombre}
+              </span>
+              <span className="block texto-leyenda whitespace-normal text-texto-secundario">
+                {detalleCampana(campana, nombres)}
+              </span>
+            </TableCell>
+            {CIFRAS.map((cifra) => (
+              <TableCell
+                key={cifra.titulo}
+                className={cn(
+                  CELDA,
+                  'pl-2 text-right text-texto-principal tabular-nums',
+                )}
+              >
+                {cifra.valor(campana)}
+              </TableCell>
+            ))}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+};
 
 /** Celular: «Última campaña» con sus seis cifras (Figma 2042:1135). */
 const UltimaCampana = ({ campana }: { campana: ResultadoCampana }) => (

@@ -182,12 +182,19 @@ const responderCarritos =
   (desde, hasta) =>
     Response.json({ desde, hasta, meses } satisfies ReporteCarritos);
 
+/** El segmento a todos (SCRUM-150: el backend lo entrega estructurado). */
+const TODOS: ResultadoCampana['segmento'] = {
+  tipos: ['cliente', 'profesional', 'suscriptor'],
+  categorias: [],
+  marcas: [],
+};
+
 const campana = (
   datos: Partial<ResultadoCampana> &
-    Pick<ResultadoCampana, 'codigo' | 'nombre' | 'fecha'>,
+    Pick<ResultadoCampana, 'id' | 'nombre' | 'fecha'>,
 ): ResultadoCampana => ({
   automatica: false,
-  segmento: 'Todos los suscritos',
+  segmento: TODOS,
   enviados: 0,
   porcentajeAbiertos: null,
   porcentajeClic: null,
@@ -200,7 +207,7 @@ const campana = (
 /** Las más recientes primero, como las ordena el backend. */
 const CAMPANAS = [
   campana({
-    codigo: 'CMP-12',
+    id: 12,
     nombre: 'Mascarillas 20% dcto.',
     // 1 de septiembre, 10:00 en Chile
     fecha: '2026-09-01T14:00:00.000Z',
@@ -212,10 +219,10 @@ const CAMPANAS = [
     fallidos: 4,
   }),
   campana({
-    codigo: 'CMP-11',
+    id: 11,
     nombre: 'Novedades para peluqueros',
     fecha: '2026-08-18T14:00:00.000Z',
-    segmento: 'Profesionales',
+    segmento: { tipos: ['profesional'], categorias: [], marcas: [] },
     enviados: 312,
     porcentajeAbiertos: 58,
     porcentajeClic: 17,
@@ -223,7 +230,7 @@ const CAMPANAS = [
     cancelados: 1,
   }),
   campana({
-    codigo: 'CUMPLEANOS-2026-08',
+    id: 4,
     nombre: 'Saludo de cumpleaños',
     automatica: true,
     fecha: '2026-08',
@@ -273,6 +280,13 @@ const simularBackend = (
     }
     if (url.pathname === '/api/reportes/stock-bajo-minimo') {
       return responderStockBajo();
+    }
+    // Los nombres para el texto del segmento (aquí no hacen falta: sin categorías ni marcas)
+    if (
+      url.pathname === '/api/catalogo/categorias' ||
+      url.pathname === '/api/catalogo/marcas'
+    ) {
+      return Response.json([]);
     }
     if (url.pathname === '/api/reportes/campanas') {
       campanasPedidas.push(`${desde}|${hasta}`);
@@ -717,7 +731,7 @@ describe('Reporte de carritos y campañas (SCRUM-144)', () => {
         .getAllByRole('cell')
         .map((celda) => celda.textContent),
     ).toEqual([
-      'Mascarillas 20% dcto.1 sept · Todos los suscritos',
+      'Mascarillas 20% dcto.1 sept · Clientes, Profesionales y Suscriptores sin cuenta',
       '2.140',
       '41%',
       '9%',

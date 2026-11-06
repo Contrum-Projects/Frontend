@@ -5,7 +5,6 @@ import { api } from '@/compartido/api/cliente';
 import { exigir } from '@/compartido/api/errores';
 import type {
   FormatoBajoMinimo,
-  ReporteCampanas,
   ReporteCarritos,
   ReporteObjetivos,
   ReporteVentas,
@@ -67,11 +66,11 @@ export const useObjetivosDelPeriodo = ({ desde, hasta }: Fechas) =>
       ),
   });
 
-type RutaSimulada = '/api/reportes/carritos' | '/api/reportes/campanas';
+type RutaSimulada = '/api/reportes/carritos';
 
 /**
- * TODO(SCRUM-144): `/api/reportes/carritos` y `/api/reportes/campanas` aún no están en el
- * Swagger (API simulada, pedida a SCRUM-76). Quitar el cast cuando `pnpm api:tipos` las traiga.
+ * TODO(SCRUM-144): `/api/reportes/carritos` no está en el backend, que tiene
+ * `/api/reportes/carritos-abandonados` con otra forma (API simulada). Quitar el cast al alinearlo.
  */
 const pedirReporteSimulado = api.GET as unknown as (
   ruta: RutaSimulada,
@@ -98,8 +97,8 @@ export const useCampanasDelPeriodo = ({ desde, hasta }: Fechas) =>
     queryKey: [...CLAVE_REPORTES, 'campanas', desde, hasta],
     queryFn: () =>
       conErrorDeApi(async () =>
-        exigir<ReporteCampanas>(
-          await pedirReporteSimulado('/api/reportes/campanas', {
+        exigir(
+          await api.GET('/api/reportes/campanas', {
             params: { query: { desde, hasta } },
           }),
         ),

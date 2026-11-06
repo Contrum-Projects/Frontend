@@ -1525,35 +1525,12 @@ export interface ReporteCarritos {
   meses: CarritosDelMes[];
 }
 
-/** Resultado de una campaña o de un correo automático en el período (E14-H3). */
-export interface ResultadoCampana {
-  codigo: string;
-  /** Asunto de la campaña, o el nombre del correo automático (p. ej. «Saludo de cumpleaños»). */
-  nombre: string;
-  /** Correos automáticos (saludo de cumpleaños): sus envíos del mes, en una fila. */
-  automatica: boolean;
-  /** Campaña: fecha de envío (ISO 8601). Automática: el mes (AAAA-MM). */
-  fecha: string;
-  /** Texto del segmento armado por el backend; `null` en un correo automático. */
-  segmento: string | null;
-  enviados: number;
-  /** 0 a 100, calculados por el backend; `null` si no hubo envíos. */
-  porcentajeAbiertos: number | null;
-  porcentajeClic: number | null;
-  rebotados: number;
-  /** No salieron porque la persona ya no aceptaba publicidad al enviar (E12-H2). */
-  cancelados: number;
-  fallidos: number;
-}
-
 /**
- * GET /api/reportes/campanas?desde&hasta (E14-H3). API SIMULADA: el endpoint aún no existe;
- * forma propuesta a SCRUM-76 (ver docs/historias/SCRUM-144.md). Las más recientes primero.
+ * Resultado de una campaña, o del saludo de cumpleaños de un mes, en el período (E14-H3). Los
+ * porcentajes los calcula el backend; el segmento viene estructurado (SCRUM-150).
  */
-export interface ReporteCampanas {
-  /** AAAA-MM-DD */
-  desde: string;
-  /** AAAA-MM-DD */
-  hasta: string;
-  campanas: ResultadoCampana[];
-}
+export type ResultadoCampana = components['schemas']['FilaReporteCampanaDto'];
+
+/** GET /api/reportes/campanas?desde&hasta (E14-H3, SCRUM-150). Las más recientes primero. */
+export type ReporteCampanas =
+  components['schemas']['ReportePeriodoCampanasDto'];
