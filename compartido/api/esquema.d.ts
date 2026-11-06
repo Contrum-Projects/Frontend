@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 75.
+ * Versión de la API: 0.1.0. Rutas: 91.
  */
 
 export interface paths {
@@ -365,6 +365,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/cuentas/{codigoPublico}/rol": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Bajar el rol de una cuenta (E13-H3)
+         * @description Un administrador pasa a vendedor o bodeguero; un profesional, a cliente (con motivo, que se le envía por correo). Rige de inmediato: cierra todas las sesiones de la cuenta. Los pedidos ya creados conservan sus montos.
+         */
+        patch: operations["CambioRolController_cambiar"];
+        trace?: never;
+    };
     "/api/inventario/proveedores": {
         parameters: {
             query?: never;
@@ -705,7 +725,7 @@ export interface paths {
         put: operations["ImagenesController_ordenar"];
         /**
          * Subir una imagen a un artículo (E3-H3)
-         * @description Recibe una imagen JPEG, PNG o WebP de hasta 5 MB en el campo `imagen` (el tipo se reconoce por el contenido, no por la extensión). Queda al final del orden; la primera del artículo queda como principal. Un artículo tiene hasta 10 imágenes. El id del artículo es el del formato. Devuelve todas las imágenes del artículo.
+         * @description Recibe una imagen JPEG, PNG o WebP de hasta 4 MB en el campo `imagen` (el tipo se reconoce por el contenido, no por la extensión). Queda al final del orden; la primera del artículo queda como principal. Un artículo tiene hasta 10 imágenes. El id del artículo es el del formato. Devuelve todas las imágenes del artículo.
          */
         post: operations["ImagenesController_subir"];
         delete?: never;
@@ -814,7 +834,7 @@ export interface paths {
         put?: never;
         /**
          * Sugerir la descripción y los ingredientes desde la foto del reverso (E4-H1)
-         * @description Recibe la foto del reverso del producto (JPEG, PNG o WebP de hasta 5 MB) en el campo `imagen` y devuelve una descripción de venta sugerida y los ingredientes transcritos, para revisarlos antes de guardarlos. No guarda la foto ni la sugerencia. `ingredientes` es `null` si la foto no los muestra. Hasta 15 por minuto por cuenta.
+         * @description Recibe la foto del reverso del producto (JPEG, PNG o WebP de hasta 4 MB) en el campo `imagen` y devuelve una descripción de venta sugerida y los ingredientes transcritos, para revisarlos antes de guardarlos. No guarda la foto ni la sugerencia. `ingredientes` es `null` si la foto no los muestra. Hasta 15 por minuto por cuenta.
          */
         post: operations["SugerenciaDescripcionController_sugerir"];
         delete?: never;
@@ -958,7 +978,7 @@ export interface paths {
         put?: never;
         /**
          * Registrar la factura emitida en el SII (E9-H3)
-         * @description Recibe el PDF de la factura en el campo `archivo` (hasta 5 MB, reconocido por su contenido), el `folio` y, opcionalmente, la `fechaEmision` (AAAA-MM-DD, no futura; por defecto hoy). Guarda el documento con los datos del receptor y los montos del pedido tal como están al registrarlo. El pedido debe estar pagado y haber pedido factura; tiene una sola factura y el folio no puede repetirse. El archivo es privado: no se devuelve en la respuesta.
+         * @description Recibe el PDF de la factura en el campo `archivo` (hasta 4 MB, reconocido por su contenido), el `folio` y, opcionalmente, la `fechaEmision` (AAAA-MM-DD, no futura; por defecto hoy). Guarda el documento con los datos del receptor y los montos del pedido tal como están al registrarlo. El pedido debe estar pagado y haber pedido factura; tiene una sola factura y el folio no puede repetirse. El archivo es privado: no se devuelve en la respuesta.
          */
         post: operations["RegistrarFacturaController_registrar"];
         delete?: never;
@@ -1018,7 +1038,7 @@ export interface paths {
         put?: never;
         /**
          * Adjuntar los documentos de mi solicitud de verificación (E10-H2)
-         * @description Para quien no pasó la verificación automática: la solicitud está `pendiente` y `requiereDocumentos` es `true`. Recibe de 1 a 5 documentos en el campo `archivos` (PDF, JPG o PNG, hasta 5 MB cada uno, reconocidos por su contenido) y, en el campo `tipos`, el tipo de cada uno en el mismo orden (`titulo`, `certificado` u `otro`; un certificado de curso vale como `certificado`). La solicitud pasa a `revision_manual`, a la espera del personal. Los archivos se guardan privados y no se entregan por esta API.
+         * @description Para quien no pasó la verificación automática: la solicitud está `pendiente` y `requiereDocumentos` es `true`. Recibe de 1 a 5 documentos en el campo `archivos` (PDF, JPG o PNG, hasta 4 MB cada uno, reconocidos por su contenido) y, en el campo `tipos`, el tipo de cada uno en el mismo orden (`titulo`, `certificado` u `otro`; un certificado de curso vale como `certificado`). La solicitud pasa a `revision_manual`, a la espera del personal. Los archivos se guardan privados y no se entregan por esta API.
          */
         post: operations["SolicitudVerificacionController_adjuntarDocumentos"];
         delete?: never;
@@ -1476,6 +1496,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reportes/indicadores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Indicadores de los objetivos del proyecto (E14-H1)
+         * @description Entre las dos fechas, ambas incluidas y en hora de Chile, cada objetivo con su porcentaje y su meta. **OE1** (meta 30 %): de las cuentas verificadas como profesionales en el período, cuántas compraron (pedido pagado) desde su aprobación. **OE2** (meta 70 %): de las solicitudes de verificación presentadas en el período, cuántas se resolvieron en 48 horas o menos; las que siguen sin resolver y aún están dentro de las 48 horas no cuentan. **OE3** (meta 80 %): de los productos creados en el período, cuántos tienen la descripción de la IA, aceptada o corregida. Sin datos, `porcentaje` es `null` y `sinDatos` es `true`.
+         */
+        get: operations["ReporteIndicadoresController_indicadores"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reportes/carritos-abandonados": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Carritos abandonados y recuperados por mes (E14-H3)
+         * @description Por cada mes entre los dos indicados, ambos incluidos y en hora de Chile: cuántos carritos se abandonaron (una serie de recordatorios cuenta una vez, en el mes de su primer recordatorio) y cuántos de ellos terminaron en una compra pagada de la misma cuenta dentro de 7 días desde el primer recordatorio y antes del abandono siguiente. Los meses sin abandonos salen en cero.
+         */
+        get: operations["ReporteCarritosController_carritosAbandonados"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reportes/campanas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resultados de las campañas de un período (E14-H3, SCRUM-150)
+         * @description Las campañas enviadas entre `desde` y `hasta` (ambos incluidos, hora de Chile) y una fila por mes con el saludo de cumpleaños, las más recientes primero. Los porcentajes son sobre los correos enviados.
+         */
+        get: operations["ReporteCampanasController_periodo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reportes/campanas/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resultado de una campaña (E14-H3)
+         * @description Correos de la campaña: enviados, abiertos, con clic, rebotados, cancelados y fallidos, más los pendientes y el total. Sirve para las campañas de envío único y para el saludo de cumpleaños.
+         */
+        get: operations["ReporteCampanasController_resultado"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/territorio/regiones": {
         parameters: {
             query?: never;
@@ -1547,6 +1647,238 @@ export interface paths {
         put?: never;
         /** Confirmar la suscripción con el token del enlace (E12-H1) */
         post: operations["SuscripcionesController_confirmar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/bajas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dejar de recibir publicidad con el enlace del correo (E12-H2)
+         * @description Da de baja la dirección del enlace, sea de una cuenta o de un suscriptor. Responde lo mismo si ya estaba de baja.
+         */
+        post: operations["BajasController_darDeBaja"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cuentas/yo/consentimiento-marketing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Elegir si recibo ofertas por correo (E12-H2)
+         * @description Activarlo guarda la fecha del consentimiento; desactivarlo la conserva.
+         */
+        put: operations["ConsentimientoController_actualizar"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/campanas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar las campañas de correo (E12-H3)
+         * @description De la más nueva a la más antigua, con su estado de envío.
+         */
+        get: operations["CampanasController_listar"];
+        put?: never;
+        /**
+         * Redactar una campaña de correo (E12-H3)
+         * @description Asunto, cuerpo en texto plano y segmento. Queda como borrador hasta confirmar el envío.
+         */
+        post: operations["CampanasController_crear"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/campanas/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver una campaña de correo (E12-H3)
+         * @description Incluye el segmento usado y cuántos correos quedaron pendientes, enviados, fallidos o cancelados.
+         */
+        get: operations["CampanasController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Editar el borrador de una campaña (E12-H3)
+         * @description Cambia el asunto, el cuerpo o el segmento. Una campaña ya enviada no se edita.
+         */
+        patch: operations["CampanasController_actualizar"];
+        trace?: never;
+    };
+    "/api/marketing/campanas/vista-previa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Vista previa en vivo de un correo de campaña (SCRUM-150)
+         * @description Arma el correo con el asunto y el cuerpo que se están escribiendo, sin guardarlos. No cuenta destinatarios ni entrega la `confirmacion`: para enviar se guarda el borrador y se pide `POST /:id/vista-previa`.
+         */
+        post: operations["CampanasController_vistaPreviaEnVivo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/campanas/{id}/vista-previa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Vista previa de una campaña (E12-H3)
+         * @description Devuelve el correo (HTML y texto), cuántas direcciones lo recibirían hoy y la `confirmacion` que exige el envío.
+         */
+        post: operations["CampanasController_vistaPrevia"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/campanas/{id}/envio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirmar el envío de una campaña (E12-H3)
+         * @description Encola la campaña para las direcciones del segmento que aceptan publicidad, una vez cada una, y guarda el segmento usado. Sale una sola vez.
+         */
+        post: operations["CampanasController_enviar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/cumpleanos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver el saludo de cumpleaños (E12-H5)
+         * @description Si está activo, asunto, saludo y oferta, con las cuentas programadas este mes y la apertura del mes anterior. Si nunca se configuró, devuelve el saludo por defecto (activo, sin oferta), con `configurado: false`.
+         */
+        get: operations["CumpleanosController_obtener"];
+        /**
+         * Configurar el saludo de cumpleaños y su oferta (E12-H5)
+         * @description Reemplaza todo: si está activo, el asunto, el saludo y la oferta. Apagado, no sale ningún saludo. Los que salgan desde ahora llevan la oferta si está activa.
+         */
+        put: operations["CumpleanosController_configurar"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/seguimiento/apertura/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Registrar la apertura de un correo publicitario (E12-H6)
+         * @description La imagen invisible del correo. Guarda la fecha de la primera apertura; las siguientes no la cambian. Siempre responde la imagen, aunque el enlace no sea válido.
+         */
+        get: operations["SeguimientoController_apertura"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/seguimiento/clic/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Registrar el clic en un enlace de un correo publicitario (E12-H6)
+         * @description Guarda la fecha del primer clic (y la de apertura, si no estaba) y redirige al destino, que debe ser de la tienda. Un destino de otro sitio lleva a la portada de la tienda; un enlace no válido redirige sin registrar.
+         */
+        get: operations["SeguimientoController_clic"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/rebotes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Recibir un aviso de rebote de Resend (E12-H6)
+         * @description Webhook de Resend con el evento `email.bounced`; valida la firma (`svix-id`, `svix-timestamp`, `svix-signature`). Marca el correo como `rebotada` y deja su dirección sin publicidad, como la baja. Otros eventos se ignoran. El mismo aviso otra vez no cambia nada.
+         */
+        post: operations["RebotesController_recibir"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1710,6 +2042,19 @@ export interface components {
             contrasena: string;
             /** @description Debe ser igual a la contraseña. */
             confirmacionContrasena: string;
+        };
+        CambiarRolDto: {
+            /**
+             * @description Un administrador pasa a vendedor o bodeguero; un profesional, a cliente.
+             * @example vendedor
+             * @enum {string}
+             */
+            rol: "vendedor" | "bodeguero" | "cliente";
+            /**
+             * @description Obligatorio al pasar de profesional a cliente: se le envía por correo. Opcional para el personal.
+             * @example Dejó de ejercer como peluquera según nos informó.
+             */
+            motivo?: string | null;
         };
         CrearProveedorDto: {
             /**
@@ -2218,6 +2563,84 @@ export interface components {
              */
             pagoId: string;
         };
+        SegmentoGuardadoDto: {
+            /**
+             * @example [
+             *       "profesional"
+             *     ]
+             */
+            tipos: ("cliente" | "profesional" | "suscriptor")[];
+            /**
+             * @example [
+             *       3
+             *     ]
+             */
+            categorias: number[];
+            /** @example [] */
+            marcas: number[];
+        };
+        FilaReporteCampanaDto: {
+            /**
+             * @description Id de la campaña. `null` en el saludo de cumpleaños por defecto, que no tiene fila.
+             * @example 12
+             */
+            id: number | null;
+            /**
+             * @description Asunto de la campaña, o «Saludo de cumpleaños».
+             * @example Nueva línea reparadora
+             */
+            nombre: string;
+            /**
+             * @description El saludo de cumpleaños: sus correos de un mes, en una fila.
+             * @example false
+             */
+            automatica: boolean;
+            /**
+             * @description Campaña: cuándo se confirmó el envío (ISO 8601). Automática: el mes (AAAA-MM, hora de Chile).
+             * @example 2026-11-04T15:30:00.000Z
+             */
+            fecha: string;
+            /** @description `null` en el saludo de cumpleaños. */
+            segmento: components["schemas"]["SegmentoGuardadoDto"] | null;
+            /**
+             * @description Correos que salieron.
+             * @example 120
+             */
+            enviados: number;
+            /**
+             * @description De los enviados, cuántos se abrieron (0 a 100, sin decimales). `null` si no salió ninguno.
+             * @example 41
+             */
+            porcentajeAbiertos: number | null;
+            /**
+             * @description De los enviados, cuántos tuvieron un clic (0 a 100, sin decimales). `null` si no salió ninguno.
+             * @example 9
+             */
+            porcentajeClic: number | null;
+            /** @example 2 */
+            rebotados: number;
+            /**
+             * @description No salieron porque la persona ya no aceptaba publicidad al enviar (E12-H2).
+             * @example 1
+             */
+            cancelados: number;
+            /** @example 0 */
+            fallidos: number;
+        };
+        ReportePeriodoCampanasDto: {
+            /**
+             * Format: date
+             * @example 2026-11-01
+             */
+            desde: string;
+            /**
+             * Format: date
+             * @example 2026-11-30
+             */
+            hasta: string;
+            /** @description Las más recientes primero. */
+            campanas: components["schemas"]["FilaReporteCampanaDto"][];
+        };
         UbicacionOficialDto: {
             /**
              * @description Código Único Territorial: 2 dígitos la región, 5 la comuna.
@@ -2237,6 +2660,147 @@ export interface components {
         ConfirmarSuscripcionDto: {
             /** @description Token firmado que llegó en el enlace del correo. */
             token: string;
+        };
+        DarDeBajaDto: {
+            /** @description Token firmado que llegó en el enlace de baja del correo. */
+            token: string;
+        };
+        ActualizarConsentimientoDto: {
+            /**
+             * @description Recibir ofertas por correo.
+             * @example true
+             */
+            acepta: boolean;
+        };
+        SegmentoCampanaDto: {
+            /**
+             * @description Al menos uno. `suscriptor`: personas suscritas a ofertas sin cuenta. Solo reciben quienes aceptaron publicidad.
+             * @example [
+             *       "cliente"
+             *     ]
+             */
+            tipos: ("cliente" | "profesional" | "suscriptor")[];
+            /**
+             * @description Solo cuentas que compraron algún producto de estas categorías (o sus subcategorías) o de las marcas indicadas.
+             * @example [
+             *       3
+             *     ]
+             */
+            categorias?: number[];
+            /**
+             * @description Solo cuentas que compraron algún producto de estas marcas o de las categorías indicadas.
+             * @example [
+             *       7
+             *     ]
+             */
+            marcas?: number[];
+        };
+        CrearCampanaDto: {
+            /** @example Nueva línea reparadora con 20 % de descuento */
+            asunto: string;
+            /**
+             * @description Texto plano. Una línea en blanco separa los párrafos; el HTML se muestra tal cual, sin interpretarse.
+             * @example Hola:
+             *
+             *     Llegó la nueva línea reparadora. Encuéntrala en la tienda.
+             */
+            cuerpo: string;
+            segmento: components["schemas"]["SegmentoCampanaDto"];
+        };
+        ActualizarCampanaDto: {
+            asunto?: string;
+            cuerpo?: string;
+            /** @description Reemplaza el segmento completo. */
+            segmento?: components["schemas"]["SegmentoCampanaDto"];
+        };
+        RenderizarCampanaDto: {
+            /** @example Nueva línea reparadora con 20 % de descuento */
+            asunto: string;
+            /**
+             * @description Texto plano. Una línea en blanco separa los párrafos; el HTML se muestra tal cual, sin interpretarse.
+             * @example Hola:
+             *
+             *     Llegó la nueva línea reparadora. Encuéntrala en la tienda.
+             */
+            cuerpo: string;
+        };
+        CorreoCampanaDto: {
+            /** @example Nueva línea reparadora */
+            asunto: string;
+            /** @description HTML del correo. El enlace de baja lleva a la pantalla de baja sin token. */
+            html: string;
+            /** @description Versión en texto plano del correo. */
+            texto: string;
+        };
+        EnviarCampanaDto: {
+            /**
+             * @description El valor `confirmacion` de una vista previa de la última hora. Si la campaña cambió después o pasó la hora, hay que pedir otra.
+             * @example 1793920312.q3Zr0cU9mJ1kHk2b8vY6xW4tS7nP5aL0eD3fG2hJ1kM
+             */
+            confirmacion: string;
+        };
+        OfertaGuardadaCumpleanosDto: {
+            /** @example true */
+            activa: boolean;
+            /**
+             * @description Se conserva aunque la oferta esté inactiva.
+             * @example 20 % de descuento durante tu semana de cumpleaños.
+             */
+            texto: string | null;
+        };
+        ConfiguracionCumpleanosDto: {
+            /**
+             * @description Si el saludo sale. Por defecto, activo.
+             * @example true
+             */
+            activo: boolean;
+            /** @example ¡Feliz cumpleaños de parte de Cabello Perfecto! */
+            asunto: string;
+            /** @description Saludo en texto plano. */
+            cuerpo: string;
+            oferta: components["schemas"]["OfertaGuardadaCumpleanosDto"];
+            /**
+             * @description `false` mientras nunca se guardó: rige el saludo por defecto, sin oferta.
+             * @example true
+             */
+            configurado: boolean;
+            /**
+             * @description Cuentas que cumplen años este mes (hora de Chile) y recibirían el saludo: activas, con correo verificado y que aceptan publicidad. 0 con el saludo apagado.
+             * @example 12
+             */
+            programadosEsteMes: number;
+            /**
+             * @description Porcentaje (0 a 100, sin decimales) de los saludos enviados el mes calendario anterior que se abrieron. `null` si ese mes no se envió ninguno.
+             * @example 41
+             */
+            porcentajeAperturaUltimoMes: number | null;
+        };
+        OfertaCumpleanosDto: {
+            /**
+             * @description Incluir la oferta en el saludo.
+             * @example true
+             */
+            activa: boolean;
+            /**
+             * @description Texto plano de la oferta. Obligatorio si está activa; si no, se guarda para activarla después.
+             * @example 20 % de descuento en toda la tienda durante tu semana de cumpleaños.
+             */
+            texto?: Record<string, never> | null;
+        };
+        ConfigurarCumpleanosDto: {
+            /**
+             * @description Si el saludo sale. Apagado, no se envía ninguno; la oferta y los textos se conservan.
+             * @example true
+             */
+            activo: boolean;
+            /** @example ¡Feliz cumpleaños de parte de Cabello Perfecto! */
+            asunto: string;
+            /**
+             * @description Texto plano. Una línea en blanco separa los párrafos; el HTML se muestra tal cual, sin interpretarse. El correo antepone «Hola, {nombre}:».
+             * @example En Cabello Perfecto queremos desearte un muy feliz cumpleaños.
+             */
+            cuerpo: string;
+            oferta: components["schemas"]["OfertaCumpleanosDto"];
         };
     };
     responses: never;
@@ -3220,6 +3784,65 @@ export interface operations {
             };
             /** @description Más de 5 peticiones por minuto desde la misma IP. */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CambioRolController_cambiar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codigoPublico: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CambiarRolDto"];
+            };
+        };
+        responses: {
+            /** @description Rol cambiado y registrado en el historial. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Rol no permitido o motivo faltante o inválido. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Solo el administrador. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No existe esa cuenta. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta desactivada, cambio que no baja el rol o último administrador activo. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4336,7 +4959,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description La imagen supera los 5 MB. */
+            /** @description La imagen supera los 4 MB. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -4737,7 +5360,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description La imagen supera los 5 MB. */
+            /** @description La imagen supera los 4 MB. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -5066,7 +5689,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description El PDF supera los 5 MB. */
+            /** @description El PDF supera los 4 MB. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -5234,7 +5857,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Un documento supera los 5 MB. */
+            /** @description Un documento supera los 4 MB. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -6480,6 +7103,182 @@ export interface operations {
             };
         };
     };
+    ReporteIndicadoresController_indicadores: {
+        parameters: {
+            query: {
+                desde: string;
+                hasta: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `desde`, `hasta` e `indicadores`: por cada objetivo `codigo`, `nombre`, `meta`, `porcentaje` (con un decimal, o `null`), `cumplidos`, `total` y `sinDatos`. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Fechas inválidas, la fecha hasta anterior a la desde o un período de más de 366 días. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de ver los reportes. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ReporteCarritosController_carritosAbandonados: {
+        parameters: {
+            query: {
+                desde: string;
+                hasta: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `desde`, `hasta`, `meses` (cada uno con `mes`, `abandonados` y `recuperados`) y `total`. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Meses inválidos, el mes hasta anterior al desde o un período de más de 24 meses. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de ver los reportes. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ReporteCampanasController_periodo: {
+        parameters: {
+            query: {
+                desde: string;
+                hasta: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Resultados del período. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportePeriodoCampanasDto"];
+                };
+            };
+            /** @description Fechas inválidas, `hasta` anterior a `desde` o un período de más de 366 días. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de ver los reportes. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ReporteCampanasController_resultado: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `id`, `tipo`, `asunto`, `fechaEnvio` y `envios` con `total`, `pendientes`, `enviados`, `abiertos`, `clics`, `rebotados`, `cancelados` y `fallidos`. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de ver los reportes. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La campaña no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La campaña aún no se envía: no tiene resultados. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     TerritorioController_listarRegiones: {
         parameters: {
             query?: never;
@@ -6593,6 +7392,587 @@ export interface operations {
             };
             /** @description Más de 5 peticiones por minuto desde la misma IP. */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BajasController_darDeBaja: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DarDeBajaDto"];
+            };
+        };
+        responses: {
+            /** @description La dirección ya no recibe publicidad. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Enlace inválido. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 5 peticiones por minuto desde la misma IP. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ConsentimientoController_actualizar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActualizarConsentimientoDto"];
+            };
+        };
+        responses: {
+            /** @description Preferencia guardada. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta `acepta` o no es booleano. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CampanasController_listar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Página de campañas. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Paginación inválida. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CampanasController_crear: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrearCampanaDto"];
+            };
+        };
+        responses: {
+            /** @description Campaña creada como borrador. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Datos inválidos, categorías o marcas que no existen, o suscriptores con un filtro de compras. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CampanasController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Campaña. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La campaña no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CampanasController_actualizar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActualizarCampanaDto"];
+            };
+        };
+        responses: {
+            /** @description Campaña actualizada. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Datos inválidos o cuerpo vacío. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La campaña no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La campaña ya fue enviada. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CampanasController_vistaPreviaEnVivo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenderizarCampanaDto"];
+            };
+        };
+        responses: {
+            /** @description Correo armado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorreoCampanaDto"];
+                };
+            };
+            /** @description Asunto o cuerpo inválidos. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CampanasController_vistaPrevia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Vista previa. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La campaña no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La campaña ya fue enviada. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CampanasController_enviar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnviarCampanaDto"];
+            };
+        };
+        responses: {
+            /** @description Campaña encolada. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta la confirmación. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La campaña no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ya fue enviada, cambió después de la vista previa o no tiene destinatarios. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CumpleanosController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Saludo de cumpleaños. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfiguracionCumpleanosDto"];
+                };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CumpleanosController_configurar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfigurarCumpleanosDto"];
+            };
+        };
+        responses: {
+            /** @description Saludo guardado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfiguracionCumpleanosDto"];
+                };
+            };
+            /** @description Datos inválidos, o oferta activa sin texto. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SeguimientoController_apertura: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description GIF transparente de 1×1. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 120 peticiones por minuto desde la misma IP. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SeguimientoController_clic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Redirige al destino del enlace. */
+            302: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 120 peticiones por minuto desde la misma IP. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RebotesController_recibir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Aviso recibido. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin una firma válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta configurar el secreto del webhook. */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
