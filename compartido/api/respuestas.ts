@@ -463,38 +463,14 @@ export type TipoMovimiento =
   | 'reingreso';
 
 /**
- * Una fila de GET /api/inventario/stock (E11-H5 criterio 1). TODO(SCRUM-114): no existe en el
- * backend; simulado con la forma pedida a SCRUM-40 (ver docs/historias/SCRUM-114.md).
- * `ubicaciones` y `stock` son de la bodega elegida (o de todas); `bajoMinimo` lo decide el
- * backend.
+ * backend: src/modulos/inventario/dto/stock-listado.dto.ts. Una fila de GET /api/inventario/stock
+ * (E11-H5 criterio 1, SCRUM-150): `ubicaciones` y `stock` son de la bodega elegida (o de todas);
+ * `bajoMinimo` lo decide el backend y `stockMinimo: 0` es «sin mínimo».
  */
-export interface StockListado {
-  formatoId: number;
-  sku: string;
-  producto: string;
-  nombreFormato: string;
-  /** Foto principal del formato. */
-  imagen: string | null;
-  ubicaciones: { id: number; codigo: string }[];
-  stock: number;
-  stockMinimo: number | null;
-  bajoMinimo: boolean;
-  /** Nula si el formato nunca se recibió. */
-  ultimaEntrada: {
-    costoUnitarioNeto: number;
-    proveedor: { id: number; razonSocial: string };
-  } | null;
-}
+export type StockListado = components['schemas']['StockListadoDto'];
 
-/** GET /api/inventario/stock?bodegaId&buscar&bajoMinimo&pagina&limite. Simulado (SCRUM-114). */
-export interface ListadoStock {
-  items: StockListado[];
-  total: number;
-  pagina: number;
-  limite: number;
-  /** Formatos bajo el mínimo con la bodega y la búsqueda elegidas, para el chip. */
-  totalBajoMinimo: number;
-}
+/** GET /api/inventario/stock?bodegaId&buscar&bajoMinimo&pagina&limite (SCRUM-150). */
+export type ListadoStock = components['schemas']['ListadoStockDto'];
 
 /**
  * Una fila de GET /api/inventario/movimientos (E11-H5 criterio 2). TODO(SCRUM-114): no existe

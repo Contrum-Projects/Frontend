@@ -90,7 +90,7 @@ export const TablaStock = ({ filas, alVer }: ListaProps) => (
             <CifraStock stock={fila.stock} bajoMinimo={fila.bajoMinimo} />
           </TableCell>
           <TableCell className={`text-right tabular-nums ${CELDA}`}>
-            {fila.stockMinimo ?? '—'}
+            {fila.stockMinimo > 0 ? fila.stockMinimo : '—'}
           </TableCell>
           <TableCell className={`text-right tabular-nums ${CELDA}`}>
             {fila.ultimaEntrada
@@ -122,7 +122,7 @@ const detalleCelular = (fila: StockListado) =>
     fila.ubicaciones.length > 0
       ? `Ubicación ${textoUbicaciones(fila)}`
       : 'Sin ubicación',
-    fila.stockMinimo !== null && `mín. ${fila.stockMinimo}`,
+    fila.stockMinimo > 0 && `mín. ${fila.stockMinimo}`,
   ]
     .filter(Boolean)
     .join(' · ');

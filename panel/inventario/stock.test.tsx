@@ -70,7 +70,7 @@ const SERUM: StockListado = {
   imagen: null,
   ubicaciones: [],
   stock: 0,
-  stockMinimo: null,
+  stockMinimo: 0,
   bajoMinimo: false,
   ultimaEntrada: null,
 };

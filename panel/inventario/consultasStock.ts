@@ -45,11 +45,11 @@ export const MOVIMIENTOS_SIN_FILTROS: FiltrosMovimientos = {
 };
 
 /**
- * TODO(SCRUM-114): GET /inventario/stock y GET /inventario/movimientos aún no están en el
- * Swagger (API simulada, pedidos a SCRUM-40). Quitar el cast cuando `pnpm api:tipos` los traiga.
+ * TODO(SCRUM-114): GET /inventario/movimientos aún no está en el Swagger (API simulada, pedido a
+ * SCRUM-40). Quitar el cast cuando `pnpm api:tipos` lo traiga.
  */
 const pedir = api.GET as unknown as (
-  ruta: '/api/inventario/stock' | '/api/inventario/movimientos',
+  ruta: '/api/inventario/movimientos',
   opciones: { params: { query: Record<string, string> } },
 ) => Promise<{ data?: unknown; error?: unknown; response: Response }>;
 
@@ -73,7 +73,7 @@ export const useStock = (filtros: FiltrosStock, habilitada = true) => {
     queryFn: () =>
       conErrorDeApi(async () =>
         exigir<ListadoStock>(
-          await pedir('/api/inventario/stock', { params: { query } }),
+          await api.GET('/api/inventario/stock', { params: { query } }),
         ),
       ),
     placeholderData: keepPreviousData,

@@ -32,7 +32,12 @@ Estado al 01-11-2026 (`pnpm api:tipos` contra el backend local): **Parcial**.
   ubicación, total y última entrada (proveedor y costo), o `ultimaEntrada: null` si nunca se
   recibió. El Swagger no declara la respuesta: tipo `StockFormato` en `respuestas.ts`.
 - **Existe:** `GET /api/inventario/stock/bajo-minimo` (SCRUM-41), solo bodega y administración.
-- **Falta (simulado):** el listado de stock y el de movimientos. Forma propuesta a SCRUM-40:
+- **Existe desde SCRUM-150 (06-11-2026):** `GET /api/inventario/stock`, con la forma de abajo,
+  tipada en el Swagger (`ListadoStockDto`). Cambios frente a lo propuesto: `stockMinimo` es
+  `number` y `0` es «sin mínimo» (la columna es `Int @default(0)`); `bajoMinimo` sigue la regla
+  del aviso de E11-H6 (stock total de todas las ubicaciones), aunque se elija una bodega. Se borró
+  su ruta simulada.
+- **Falta (simulado):** el listado de movimientos. Forma propuesta a SCRUM-40 (el stock, ya real):
 
 `GET /api/inventario/stock?bodegaId&buscar&bajoMinimo=true&pagina&limite`
 
@@ -46,7 +51,7 @@ Estado al 01-11-2026 (`pnpm api:tipos` contra el backend local): **Parcial**.
     imagen: string | null;                         // foto principal del formato
     ubicaciones: { id: number; codigo: string }[]; // con unidades, en la bodega elegida
     stock: number;                                 // en la bodega elegida
-    stockMinimo: number | null;
+    stockMinimo: number;                           // 0: sin mínimo
     bajoMinimo: boolean;                           // lo decide el backend
     ultimaEntrada: { costoUnitarioNeto: number; proveedor: { id: number; razonSocial: string } } | null;
   }[];

@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 93.
+ * Versión de la API: 0.1.0. Rutas: 94.
  */
 
 export interface paths {
@@ -483,6 +483,26 @@ export interface paths {
          * @description Mueve unidades de un formato de una ubicación de origen a otra de destino (activa, de bodega activa), de la misma bodega o de otra. Resta en el origen, suma en el destino y deja un movimiento transferencia con ambas ubicaciones, en una transacción.
          */
         post: operations["TransferenciasController_registrar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inventario/stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar el stock por formato (E11-H5)
+         * @description Un formato por fila (también los desactivados y los que nunca se recibieron, con stock 0), por producto y formato. Con `bodegaId`, solo los formatos con unidades en esa bodega, y sus ubicaciones y stock son los de ella. `bajoMinimo` sigue la regla del aviso (E11-H6): el stock total en todas las ubicaciones bajo un mínimo mayor que 0; `stockMinimo: 0` es «sin mínimo». Lleva el costo unitario neto y el proveedor de la entrada más reciente, o `null` si nunca se recibió.
+         */
+        get: operations["StockController_listar"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2221,6 +2241,68 @@ export interface components {
             cantidad: number;
             /** @example Reposición de la góndola */
             observacion?: Record<string, never> | null;
+        };
+        UbicacionConStockDto: {
+            /** @example 3 */
+            id: number;
+            /** @example A-01 */
+            codigo: string;
+        };
+        ProveedorDeEntradaDto: {
+            /** @example 1 */
+            id: number;
+            /** @example Distribuidora Capilar SpA */
+            razonSocial: string;
+        };
+        UltimaEntradaListadoDto: {
+            /**
+             * @description Costo unitario neto.
+             * @example 4200.5
+             */
+            costoUnitarioNeto: number;
+            proveedor: components["schemas"]["ProveedorDeEntradaDto"];
+        };
+        StockListadoDto: {
+            /** @example 21 */
+            formatoId: number;
+            /** @example SH-REP-300 */
+            sku: string;
+            /** @example Shampoo reparador */
+            producto: string;
+            /** @example 300 ml */
+            nombreFormato: string;
+            /** @description URL de la foto principal del formato; `null` si no tiene. */
+            imagen: string | null;
+            /** @description Ubicaciones con unidades (de la bodega elegida, o de todas), por código. */
+            ubicaciones: components["schemas"]["UbicacionConStockDto"][];
+            /**
+             * @description Unidades en la bodega elegida, o en todas.
+             * @example 12
+             */
+            stock: number;
+            /**
+             * @description 0: el formato no tiene mínimo.
+             * @example 5
+             */
+            stockMinimo: number;
+            /** @description El stock total del formato (todas sus ubicaciones) está bajo su mínimo: la misma regla del aviso de E11-H6. */
+            bajoMinimo: boolean;
+            /** @description Costo y proveedor de la entrada más reciente; `null` si nunca se recibió. */
+            ultimaEntrada: components["schemas"]["UltimaEntradaListadoDto"] | null;
+        };
+        ListadoStockDto: {
+            items: components["schemas"]["StockListadoDto"][];
+            /** @example 1 */
+            total: number;
+            /** @example 1 */
+            pagina: number;
+            /** @example 20 */
+            limite: number;
+            /**
+             * @description Formatos bajo el mínimo con la misma bodega y búsqueda (sin el filtro `bajoMinimo`).
+             * @example 2
+             */
+            totalBajoMinimo: number;
         };
         BodegaDeUbicacionDto: {
             /** @example 1 */
@@ -4350,6 +4432,56 @@ export interface operations {
                 content?: never;
             };
             /** @description El rol no tiene el permiso de registrar inventario. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StockController_listar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+                /** @description Solo los formatos con unidades en esta bodega; las ubicaciones y el stock de cada fila son los de ella. */
+                bodegaId?: number;
+                /** @description Texto contenido en el nombre del producto, el del formato o el SKU, sin distinguir mayúsculas. */
+                buscar?: string;
+                /** @description Con `true`, solo los formatos bajo su stock mínimo. */
+                bajoMinimo?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Stock por formato. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListadoStockDto"];
+                };
+            };
+            /** @description Bodega, búsqueda o paginación inválidas. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de consultar inventario. */
             403: {
                 headers: {
                     [name: string]: unknown;
