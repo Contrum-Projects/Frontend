@@ -25,6 +25,7 @@ export const DATOS: DatosPersonales = {
   telefono: '+56912345678',
   fechaNacimiento: null,
   genero: null,
+  consentimientoMarketing: { acepta: false, fechaConsentimiento: null },
 };
 
 const RM = { codigoCut: '13', nombre: 'Metropolitana de Santiago' };

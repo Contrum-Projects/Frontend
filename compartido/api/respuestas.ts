@@ -253,6 +253,8 @@ export interface DatosPersonales {
   /** AAAA-MM-DD. */
   fechaNacimiento: string | null;
   genero: string | null;
+  /** Si recibe ofertas por correo y desde cuándo (E12-H2). */
+  consentimientoMarketing: PreferenciaOfertas;
 }
 
 /** Región o comuna de la lista oficial, por su código CUT (GET /api/territorio/…). */
@@ -1300,17 +1302,16 @@ export interface SolicitudResuelta {
 }
 
 /**
- * GET y PUT /api/cuentas/yo/ofertas (E12-H2). TODO(SCRUM-69): el backend aún no lo tiene; forma
- * propuesta en docs/historias/SCRUM-139.md (API simulada). Sale de `Usuario.aceptaMarketingEmail`,
- * `fechaConsentimientoMarketing` y `fechaVerificacionCorreo`.
+ * Si la cuenta recibe ofertas por correo (E12-H2). Viene en `GET /api/cuentas/yo`
+ * (`consentimientoMarketing`) y es la respuesta de `PUT /api/cuentas/yo/consentimiento-marketing`.
+ * backend: src/modulos/marketing/consentimiento.service.ts › ConsentimientoMarketing y
+ * src/modulos/cuentas/mi-cuenta.service.ts › DatosPersonales (SCRUM-150)
  */
 export interface PreferenciaOfertas {
   /** Si la cuenta acepta publicidad por correo. */
-  activa: boolean;
-  /** ISO 8601. Cuándo la activó; `null` si nunca la activó o la desactivó. */
+  acepta: boolean;
+  /** ISO 8601. La última vez que la aceptó; `null` si nunca la aceptó. */
   fechaConsentimiento: string | null;
-  email: string;
-  correoVerificado: boolean;
 }
 
 /*
