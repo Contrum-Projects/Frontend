@@ -101,23 +101,16 @@ export const opcionesDeCategoria = (
   });
 
 /**
- * El backend responde los errores como una lista de mensajes, sin decir a qué campo
- * pertenecen. Se reconocen por cómo empiezan, según los DTO de categorías y
- * categorias.service.ts (el ciclo y el padre que no existe van junto a «Categoría padre»).
+ * A qué campo del formulario va cada campo que el backend indica en `errores` (SCRUM-150). Un
+ * mensaje sin campo, o de un campo que no está aquí, se muestra como aviso general.
  */
-const INICIOS_CATEGORIA: [inicio: string, campo: CampoCategoria][] = [
-  ['El nombre', 'nombre'],
-  ['La descripción', 'descripcion'],
-  ['La categoría padre', 'padreId'],
-  ['No se puede mover', 'padreId'],
-];
+export const CAMPOS_CATEGORIA: Partial<Record<string, CampoCategoria>> = {
+  nombre: 'nombre',
+  descripcion: 'descripcion',
+  padreId: 'padreId',
+};
 
-/** El campo de un mensaje del backend, o `null` si no es de un campo. */
-export const campoDelErrorCategoria = (
-  mensaje: string,
-): CampoCategoria | null =>
-  INICIOS_CATEGORIA.find(([inicio]) => mensaje.startsWith(inicio))?.[1] ?? null;
-
-/** «El nombre de la marca…» (400) y «Ya existe una marca…» (409) son del nombre. */
-export const esErrorDelNombreDeMarca = (mensaje: string) =>
-  mensaje.startsWith('El nombre') || mensaje.startsWith('Ya existe');
+/** El único campo de la marca: «El nombre de la marca…» (400) y «Ya existe una marca…» (409). */
+export const CAMPOS_MARCA: Partial<Record<string, 'nombre'>> = {
+  nombre: 'nombre',
+};

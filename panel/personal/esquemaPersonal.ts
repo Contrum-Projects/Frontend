@@ -78,17 +78,12 @@ export const cuerpoPersonal = (datos: SalidaPersonal): CuerpoPersonal => ({
 });
 
 /**
- * El backend responde los errores como una lista de mensajes, sin decir a qué campo
- * pertenecen (400 de validación y 409 de correo registrado). Se reconocen por cómo empiezan,
- * según CrearPersonalDto y personal.service.ts.
+ * A qué campo del formulario va cada campo que el backend indica en `errores` (SCRUM-150). Un
+ * mensaje sin campo, o de un campo que no está aquí, se muestra como aviso general.
  */
-const INICIOS: [inicio: string, campo: CampoPersonal][] = [
-  ['El nombre', 'nombre'],
-  ['El apellido', 'apellido'],
-  ['El correo', 'email'],
-  ['El rol', 'rol'],
-];
-
-/** El campo de un mensaje del backend, o `null` si no es de un campo. */
-export const campoDelError = (mensaje: string): CampoPersonal | null =>
-  INICIOS.find(([inicio]) => mensaje.startsWith(inicio))?.[1] ?? null;
+export const CAMPOS_PERSONAL: Partial<Record<string, CampoPersonal>> = {
+  nombre: 'nombre',
+  apellido: 'apellido',
+  email: 'email',
+  rol: 'rol',
+};

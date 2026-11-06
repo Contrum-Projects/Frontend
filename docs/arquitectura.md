@@ -81,12 +81,15 @@ copiado del backend y se usa con `exigir<Tipo>(…)`.
 ## Errores
 
 El backend responde `{ statusCode, message, error }`, con `message` como texto o lista (validación
-de DTOs, ya en español). `exigir()` lo convierte en `ErrorDeApi { estado, mensajes,
-esperarSegundos }`. Los 5xx se muestran con un mensaje genérico.
+de DTOs, ya en español), y `errores: [{ campo, mensaje }]` cuando el error es de uno o más campos
+(SCRUM-150). `exigir()` lo convierte en `ErrorDeApi { estado, mensajes, esperarSegundos, errores }`.
+Los 5xx se muestran con un mensaje genérico.
 
-Los mensajes de validación no dicen a qué campo pertenecen. Para mostrar un error junto a su campo
-(SCRUM-93 c2), valida primero en el formulario con zod, y para los conflictos del servidor (correo o
-RUT ya registrados) acuerden con el backend cómo indicar el campo.
+Para mostrar un error junto a su campo, valida primero en el formulario con zod y, para lo que
+rechaza el backend, usa `repartirErrores(error, mapa)`: `mapa` dice a qué campo del formulario va
+cada campo del backend (por el primer tramo de su ruta: `detalles.0.cantidad` → `detalles`). Lo que
+no tiene campo, o no está en el mapa, queda como aviso general. Nunca reconozcas el campo por el
+texto del mensaje: el backend puede reescribirlo.
 
 ## Despliegue
 

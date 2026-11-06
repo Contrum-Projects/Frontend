@@ -81,16 +81,12 @@ export const cuerpoCambioEstado = (
 });
 
 /**
- * El backend responde los errores como mensajes sin campo. Se reconocen por cómo empiezan,
- * según el DTO y el servicio de cambio de estado (también la OT repetida, que es un 409).
+ * A qué campo del formulario va cada campo que el backend indica en `errores` (SCRUM-150). Un
+ * mensaje sin campo, o de un campo que no está aquí, se muestra como aviso general.
  */
-const INICIOS: [inicio: string, campo: CampoCambioEstado][] = [
-  ['El estado', 'estado'],
-  ['El comentario', 'comentario'],
-  ['El código de seguimiento', 'codigoSeguimiento'],
-  ['Ese código de seguimiento', 'codigoSeguimiento'],
-];
-
-/** El campo al que apunta un mensaje del backend, o `null` si es general. */
-export const campoDelError = (mensaje: string): CampoCambioEstado | null =>
-  INICIOS.find(([inicio]) => mensaje.startsWith(inicio))?.[1] ?? null;
+export const CAMPOS_CAMBIO_ESTADO: Partial<Record<string, CampoCambioEstado>> =
+  {
+    estado: 'estado',
+    comentario: 'comentario',
+    codigoSeguimiento: 'codigoSeguimiento',
+  };

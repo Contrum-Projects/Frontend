@@ -213,7 +213,12 @@ describe('E10-H5 FE · Perfil profesional', () => {
       'GET /api/perfil-profesional/yo': SIN_PERFIL,
       'PUT /api/perfil-profesional/yo': () =>
         responder(
-          { statusCode: 400, message: [mensaje], error: 'Bad Request' },
+          {
+            statusCode: 400,
+            message: [mensaje],
+            error: 'Bad Request',
+            errores: [{ campo: 'redSocial', mensaje }],
+          },
           400,
         ),
     });

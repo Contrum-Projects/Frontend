@@ -420,7 +420,7 @@ describe('Pack nuevo (SCRUM-105)', () => {
   it('E3-H6 FE · errores: el SKU repetido se muestra junto a su campo, sin perder lo escrito', async () => {
     conBusqueda({
       'POST /api/catalogo/packs': () =>
-        error(409, 'El SKU ya pertenece a otro artículo.'),
+        error(409, 'El SKU ya pertenece a otro artículo.', ['sku']),
     });
     mostrar(<PantallaPackNuevo />);
     await llenarDatos();

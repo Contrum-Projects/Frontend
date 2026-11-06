@@ -30,11 +30,26 @@ export interface MensajeApi {
   mensaje: string;
 }
 
-/** Cuerpo de error de NestJS. `message` es una lista cuando falla la validación de un DTO. */
+/**
+ * Un error que pertenece a un campo de la entrada. `campo` es la ruta de la propiedad en el cuerpo
+ * que se envió (`email`, `oferta.texto`, `detalles.0.cantidad`).
+ * backend: src/common/errores/error-de-campo.ts › ErrorDeCampo (SCRUM-150)
+ */
+export interface ErrorDeCampo {
+  campo: string;
+  mensaje: string;
+}
+
+/**
+ * Cuerpo de error de NestJS. `message` es una lista cuando falla la validación de un DTO. Cuando el
+ * error es de uno o más campos, trae `errores` con el campo de cada mensaje.
+ * backend: src/common/errores/error-de-campo.ts › CuerpoError (SCRUM-150)
+ */
 export interface CuerpoError {
   statusCode: number;
   message: string | string[];
   error?: string;
+  errores?: ErrorDeCampo[];
 }
 
 /** backend: src/modulos/catalogo/tienda.service.ts › ProductoTienda (lo que ve quien no es profesional) */

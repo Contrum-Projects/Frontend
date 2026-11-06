@@ -1,26 +1,22 @@
+import { type ErrorDeApi, repartirErrores } from '@/compartido/api/errores';
 import type { CampoRegistro } from './esquemaRegistro';
 
 /**
- * El backend responde los errores del registro como una lista de mensajes, sin decir a qué
- * campo pertenecen (400 de validación y 409 de correo o RUT repetido). Se reconocen por cómo
- * empiezan, según los mensajes de src/modulos/cuentas/cuentas.service.ts y de
- * src/common/validacion/. Si el backend agrega el campo al error, esto se reemplaza.
+ * A qué campo del formulario va cada campo que el backend indica en `errores` (SCRUM-150): son los
+ * de `RegistrarCuentaDto` y `ActualizarDatosDto`, con los mismos nombres. «El correo y el RUT ya
+ * están registrados.» llega en `email` y en `rut`.
  */
-const INICIOS: [inicio: string, campos: CampoRegistro[]][] = [
-  ['El correo y el RUT', ['email', 'rut']],
-  // Dos registros simultáneos con el mismo dato: el backend no dice cuál
-  ['El correo o el RUT', ['email', 'rut']],
-  ['Las contraseñas no coinciden', ['confirmacionContrasena']],
-  ['La confirmación de la contraseña', ['confirmacionContrasena']],
-  ['La contraseña', ['contrasena']],
-  ['El nombre', ['nombre']],
-  ['El apellido', ['apellido']],
-  ['El correo', ['email']],
-  ['El teléfono', ['telefono']],
-  ['El RUT', ['rut']],
-  ['La fecha de nacimiento', ['fechaNacimiento']],
-  ['El género', ['genero']],
-];
+const CAMPOS_REGISTRO: Partial<Record<string, CampoRegistro>> = {
+  nombre: 'nombre',
+  apellido: 'apellido',
+  email: 'email',
+  contrasena: 'contrasena',
+  confirmacionContrasena: 'confirmacionContrasena',
+  telefono: 'telefono',
+  rut: 'rut',
+  fechaNacimiento: 'fechaNacimiento',
+  genero: 'genero',
+};
 
 export interface ErroresRepartidos {
   /** El primer mensaje de cada campo. */
@@ -29,16 +25,11 @@ export interface ErroresRepartidos {
   generales: string[];
 }
 
-export const repartirErrores = (mensajes: string[]): ErroresRepartidos => {
+export const repartirErroresRegistro = (
+  error: ErrorDeApi,
+): ErroresRepartidos => {
+  const { porCampo, generales } = repartirErrores(error, CAMPOS_REGISTRO);
   const campos: ErroresRepartidos['campos'] = {};
-  const generales: string[] = [];
-  for (const mensaje of mensajes) {
-    const coincidencia = INICIOS.find(([inicio]) => mensaje.startsWith(inicio));
-    if (!coincidencia) {
-      generales.push(mensaje);
-      continue;
-    }
-    for (const campo of coincidencia[1]) campos[campo] ??= mensaje;
-  }
+  for (const [campo, mensaje] of porCampo) campos[campo] ??= mensaje;
   return { campos, generales };
 };

@@ -5,7 +5,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
-import { ErrorDeApi, errorDeApi } from '@/compartido/api/errores';
+import {
+  ErrorDeApi,
+  errorDeApi,
+  repartirErrores,
+} from '@/compartido/api/errores';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Button } from '@/compartido/ui/button';
 import { Spinner } from '@/compartido/ui/spinner';
@@ -15,7 +19,7 @@ import { CamposMovimiento } from './camposMovimiento';
 import { CLAVE_STOCK } from './consultasStock';
 import {
   SALIDA_VACIA,
-  campoDelError,
+  CAMPOS_SALIDA,
   esquemaSalida,
   textoBoton,
   type DatosSalida,
@@ -60,18 +64,13 @@ export function FormularioSalida({
       setAviso(fallo.message);
       return;
     }
-    const generales: string[] = [];
-    for (const mensaje of fallo.mensajes) {
-      const campo = campoDelError(mensaje, tipo);
-      if (campo) {
-        setError(
-          campo,
-          { type: 'server', message: mensaje },
-          { shouldFocus: true },
-        );
-      } else {
-        generales.push(mensaje);
-      }
+    const { porCampo, generales } = repartirErrores(fallo, CAMPOS_SALIDA);
+    for (const [campo, mensaje] of porCampo) {
+      setError(
+        campo,
+        { type: 'server', message: mensaje },
+        { shouldFocus: true },
+      );
     }
     if (generales.length > 0) setAviso(generales.join(' '));
   };

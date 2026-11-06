@@ -96,22 +96,17 @@ export const cuerpoProducto = (
 };
 
 /**
- * El backend responde los errores como una lista de mensajes, sin decir a qué campo
- * pertenecen. Se reconocen por cómo empiezan, según CrearProductoDto y productos.service.ts
- * («La marca está desactivada.», «La categoría no existe.»…).
+ * A qué campo del formulario va cada campo que el backend indica en `errores` (SCRUM-150). Un
+ * mensaje sin campo, o de un campo que no está aquí, se muestra como aviso general.
  */
-const INICIOS_PRODUCTO: [inicio: string, campo: CampoProducto][] = [
-  ['El nombre', 'nombre'],
-  ['La descripción', 'descripcion'],
-  ['La lista de ingredientes', 'ingredientes'],
-  ['La marca', 'marcaId'],
-  ['La categoría', 'categoriaId'],
-  ['El canal de venta', 'exclusivo'],
-];
-
-/** El campo de un mensaje del backend, o `null` si no es de un campo. */
-export const campoDelErrorProducto = (mensaje: string): CampoProducto | null =>
-  INICIOS_PRODUCTO.find(([inicio]) => mensaje.startsWith(inicio))?.[1] ?? null;
+export const CAMPOS_PRODUCTO: Partial<Record<string, CampoProducto>> = {
+  nombre: 'nombre',
+  descripcion: 'descripcion',
+  ingredientes: 'ingredientes',
+  marcaId: 'marcaId',
+  categoriaId: 'categoriaId',
+  canalVenta: 'exclusivo',
+};
 
 /** Origen de la descripción, como en Figma (P3a 2039:1120). */
 export const ORIGENES: Record<

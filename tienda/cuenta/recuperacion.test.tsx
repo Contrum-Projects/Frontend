@@ -248,7 +248,16 @@ describe('SCRUM-96 · Nueva contraseña', () => {
   it('E1-H4 FE · Nueva contraseña: el error de la contraseña del backend va junto a su campo sin perder lo escrito', async () => {
     simular('/api/cuentas/restablecer-contrasena', () =>
       responder(
-        { statusCode: 400, message: ['Las contraseñas no coinciden.'] },
+        {
+          statusCode: 400,
+          message: ['Las contraseñas no coinciden.'],
+          errores: [
+            {
+              campo: 'confirmacionContrasena',
+              mensaje: 'Las contraseñas no coinciden.',
+            },
+          ],
+        },
         400,
       ),
     );
@@ -311,7 +320,14 @@ describe('SCRUM-96 · Nueva contraseña', () => {
 describe('SCRUM-96 · Enlace vencido o usado', () => {
   it('E1-H4 FE · Enlace vencido o usado: explica el motivo del backend y ofrece pedir uno nuevo', async () => {
     simular('/api/cuentas/restablecer-contrasena', () =>
-      responder({ statusCode: 400, message: ENLACE_INVALIDO }, 400),
+      responder(
+        {
+          statusCode: 400,
+          message: ENLACE_INVALIDO,
+          errores: [{ campo: 'token', mensaje: ENLACE_INVALIDO }],
+        },
+        400,
+      ),
     );
     abrirEnlace('vencido');
 

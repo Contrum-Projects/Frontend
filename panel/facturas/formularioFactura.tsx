@@ -4,7 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useId, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { ErrorDeApi, errorDeApi } from '@/compartido/api/errores';
+import {
+  ErrorDeApi,
+  errorDeApi,
+  repartirErrores,
+} from '@/compartido/api/errores';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Button } from '@/compartido/ui/button';
 import { Input } from '@/compartido/ui/input';
@@ -14,7 +18,7 @@ import { aFecha, SelectorFecha } from '@/tienda/cuenta/selectorFecha';
 import { CampoArchivoFactura } from './campoArchivoFactura';
 import { useRegistrarFactura } from './consultasFacturas';
 import {
-  campoDelError,
+  CAMPOS_FACTURA,
   datosFactura,
   esquemaFactura,
   facturaInicial,
@@ -60,18 +64,13 @@ export function FormularioFactura({
       setAviso(fallo.message);
       return;
     }
-    const generales: string[] = [];
-    for (const mensaje of fallo.mensajes) {
-      const campo = campoDelError(mensaje);
-      if (campo) {
-        setError(
-          campo,
-          { type: 'server', message: mensaje },
-          { shouldFocus: true },
-        );
-      } else {
-        generales.push(mensaje);
-      }
+    const { porCampo, generales } = repartirErrores(fallo, CAMPOS_FACTURA);
+    for (const [campo, mensaje] of porCampo) {
+      setError(
+        campo,
+        { type: 'server', message: mensaje },
+        { shouldFocus: true },
+      );
     }
     if (generales.length > 0) setAviso(generales.join(' '));
   };

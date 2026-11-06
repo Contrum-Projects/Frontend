@@ -88,17 +88,15 @@ export const cuerpoEdicionFacturacion = (datos: SalidaFacturacion) =>
     correoFacturacion: datos.correoFacturacion || null,
   }) as components['schemas']['ActualizarDatosFacturacionDto'];
 
-/** Errores 400 del backend (sin campo) por cómo empiezan, como en esquemaDireccion.ts. */
-const INICIOS: [inicio: string, campo: CampoFacturacion][] = [
-  ['El RUT', 'rut'],
-  ['La razón social', 'razonSocial'],
-  ['El giro', 'giro'],
-  ['La dirección', 'direccion'],
-  ['La comuna', 'comuna'],
-  ['El correo', 'correoFacturacion'],
-];
-
-export const campoDelErrorFacturacion = (
-  mensaje: string,
-): CampoFacturacion | undefined =>
-  INICIOS.find(([inicio]) => mensaje.startsWith(inicio))?.[1];
+/**
+ * A qué campo del formulario va cada campo que el backend indica en `errores` (SCRUM-150). Un
+ * mensaje sin campo, o de un campo que no está aquí, se muestra como aviso general.
+ */
+export const CAMPOS_FACTURACION: Partial<Record<string, CampoFacturacion>> = {
+  rut: 'rut',
+  razonSocial: 'razonSocial',
+  giro: 'giro',
+  direccion: 'direccion',
+  comuna: 'comuna',
+  correoFacturacion: 'correoFacturacion',
+};

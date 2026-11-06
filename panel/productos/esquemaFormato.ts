@@ -210,30 +210,21 @@ export const cuerpoFormato = (
 });
 
 /**
- * Campos de un mensaje del backend (la lista de mensajes no dice a qué campo pertenece). Se
- * reconocen por cómo empiezan, según CrearFormatoDto y formatos.service.ts. El 409 de SKU y
- * código repetidos a la vez marca los dos (E3-H2 criterio 2).
+ * A qué campo del formulario va cada campo que el backend indica en `errores` (SCRUM-150): los de
+ * `CrearFormatoDto`, con los mismos nombres. El 409 de SKU y código repetidos a la vez llega en los
+ * dos (E3-H2 criterio 2).
  */
-const INICIOS_FORMATO: [inicio: string, campos: CampoFormato[]][] = [
-  ['El SKU y el código de barras', ['sku', 'codigoBarras']],
-  // Dos guardados simultáneos: el backend no sabe cuál de los dos se repitió
-  ['El SKU o el código de barras', ['sku', 'codigoBarras']],
-  ['El SKU', ['sku']],
-  ['El código de barras', ['codigoBarras']],
-  ['El nombre del formato', ['nombreFormato']],
-  ['El contenido', ['contenido']],
-  ['Indica el contenido', ['contenido', 'unidadMedida']],
-  ['La unidad de medida', ['unidadMedida']],
-  ['La fecha de vencimiento', ['fechaVencimiento']],
-  ['El stock mínimo', ['stockMinimo']],
-  ['El peso', ['pesoGramos']],
-  ['El alto', ['altoCm']],
-  ['El ancho', ['anchoCm']],
-  ['El largo', ['largoCm']],
-  ['El formato predeterminado', ['esPredeterminado']],
-  ['El producto necesita un formato predeterminado', ['esPredeterminado']],
-];
-
-/** Los campos de un mensaje del backend; vacío si no es de un campo. */
-export const camposDelErrorFormato = (mensaje: string): CampoFormato[] =>
-  INICIOS_FORMATO.find(([inicio]) => mensaje.startsWith(inicio))?.[1] ?? [];
+export const CAMPOS_FORMATO: Partial<Record<string, CampoFormato>> = {
+  sku: 'sku',
+  codigoBarras: 'codigoBarras',
+  nombreFormato: 'nombreFormato',
+  contenido: 'contenido',
+  unidadMedida: 'unidadMedida',
+  fechaVencimiento: 'fechaVencimiento',
+  stockMinimo: 'stockMinimo',
+  pesoGramos: 'pesoGramos',
+  altoCm: 'altoCm',
+  anchoCm: 'anchoCm',
+  largoCm: 'largoCm',
+  esPredeterminado: 'esPredeterminado',
+};

@@ -119,8 +119,24 @@ export const listado = (
   ...extra,
 });
 
-export const error = (status: number, message: string | string[]) =>
-  Response.json({ statusCode: status, message }, { status });
+export const error = (
+  status: number,
+  message: string | string[],
+  /** Campos a los que pertenece el error (`errores` del backend, SCRUM-150). */
+  campos: string[] = [],
+) =>
+  Response.json(
+    {
+      statusCode: status,
+      message,
+      ...(campos.length > 0 && {
+        errores: campos.flatMap((campo) =>
+          [message].flat().map((mensaje) => ({ campo, mensaje })),
+        ),
+      }),
+    },
+    { status },
+  );
 
 type Manejador = (peticion: Request) => Response | Promise<Response>;
 

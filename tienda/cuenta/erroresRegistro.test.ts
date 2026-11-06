@@ -1,65 +1,77 @@
 import { describe, expect, it } from 'vitest';
-import { repartirErrores } from './erroresRegistro';
+import { errorDeApi } from '@/compartido/api/errores';
+import { repartirErroresRegistro } from './erroresRegistro';
 
-describe('repartirErrores', () => {
-  it('asigna cada mensaje del backend a su campo', () => {
+/** Un error como lo responde el backend: cada mensaje con su campo, o sin él. */
+const error = (
+  estado: number,
+  errores: [campo: string | null, mensaje: string][],
+) =>
+  errorDeApi(
+    {
+      statusCode: estado,
+      message: [...new Set(errores.map(([, mensaje]) => mensaje))],
+      errores: errores.flatMap(([campo, mensaje]) =>
+        campo ? [{ campo, mensaje }] : [],
+      ),
+    },
+    new Response(null, { status: estado }),
+  );
+
+describe('repartirErroresRegistro (SCRUM-150)', () => {
+  it('E1-H1 FE · cada mensaje va al campo que indica el backend', () => {
     expect(
-      repartirErrores([
-        'El nombre es obligatorio.',
-        'La contraseña debe tener al menos un número.',
-        'La confirmación de la contraseña es obligatoria.',
-        'El RUT no es válido.',
-        'La fecha de nacimiento no puede ser futura.',
-      ]),
+      repartirErroresRegistro(
+        error(400, [
+          ['email', 'El correo no es válido.'],
+          ['contrasena', 'La contraseña debe tener al menos 8 caracteres.'],
+          ['confirmacionContrasena', 'Las contraseñas no coinciden.'],
+        ]),
+      ),
     ).toEqual({
       campos: {
-        nombre: 'El nombre es obligatorio.',
-        contrasena: 'La contraseña debe tener al menos un número.',
-        confirmacionContrasena:
-          'La confirmación de la contraseña es obligatoria.',
-        rut: 'El RUT no es válido.',
-        fechaNacimiento: 'La fecha de nacimiento no puede ser futura.',
+        email: 'El correo no es válido.',
+        contrasena: 'La contraseña debe tener al menos 8 caracteres.',
+        confirmacionContrasena: 'Las contraseñas no coinciden.',
       },
       generales: [],
     });
   });
 
-  it('el correo y el RUT repetidos marcan los dos campos', () => {
+  it('E1-H1 FE · correo y RUT ya registrados: el mismo mensaje en los dos campos', () => {
+    const mensaje = 'El correo y el RUT ya están registrados.';
     expect(
-      repartirErrores(['El correo y el RUT ya están registrados.']).campos,
-    ).toEqual({
-      email: 'El correo y el RUT ya están registrados.',
-      rut: 'El correo y el RUT ya están registrados.',
-    });
+      repartirErroresRegistro(
+        error(409, [
+          ['email', mensaje],
+          ['rut', mensaje],
+        ]),
+      ),
+    ).toEqual({ campos: { email: mensaje, rut: mensaje }, generales: [] });
   });
 
-  it('«El correo o el RUT» (registros simultáneos) marca los dos campos, y el RUT solo, el RUT', () => {
+  it('E1-H1 FE · un mensaje sin campo, o de un campo que no está en el formulario, es un aviso general', () => {
     expect(
-      repartirErrores(['El correo o el RUT ya está registrado.']).campos,
+      repartirErroresRegistro(
+        error(400, [
+          ['x', 'El campo «x» no se admite.'],
+          [null, 'Intenta de nuevo.'],
+        ]),
+      ),
     ).toEqual({
-      email: 'El correo o el RUT ya está registrado.',
-      rut: 'El correo o el RUT ya está registrado.',
-    });
-    expect(repartirErrores(['El RUT ya está registrado.']).campos).toEqual({
-      rut: 'El RUT ya está registrado.',
-    });
-  });
-
-  it('deja como aviso general lo que no es de un campo', () => {
-    expect(repartirErrores(['El campo «x» no se admite.'])).toEqual({
       campos: {},
-      generales: ['El campo «x» no se admite.'],
+      generales: ['El campo «x» no se admite.', 'Intenta de nuevo.'],
     });
   });
 
-  it('con varios mensajes del mismo campo muestra el primero', () => {
+  it('E1-H1 FE · con varios mensajes del mismo campo, se muestra el primero', () => {
     expect(
-      repartirErrores([
-        'La contraseña debe tener al menos 8 caracteres.',
-        'La contraseña debe tener al menos un número.',
-      ]).campos,
-    ).toEqual({
-      contrasena: 'La contraseña debe tener al menos 8 caracteres.',
-    });
+      repartirErroresRegistro(
+        error(400, [
+          ['nombre', 'El nombre es obligatorio.'],
+          ['nombre', 'El nombre debe tener hasta 80 caracteres.'],
+        ]),
+      ).campos,
+    ).toEqual({ nombre: 'El nombre es obligatorio.' });
   });
 });

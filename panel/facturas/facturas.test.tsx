@@ -108,8 +108,24 @@ const simularBackend = (rutas: Record<string, Manejador> = {}) => {
   return { pedidas };
 };
 
-const error = (status: number, message: string | string[]) =>
-  Response.json({ statusCode: status, message }, { status });
+const error = (
+  status: number,
+  message: string | string[],
+  /** Campos a los que pertenece el error (`errores` del backend, SCRUM-150). */
+  campos: string[] = [],
+) =>
+  Response.json(
+    {
+      statusCode: status,
+      message,
+      ...(campos.length > 0 && {
+        errores: campos.flatMap((campo) =>
+          [message].flat().map((mensaje) => ({ campo, mensaje })),
+        ),
+      }),
+    },
+    { status },
+  );
 
 const mostrar = (pantalla: ReactNode) =>
   render(
@@ -344,7 +360,7 @@ describe('Facturas por emitir (SCRUM-127)', () => {
   it('E9-H3 FE · CA3 folio repetido: muestra el error del backend junto al folio, sin perder lo escrito ni el PDF', async () => {
     simularBackend({
       'POST /api/pedidos/FACTPOREMI01/factura': () =>
-        error(409, 'Ya existe una factura con el folio 1532.'),
+        error(409, 'Ya existe una factura con el folio 1532.', ['folio']),
     });
     const usuario = userEvent.setup();
     mostrar(<DetalleFacturaPanel codigo="FACTPOREMI01" />);

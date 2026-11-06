@@ -162,8 +162,24 @@ const simularBackend = (rutas: Record<string, Manejador> = {}) => {
   return { pedidas };
 };
 
-const error = (status: number, message: string | string[]) =>
-  Response.json({ statusCode: status, message }, { status });
+const error = (
+  status: number,
+  message: string | string[],
+  /** Campos a los que pertenece el error (`errores` del backend, SCRUM-150). */
+  campos: string[] = [],
+) =>
+  Response.json(
+    {
+      statusCode: status,
+      message,
+      ...(campos.length > 0 && {
+        errores: campos.flatMap((campo) =>
+          [message].flat().map((mensaje) => ({ campo, mensaje })),
+        ),
+      }),
+    },
+    { status },
+  );
 
 const mostrar = (pantalla: ReactNode) =>
   render(
@@ -667,6 +683,7 @@ describe('Panel de pedidos · cambio de estado (SCRUM-130)', () => {
         error(
           409,
           'Ese código de seguimiento ya está registrado en otro pedido.',
+          ['codigoSeguimiento'],
         ),
     });
     const usuario = userEvent.setup();

@@ -72,8 +72,24 @@ const simularBackend = (
   return { estado, fetch };
 };
 
-const error = (status: number, message: string | string[]) =>
-  Response.json({ statusCode: status, message }, { status });
+const error = (
+  status: number,
+  message: string | string[],
+  /** Campos a los que pertenece el error (`errores` del backend, SCRUM-150). */
+  campos: string[] = [],
+) =>
+  Response.json(
+    {
+      statusCode: status,
+      message,
+      ...(campos.length > 0 && {
+        errores: campos.flatMap((campo) =>
+          [message].flat().map((mensaje) => ({ campo, mensaje })),
+        ),
+      }),
+    },
+    { status },
+  );
 
 const ingresarComo = (rol: Rol) =>
   act(() =>
@@ -307,7 +323,7 @@ describe('Pantalla Proveedores (SCRUM-110)', () => {
   it('E11-H1 FE · RUT repetido: muestra el error del servidor junto al RUT sin perder lo escrito', async () => {
     simularBackend([DISTRIBUIDORA], {
       'POST /api/inventario/proveedores': () =>
-        error(409, 'Ya existe un proveedor con ese RUT.'),
+        error(409, 'Ya existe un proveedor con ese RUT.', ['rut']),
     });
     mostrarPantalla();
     await screen.findByRole('table');

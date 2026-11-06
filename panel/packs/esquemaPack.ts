@@ -138,26 +138,15 @@ export const cuerpoPack = (
   }) as unknown as components['schemas']['CrearPackDto'];
 
 /**
- * El backend responde los errores como una lista de mensajes, sin decir a qué campo pertenecen.
- * Se reconocen por cómo empiezan, según CrearPackDto y packs.service.ts. Los de los componentes
- * («Un pack solo admite formatos…», «El formato con id 11 no está activo…») van bajo la tabla.
+ * A qué campo del formulario va cada campo que el backend indica en `errores` (SCRUM-150). Un
+ * mensaje sin campo, o de un campo que no está aquí, se muestra como aviso general.
  */
-const INICIOS_PACK: [inicio: string, campo: CampoPack][] = [
-  ['El SKU', 'sku'],
-  ['El nombre del pack', 'nombre'],
-  ['La descripción del pack', 'descripcion'],
-  ['La fecha de inicio de la vigencia', 'fechaInicioVigencia'],
-  ['La fecha de término de la vigencia', 'fechaFinVigencia'],
-  ['El canal de venta', 'exclusivo'],
-  ['Indica los formatos', 'componentes'],
-  ['Indica el formato', 'componentes'],
-  ['Algún formato', 'componentes'],
-  ['La cantidad del componente', 'componentes'],
-  ['Cada formato', 'componentes'],
-  ['Un pack', 'componentes'],
-  ['El formato con id', 'componentes'],
-];
-
-/** El campo de un mensaje del backend, o `null` si no es de un campo. */
-export const campoDelErrorPack = (mensaje: string): CampoPack | null =>
-  INICIOS_PACK.find(([inicio]) => mensaje.startsWith(inicio))?.[1] ?? null;
+export const CAMPOS_PACK: Partial<Record<string, CampoPack>> = {
+  sku: 'sku',
+  nombre: 'nombre',
+  descripcion: 'descripcion',
+  fechaInicioVigencia: 'fechaInicioVigencia',
+  fechaFinVigencia: 'fechaFinVigencia',
+  canalVenta: 'exclusivo',
+  componentes: 'componentes',
+};
