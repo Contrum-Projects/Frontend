@@ -1702,7 +1702,7 @@ export interface paths {
         };
         /**
          * Listar las campañas de correo (E12-H3)
-         * @description De la más nueva a la más antigua, con su estado de envío.
+         * @description De la más nueva a la más antigua, con su estado de envío, a cuántas direcciones va o fue y su apertura, más los contadores de contactos con consentimiento.
          */
         get: operations["CampanasController_listar"];
         put?: never;
@@ -2571,12 +2571,16 @@ export interface components {
              */
             tipos: ("cliente" | "profesional" | "suscriptor")[];
             /**
+             * @description Ids de las categorías (con sus subcategorías).
              * @example [
              *       3
              *     ]
              */
             categorias: number[];
-            /** @example [] */
+            /**
+             * @description Ids de las marcas.
+             * @example []
+             */
             marcas: number[];
         };
         FilaReporteCampanaDto: {
@@ -2707,6 +2711,123 @@ export interface components {
             cuerpo: string;
             segmento: components["schemas"]["SegmentoCampanaDto"];
         };
+        AutorCampanaDto: {
+            /** @example Camila */
+            nombre: string;
+            /** @example Rojas */
+            apellido: string;
+        };
+        EnviosCampanaDto: {
+            /** @example 120 */
+            total: number;
+            /** @example 0 */
+            pendientes: number;
+            /** @example 115 */
+            enviados: number;
+            /** @example 1 */
+            fallidos: number;
+            /** @example 2 */
+            cancelados: number;
+            /** @example 2 */
+            rebotados: number;
+        };
+        DetalleCampanaDto: {
+            /** @example 12 */
+            id: number;
+            /** @example Nueva línea reparadora */
+            asunto: string;
+            /** @description Texto plano: una línea en blanco separa los párrafos. */
+            cuerpo: string;
+            segmento: components["schemas"]["SegmentoGuardadoDto"];
+            /**
+             * @description Si ya se confirmó el envío.
+             * @example false
+             */
+            enviada: boolean;
+            /**
+             * Format: date-time
+             * @example 2026-11-04T15:30:00.000Z
+             */
+            fechaCreacion: string;
+            /**
+             * Format: date-time
+             * @description Cuándo se confirmó el envío; `null` en un borrador.
+             * @example null
+             */
+            fechaEnvio: string | null;
+            creadaPor: components["schemas"]["AutorCampanaDto"];
+            /** @description Sus correos por estado. */
+            envios: components["schemas"]["EnviosCampanaDto"];
+        };
+        ContactosCampanasDto: {
+            /**
+             * @description Direcciones que recibirían hoy una campaña a todos (cuentas y suscriptores sin cuenta, cada una una vez).
+             * @example 812
+             */
+            aceptanPublicidad: number;
+            /**
+             * @description Cuentas cliente o profesional activas, con el correo verificado, que aceptan publicidad.
+             * @example 640
+             */
+            cuentasVerificadas: number;
+            /**
+             * @description Suscriptores confirmados, sin baja y sin una cuenta con el mismo correo.
+             * @example 172
+             */
+            suscriptoresSinCuenta: number;
+            /**
+             * @description Direcciones con algún correo rebotado.
+             * @example 9
+             */
+            conRebote: number;
+        };
+        CampanaListadaDto: {
+            /** @example 12 */
+            id: number;
+            /** @example Nueva línea reparadora */
+            asunto: string;
+            /** @description Texto plano: una línea en blanco separa los párrafos. */
+            cuerpo: string;
+            segmento: components["schemas"]["SegmentoGuardadoDto"];
+            /**
+             * @description Si ya se confirmó el envío.
+             * @example false
+             */
+            enviada: boolean;
+            /**
+             * Format: date-time
+             * @example 2026-11-04T15:30:00.000Z
+             */
+            fechaCreacion: string;
+            /**
+             * Format: date-time
+             * @description Cuándo se confirmó el envío; `null` en un borrador.
+             * @example null
+             */
+            fechaEnvio: string | null;
+            creadaPor: components["schemas"]["AutorCampanaDto"];
+            /**
+             * @description Borrador: cuántas direcciones la recibirían hoy. Enviada: a cuántas salió.
+             * @example 812
+             */
+            destinatarios: number;
+            /**
+             * @description Enviada: de los correos enviados, cuántos se abrieron (0 a 100, sin decimales). `null` en un borrador o sin envíos.
+             * @example 41
+             */
+            porcentajeApertura: number | null;
+        };
+        ListadoCampanasDto: {
+            contactos: components["schemas"]["ContactosCampanasDto"];
+            /** @description De la más nueva a la más antigua. */
+            items: components["schemas"]["CampanaListadaDto"][];
+            /** @example 14 */
+            total: number;
+            /** @example 1 */
+            pagina: number;
+            /** @example 20 */
+            limite: number;
+        };
         ActualizarCampanaDto: {
             asunto?: string;
             cuerpo?: string;
@@ -2732,12 +2853,38 @@ export interface components {
             /** @description Versión en texto plano del correo. */
             texto: string;
         };
+        VistaPreviaCampanaDto: {
+            /** @example Nueva línea reparadora */
+            asunto: string;
+            /** @description HTML del correo. */
+            html: string;
+            /** @description Versión en texto plano del correo. */
+            texto: string;
+            /**
+             * @description Direcciones que lo recibirían hoy (cada una una vez).
+             * @example 812
+             */
+            destinatarios: number;
+            /** @description Se entrega en `POST /:id/envio`. Vence a la hora. */
+            confirmacion: string;
+        };
         EnviarCampanaDto: {
             /**
              * @description El valor `confirmacion` de una vista previa de la última hora. Si la campaña cambió después o pasó la hora, hay que pedir otra.
              * @example 1793920312.q3Zr0cU9mJ1kHk2b8vY6xW4tS7nP5aL0eD3fG2hJ1kM
              */
             confirmacion: string;
+        };
+        CampanaEnviadaDto: {
+            /** @example 12 */
+            id: number;
+            /**
+             * Format: date-time
+             * @example 2026-11-06T15:30:00.000Z
+             */
+            fechaEnvio: string;
+            /** @example 812 */
+            destinatarios: number;
         };
         OfertaGuardadaCumpleanosDto: {
             /** @example true */
@@ -7495,7 +7642,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ListadoCampanasDto"];
+                };
             };
             /** @description Paginación inválida. */
             400: {
@@ -7538,7 +7687,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetalleCampanaDto"];
+                };
             };
             /** @description Datos inválidos, categorías o marcas que no existen, o suscriptores con un filtro de compras. */
             400: {
@@ -7579,7 +7730,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetalleCampanaDto"];
+                };
             };
             /** @description Falta iniciar sesión. */
             401: {
@@ -7624,7 +7777,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetalleCampanaDto"];
+                };
             };
             /** @description Datos inválidos o cuerpo vacío. */
             400: {
@@ -7724,7 +7879,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["VistaPreviaCampanaDto"];
+                };
             };
             /** @description Falta iniciar sesión. */
             401: {
@@ -7776,7 +7933,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CampanaEnviadaDto"];
+                };
             };
             /** @description Falta la confirmación. */
             400: {
