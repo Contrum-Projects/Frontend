@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 96.
+ * Versión de la API: 0.1.0. Rutas: 100.
  */
 
 export interface paths {
@@ -1494,6 +1494,86 @@ export interface paths {
          * @description Deja el pedido cancelado, devuelve su stock a las ubicaciones de donde salió y registra el cambio en el historial con quién lo hizo y el comentario opcional, todo en una transacción. Solo se puede cancelar un pedido pendiente de pago.
          */
         post: operations["CancelarPedidoController_cancelar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/gestion/pedidos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar los pedidos del panel (E8-H2)
+         * @description Del más reciente al más antiguo, paginados, del `grupo` pedido (por defecto `por_preparar`: pagados y en preparación; `listos_para_retiro`, `despachados`, `pendientes_pago` y `todos`) y con la búsqueda `q`. Cada pedido trae código, fecha, cliente (razón social si pidió factura), entrega, estado, total con IVA y unidades. `grupos` da los chips en orden con su `cantidad` (`null` en los que no muestran conteo) y `grupo`, el aplicado.
+         */
+        get: operations["GestionPedidosController_listar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/gestion/pedidos/{codigoPedido}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver un pedido desde el panel (E8-H2)
+         * @description El detalle del pedido (artículos, montos, entrega, documento) más el cliente (nombre, correo y teléfono), el historial del primero al último con su comentario y quién lo hizo («Sistema», «Cliente» o el nombre del personal), los `cambiosPermitidos` desde el estado actual (con su sentido, si piden código de seguimiento y si avisan al cliente) y `sePuedeCancelar` (solo pendiente de pago).
+         */
+        get: operations["GestionPedidosController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/gestion/facturas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar las facturas del panel (E9-H3)
+         * @description Los pedidos pagados (no cancelados) que pidieron factura: primero los por emitir, del pedido más antiguo al más nuevo, y después los emitidos, de la emisión más reciente a la más antigua. Cada uno con razón social, RUT, total con IVA, `estado` (`por_emitir` o `emitida`) y folio. `porEmitir` es el conteo de la pestaña.
+         */
+        get: operations["GestionFacturasController_listar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/gestion/facturas/{codigoPedido}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver los datos para emitir la factura de un pedido (E9-H3)
+         * @description El receptor (razón social, RUT, giro, dirección y comuna), los montos, la tasa de IVA y, si ya se emitió, folio y fecha. Por emitir, los datos de facturación del pedido; emitida, los que copió la factura.
+         */
+        get: operations["GestionFacturasController_obtener"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -7834,6 +7914,176 @@ export interface operations {
             };
             /** @description El pedido no está pendiente de pago (ya pagado o cancelado). */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GestionPedidosController_listar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+                /** @description Grupo del filtro; sin él, `por_preparar`. */
+                grupo?: "por_preparar" | "listos_para_retiro" | "despachados" | "pendientes_pago" | "todos";
+                /** @description Texto contenido en el código del pedido, el nombre, apellido o correo del cliente, la razón social de su factura o el nombre de un producto o pack del pedido. */
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pedidos, grupos y el grupo aplicado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Grupo, búsqueda o paginación inválidos. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar pedidos. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GestionPedidosController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codigoPedido: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Detalle del pedido para el personal. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar pedidos. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pedido no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GestionFacturasController_listar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Facturas, paginadas, con el conteo por emitir. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Paginación inválida. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar la facturación. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GestionFacturasController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codigoPedido: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Datos de la factura del pedido. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar la facturación. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pedido no existe, no pidió factura o aún no está pagado. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

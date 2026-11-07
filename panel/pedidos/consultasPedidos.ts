@@ -8,7 +8,7 @@ import {
 } from '@tanstack/react-query';
 import { api } from '@/compartido/api/cliente';
 import { ErrorDeApi, exigir } from '@/compartido/api/errores';
-import type { components } from '@/compartido/api/esquema';
+import type { components, paths } from '@/compartido/api/esquema';
 import type {
   DetallePedidoGestion,
   ListadoPedidosGestion,
@@ -28,25 +28,18 @@ export interface FiltrosPedidos {
   q: string;
 }
 
-/**
- * TODO(SCRUM-130): GET /gestion/pedidos y GET /gestion/pedidos/{codigoPedido} aún no están en el
- * Swagger (API simulada, pedidos a SCRUM-58). Quitar el cast cuando `pnpm api:tipos` los traiga.
- */
-const pedir = api.GET as unknown as (
-  ruta: '/api/gestion/pedidos' | '/api/gestion/pedidos/{codigoPedido}',
-  opciones: {
-    params: {
-      query?: Record<string, string>;
-      path?: { codigoPedido: string };
-    };
-  },
-) => Promise<{ data?: unknown; error?: unknown; response: Response }>;
+type ConsultaPedidos = NonNullable<
+  paths['/api/gestion/pedidos']['get']['parameters']['query']
+>;
 
-/** Sin los filtros vacíos. */
+/**
+ * Sin los filtros vacíos. `grupo` es una clave que entregó el mismo backend (en `grupos`), por eso
+ * se pasa como su tipo.
+ */
 const consultaDe = (filtros: FiltrosPedidos) =>
   Object.fromEntries(
     Object.entries(filtros).filter(([, valor]) => valor !== ''),
-  );
+  ) as ConsultaPedidos;
 
 /**
  * E8-H2, criterio 1 · Los pedidos del grupo elegido, del más reciente al más antiguo (orden del
@@ -60,7 +53,7 @@ export const usePedidosPanel = (filtros: FiltrosPedidos, habilitada = true) => {
     queryFn: () =>
       conErrorDeApi(async () =>
         exigir<ListadoPedidosGestion>(
-          await pedir('/api/gestion/pedidos', { params: { query } }),
+          await api.GET('/api/gestion/pedidos', { params: { query } }),
         ),
       ),
     placeholderData: keepPreviousData,
@@ -86,7 +79,7 @@ export const useDetallePedidoPanel = (codigoPedido: string) =>
     queryFn: () =>
       conErrorDeApi(async () =>
         exigir<DetallePedidoGestion>(
-          await pedir('/api/gestion/pedidos/{codigoPedido}', {
+          await api.GET('/api/gestion/pedidos/{codigoPedido}', {
             params: { path: { codigoPedido } },
           }),
         ),

@@ -841,8 +841,8 @@ export interface CotizacionDespacho {
 }
 
 /**
- * Un pedido de la lista del panel (E8-H2). TODO(SCRUM-130): `GET /api/gestion/pedidos` aún no
- * existe; forma pedida a SCRUM-58 (ver docs/historias/SCRUM-130.md).
+ * backend: src/modulos/pedidos/gestion-pedidos.service.ts › PedidoGestion. Un pedido de la lista
+ * del panel (E8-H2, SCRUM-150). El Swagger no declara la respuesta.
  */
 export interface PedidoGestion {
   codigoPublico: string;
@@ -866,7 +866,7 @@ export interface GrupoPedidos {
   cantidad: number | null;
 }
 
-/** GET /api/gestion/pedidos (E8-H2). Pedida a SCRUM-58. */
+/** GET /api/gestion/pedidos (E8-H2). backend: gestion-pedidos.service.ts › ListadoPedidosGestion. */
 export interface ListadoPedidosGestion {
   /** Del más reciente al más antiguo. */
   items: PedidoGestion[];
@@ -891,7 +891,7 @@ export interface CambioPermitido {
   avisaAlCliente: boolean;
 }
 
-/** GET /api/gestion/pedidos/{codigoPedido} (E8-H2). Pedida a SCRUM-58. */
+/** GET /api/gestion/pedidos/{codigoPedido} (E8-H2). backend: gestion-pedidos.service.ts › DetallePedidoGestion. */
 export interface DetallePedidoGestion extends Omit<
   DetallePedidoCuenta,
   'historial'
@@ -909,7 +909,7 @@ export interface DetallePedidoGestion extends Omit<
   cambiosPermitidos: CambioPermitido[];
   /**
    * Si el personal puede cancelarlo (E8-H3): hoy, solo un pedido pendiente de pago. Lo decide el
-   * backend. TODO(SCRUM-131): pedido a SCRUM-58 junto con el detalle.
+   * backend.
    */
   sePuedeCancelar: boolean;
 }
@@ -935,8 +935,7 @@ export interface PedidoConNuevoEstado {
 /**
  * Cómo va la factura de un pedido que la pidió (E9-H3): `por_emitir` hasta que el personal la
  * registra con su folio. backend: src/common/dominio/valores.ts › ESTADOS_FACTURA_GESTION
- * (decisión del 6 nov, SCRUM-150). El endpoint sigue pendiente en SCRUM-55: sin factura
- * registrada, su campo `factura` vendrá `null`.
+ * (decisión del 6 nov, SCRUM-150).
  */
 export type EstadoFacturaGestion = 'por_emitir' | 'emitida';
 
@@ -955,7 +954,8 @@ export interface FacturaGestion {
 
 /**
  * GET /api/gestion/facturas (E9-H3). Los pedidos que pidieron factura y ya se pagaron; cuáles
- * entran y en qué orden lo decide el backend. TODO(SCRUM-127): pedida a SCRUM-55.
+ * entran y en qué orden lo decide el backend (SCRUM-150: primero las por emitir). backend:
+ * src/modulos/facturacion/gestion-facturas.service.ts. El Swagger no declara la respuesta.
  */
 export interface ListadoFacturasGestion {
   items: FacturaGestion[];
@@ -969,7 +969,7 @@ export interface ListadoFacturasGestion {
 /**
  * GET /api/gestion/facturas/{codigoPedido} (E9-H3). Los datos para emitirla en el SII: el
  * receptor (de los datos de facturación del pedido) y los montos del pedido. Ya emitida, los que
- * copió el documento. TODO(SCRUM-127): pedida a SCRUM-55.
+ * copió el documento. backend: gestion-facturas.service.ts › DetalleFacturaGestion.
  */
 export interface DetalleFacturaGestion {
   codigoPedido: string;
