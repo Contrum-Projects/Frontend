@@ -198,6 +198,8 @@ export interface ProductoDetalle {
   id: number;
   nombre: string;
   descripcion: string;
+  /** Lista de ingredientes del reverso (SCRUM-150); `null` si el producto no la tiene. */
+  ingredientes: string | null;
   marca: { id: number; nombre: string } | null;
   categoria: { id: number; nombre: string };
   formatos: FormatoDetalle[];

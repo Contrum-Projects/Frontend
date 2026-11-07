@@ -70,7 +70,8 @@ El Swagger no declara las respuestas (`content?: never`): los tipos `ProductoDet
 - Aviso de agotado: «Agotado en este formato. El de 300 ml sí está disponible.» (texto de Figma);
   con varios disponibles, «Los de 300 ml y 1 L sí están disponibles.»; sin ninguno, solo
   «Agotado en este formato.».
-- No se muestran (sin datos en la API ni criterio): pestañas «Ingredientes» y «Modo de uso»,
+- Desde SCRUM-150 (07-11-2026) la pestaña «Ingredientes» aparece junto a «Descripción» cuando el
+  backend entrega la lista. No se muestran (sin datos en la API ni criterio): pestaña «Modo de uso»,
   «También te puede interesar», aviso «¿Eres peluquero?» (SCRUM-109/134), «quedan 2» del pack
   (el backend no informa cantidades, a propósito) ni la miniatura de cada componente.
 - La descripción va una vez, en la sección «Descripción» bajo la ficha (la API tiene un solo texto;
