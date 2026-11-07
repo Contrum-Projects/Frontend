@@ -28,7 +28,8 @@ export const RUTAS = {
   perfilProfesional: '/cuenta/perfil-profesional',
   // Listado de packs (sin historia ni Figma, SCRUM-150: sigue el catálogo)
   packs: '/packs' as Route,
-  // Sin historia: ayuda, profesionales y legales
+  // Precio profesional y ayuda: páginas con el contenido de las reglas del backend (SCRUM-150).
+  // Contacto, términos y privacidad siguen sin página: falta su contenido (docs/diseno.md)
   precioProfesional: '/precio-profesional' as Route,
   despacho: '/ayuda/despacho-y-retiro' as Route,
   comprobantes: '/ayuda/comprobante-y-factura' as Route,
