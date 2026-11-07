@@ -1,42 +1,26 @@
 'use client';
 
 import { ChevronDown, Info } from 'lucide-react';
-import { type ReactNode, useState } from 'react';
+import { useState } from 'react';
 import { cn } from '@/compartido/lib/utils';
-import { Skeleton } from '@/compartido/ui/skeleton';
 import { Chip } from '@/compartido/ui/chip';
-import { GENEROS } from '@/tienda/cuenta/esquemaRegistro';
 import { CampoNumero } from './campoNumero';
-import { useUbicacionesSegmento } from './consultasTerritorio';
-import { Elegidas } from './elegidas';
 import {
   type FiltroCuenta,
   type FiltroNumero,
   type FormularioCampana,
   filtrosActivos,
 } from './esquemaCampana';
-import { MensajeError } from './mensajeError';
+import {
+  FiltroPerfil,
+  FiltroUbicacion,
+  Grupo,
+  type PropsFiltros,
+} from './gruposFiltros';
+
+export type { ErroresFiltros } from './gruposFiltros';
 
 type Segmento = FormularioCampana['segmento'];
-
-export type ErroresFiltros = Partial<Record<FiltroCuenta, string>>;
-
-interface FiltrosCuentaProps {
-  id: string;
-  valor: Segmento;
-  alCambiar: (segmento: Segmento) => void;
-  errores: ErroresFiltros;
-}
-
-const MESES = Array.from({ length: 12 }, (_, indice) => ({
-  id: indice + 1,
-  nombre: new Intl.DateTimeFormat('es-CL', { month: 'long' }).format(
-    new Date(2026, indice, 1),
-  ),
-})).map((mes) => ({
-  ...mes,
-  nombre: mes.nombre.charAt(0).toUpperCase() + mes.nombre.slice(1),
-}));
 
 /**
  * «Más filtros» del segmento (SCRUM-150): compras, ubicación, perfil y cuenta. Cada filtro que se
@@ -48,7 +32,7 @@ export const FiltrosCuenta = ({
   valor,
   alCambiar,
   errores,
-}: FiltrosCuentaProps) => {
+}: PropsFiltros) => {
   const activos = filtrosActivos(valor);
   const [abierto, setAbierto] = useState(activos > 0);
   const cambiar = <K extends FiltroCuenta>(clave: K, dato: Segmento[K]) =>
@@ -123,7 +107,7 @@ export const FiltrosCuenta = ({
           </Grupo>
 
           <Grupo titulo="Ubicación">
-            <Ubicacion
+            <FiltroUbicacion
               id={id}
               valor={valor}
               alCambiar={alCambiar}
@@ -131,56 +115,12 @@ export const FiltrosCuenta = ({
             />
           </Grupo>
 
-          <Grupo titulo="Perfil">
-            <div className="flex flex-wrap items-center gap-2">
-              <Elegidas
-                titulo="Mes de cumpleaños"
-                opciones={MESES}
-                elegidas={valor.mesesCumpleanos}
-                alCambiar={(meses) => cambiar('mesesCumpleanos', meses)}
-                error={errores.mesesCumpleanos}
-                id={`${id}-meses`}
-              />
-            </div>
-            <MensajeError
-              id={`${id}-meses-error`}
-              mensaje={errores.mesesCumpleanos}
-            />
-            <div className="flex flex-wrap gap-x-6 gap-y-3">
-              {numero('edadMinima', 'Edad: desde', { sufijo: 'años' })}
-              {numero('edadMaxima', 'hasta', { sufijo: 'años' })}
-            </div>
-            <div
-              role="group"
-              aria-label="Género"
-              className="flex flex-wrap items-center gap-2"
-            >
-              <span className="texto-pequeno text-texto-principal">
-                Género:
-              </span>
-              {GENEROS.map((genero) => (
-                <Chip
-                  key={genero}
-                  type="checkbox"
-                  checked={valor.generos.includes(genero)}
-                  onChange={(evento) =>
-                    cambiar(
-                      'generos',
-                      evento.target.checked
-                        ? [...valor.generos, genero]
-                        : valor.generos.filter((g) => g !== genero),
-                    )
-                  }
-                >
-                  {genero}
-                </Chip>
-              ))}
-            </div>
-            <MensajeError
-              id={`${id}-generos-error`}
-              mensaje={errores.generos}
-            />
-          </Grupo>
+          <FiltroPerfil
+            id={id}
+            valor={valor}
+            alCambiar={alCambiar}
+            errores={errores}
+          />
 
           <Grupo titulo="Cuenta">
             {numero('registroUltimosDias', 'Creada en los últimos', {
@@ -204,63 +144,5 @@ export const FiltrosCuenta = ({
         </div>
       )}
     </div>
-  );
-};
-
-const Grupo = ({
-  titulo,
-  children,
-}: {
-  titulo: string;
-  children: ReactNode;
-}) => (
-  <section aria-label={titulo} className="flex flex-col gap-3">
-    <h3 className="texto-etiqueta text-texto-principal">{titulo}</h3>
-    {children}
-  </section>
-);
-
-/** Regiones y comunas de las direcciones guardadas, por su código CUT. */
-const Ubicacion = ({ id, valor, alCambiar, errores }: FiltrosCuentaProps) => {
-  const ubicaciones = useUbicacionesSegmento();
-  if (ubicaciones.error) {
-    return (
-      <MensajeError id={`${id}-ubicacion-error`} mensaje={ubicaciones.error} />
-    );
-  }
-  if (ubicaciones.cargando) {
-    return (
-      <div aria-hidden className="flex gap-2">
-        <Skeleton className="h-10 w-24 rounded-full" />
-        <Skeleton className="h-10 w-24 rounded-full" />
-      </div>
-    );
-  }
-  return (
-    <>
-      <p className="texto-pequeno text-texto-secundario">
-        Con una dirección guardada en:
-      </p>
-      <div className="flex flex-wrap items-center gap-2">
-        <Elegidas
-          titulo="Región"
-          opciones={ubicaciones.regiones}
-          elegidas={valor.regiones}
-          alCambiar={(regiones) => alCambiar({ ...valor, regiones })}
-          error={errores.regiones}
-          id={`${id}-regiones`}
-        />
-        <Elegidas
-          titulo="Comuna"
-          opciones={ubicaciones.comunas}
-          elegidas={valor.comunas}
-          alCambiar={(comunas) => alCambiar({ ...valor, comunas })}
-          error={errores.comunas}
-          id={`${id}-comunas`}
-        />
-      </div>
-      <MensajeError id={`${id}-regiones-error`} mensaje={errores.regiones} />
-      <MensajeError id={`${id}-comunas-error`} mensaje={errores.comunas} />
-    </>
   );
 };
