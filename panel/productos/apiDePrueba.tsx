@@ -99,6 +99,9 @@ export const filaListado = (
   extra: Partial<ProductoListadoPanel> = {},
 ): ProductoListadoPanel => ({
   ...producto(),
+  marcaId: 1,
+  categoriaId: 4,
+  fechaCreacion: '2026-10-28T15:00:00.000Z',
   imagen: null,
   formatos: 2,
   precioDesde: 12990,

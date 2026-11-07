@@ -585,34 +585,6 @@ describe('Pack guardado (SCRUM-105)', () => {
     ]);
   });
 
-  it('E3-H6 FE · sin los datos pedidos al backend, el stock y la disponibilidad no se inventan', async () => {
-    const sinDatos = pack({
-      componentes: pack().componentes.map(
-        ({
-          stockTotal: _s,
-          precioMinoristaNeto: _n,
-          precioMinoristaConIva: _i,
-          ...resto
-        }) => resto,
-      ),
-      disponibilidad: undefined,
-      componenteLimitante: undefined,
-      precioMinoristaPorSeparadoConIva: undefined,
-    });
-    conPack(sinDatos);
-    mostrar(<PantallaEditarPack id="40" />);
-
-    const tarjeta = within(
-      await screen.findByRole('region', {
-        name: 'Disponibilidad en la tienda',
-      }),
-    );
-    expect(tarjeta.queryByText(/packs?$/)).not.toBeInTheDocument();
-    const fila = within(tablaComponentes().getAllByRole('row')[1]);
-    expect(celdaStock(fila)).toHaveTextContent(/Sin dato$/);
-    expect(screen.queryByText(/Por separado/)).not.toBeInTheDocument();
-  });
-
   it('E3-H6 FE · sin el permiso de precios, la tarjeta de precios no se muestra', async () => {
     iniciarSesion('vendedor');
     conPack();

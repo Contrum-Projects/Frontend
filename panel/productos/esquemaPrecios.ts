@@ -110,7 +110,10 @@ export const vistaPreviaConIva = (
   porcentajeIva: number | undefined,
 ): number | null => {
   if (porcentajeIva === undefined || !esPrecio(neto)) return null;
-  return Math.round(aNumero(neto) * (1 + porcentajeIva / 100));
+  // La misma regla que `precioConIva` del backend: el neto se redondea al peso y después se suma
+  // el IVA redondeado; así la referencia no difiere en $1 del precio que se guarda (SCRUM-150)
+  const pesos = Math.round(aNumero(neto));
+  return pesos + Math.round((pesos * porcentajeIva) / 100);
 };
 
 /**

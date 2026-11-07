@@ -670,7 +670,7 @@ export interface paths {
         };
         /**
          * Listar productos
-         * @description Por defecto solo los activos, ordenados por nombre y paginados. Se puede filtrar por texto, categoría y marca.
+         * @description Por defecto solo los activos, ordenados por nombre y paginados. Busca en el nombre, la marca o el SKU y filtra por categoría, marca, canal, stock bajo e inactivos. Cada fila trae su foto, formatos activos, precio desde (con IVA, del canal del producto), stock total y si está bajo el mínimo; `conteos` son los números de los chips.
          */
         get: operations["ProductosController_listar"];
         put?: never;
@@ -2579,6 +2579,76 @@ export interface components {
              * @enum {string}
              */
             canalVenta: "general" | "profesional";
+        };
+        ReferenciaNombreDto: {
+            /** @example 2 */
+            id: number;
+            /** @example Kerastase */
+            nombre: string;
+        };
+        ProductoListadoPanelDto: {
+            /** @example 7 */
+            id: number;
+            /** @example 2 */
+            marcaId: number | null;
+            /** @example 3 */
+            categoriaId: number;
+            /** @example Shampoo reparador */
+            nombre: string;
+            descripcion: string;
+            /** @enum {string} */
+            origenDescripcion: "manual" | "ia" | "ia_editada";
+            ingredientes: string | null;
+            /** @enum {string} */
+            canalVenta: "general" | "profesional";
+            activo: boolean;
+            /** Format: date-time */
+            fechaCreacion: string;
+            marca: components["schemas"]["ReferenciaNombreDto"] | null;
+            categoria: components["schemas"]["ReferenciaNombreDto"];
+            /** @description URL de la foto principal del formato predeterminado, o `null`. */
+            imagen: string | null;
+            /**
+             * @description Formatos activos.
+             * @example 2
+             */
+            formatos: number;
+            /**
+             * @description Menor precio con IVA, en pesos enteros, entre sus formatos activos y del canal del producto (minorista si es general, mayorista si es exclusivo); `null` sin precios.
+             * @example 12990
+             */
+            precioDesde: number | null;
+            /**
+             * @description Unidades en ubicaciones activas de bodegas activas, sumando sus formatos.
+             * @example 24
+             */
+            stockTotal: number;
+            /** @description Algún formato está bajo su stock mínimo (regla del aviso de E11-H6: stock total en todas sus ubicaciones). */
+            stockBajo: boolean;
+        };
+        ConteosProductosPanelDto: {
+            /**
+             * @description Con los inactivos.
+             * @example 86
+             */
+            todos: number;
+            /** @example 12 */
+            exclusivos: number;
+            /** @example 4 */
+            stockBajo: number;
+            /** @example 3 */
+            inactivos: number;
+        };
+        ListadoProductosPanelDto: {
+            items: components["schemas"]["ProductoListadoPanelDto"][];
+            /** @example 86 */
+            total: number;
+            /** @example 1 */
+            pagina: number;
+            /** @example 20 */
+            limite: number;
+            /** @description Productos de cada chip con la búsqueda, la categoría y la marca aplicadas. */
+            conteos: components["schemas"]["ConteosProductosPanelDto"];
         };
         ActualizarProductoDto: {
             /** @example Shampoo reparador */
@@ -5153,7 +5223,7 @@ export interface operations {
             query?: {
                 pagina?: number;
                 limite?: number;
-                /** @description Texto contenido en el nombre, sin distinguir mayúsculas. */
+                /** @description Texto contenido en el nombre, la marca o el SKU de un formato, sin distinguir mayúsculas. */
                 buscar?: string;
                 /** @description Solo productos de esta categoría. */
                 categoriaId?: number;
@@ -5161,6 +5231,12 @@ export interface operations {
                 marcaId?: number;
                 /** @description Con `true` incluye también los productos desactivados. */
                 incluirInactivos?: boolean;
+                /** @description Con `true`, solo los productos desactivados (SCRUM-150). */
+                soloInactivos?: boolean;
+                /** @description Solo los productos de este canal; `profesional` son los exclusivos (SCRUM-150). */
+                canalVenta?: "general" | "profesional";
+                /** @description Con `true`, solo los que tienen algún formato bajo su stock mínimo (SCRUM-150). */
+                stockBajo?: boolean;
             };
             header?: never;
             path?: never;
@@ -5168,12 +5244,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Página de productos con el total. */
+            /** @description Página de productos con el total y los conteos. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ListadoProductosPanelDto"];
+                };
             };
             /** @description Filtros inválidos. */
             400: {

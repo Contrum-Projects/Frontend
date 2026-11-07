@@ -121,3 +121,5 @@ inventa en el frontend.
 **Hecha el 30-10-2026** (PR #23 integrado), por decisión del equipo antes de que el backend tenga
 lo pedido: la búsqueda de formatos (`GET /catalogo/formatos`) y los campos pedidos a SCRUM-31 siguen simulados. Cuando el backend los tenga, borrar las rutas simuladas y
 probar la pantalla con el backend real.
+
+**06-11-2026 (SCRUM-150, punto 2):** el pack trae `disponibilidad`, `componenteLimitante`, `precioMinoristaPorSeparadoConIva` y, por componente, `stockTotal` (unidades vendibles, como la tienda) y precios; se quitaron los «—» de «sin dato». Ya no queda nada simulado del catálogo. Falta probar con el backend real.

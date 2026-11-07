@@ -42,9 +42,15 @@ const pack = (extra: Partial<PackPanel> = {}): PackPanel => ({
       nombreFormato: '300 ml',
       producto: { id: 7, nombre: 'Shampoo reparador' },
       cantidad: 2,
+      stockTotal: 0,
+      precioMinoristaNeto: null,
+      precioMinoristaConIva: null,
     },
   ],
   imagenes: [],
+  disponibilidad: 0,
+  componenteLimitante: { formatoId: 21, stockTotal: 0 },
+  precioMinoristaPorSeparadoConIva: null,
   ...extra,
 });
 

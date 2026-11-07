@@ -466,42 +466,18 @@ export interface ProductoPanel {
 }
 
 /**
- * Fila del listado del panel (E3-H1, Figma P3a). **Simulada** (SCRUM-100): el backend hoy
- * entrega solo los datos de `ProductoPanel`; los demás campos se pidieron a SCRUM-26 (ver
- * docs/historias/SCRUM-100.md). Los decide el backend, el panel solo los muestra.
+ * backend: src/modulos/catalogo/dto/producto-listado.dto.ts. Fila del listado del panel (E3-H1,
+ * Figma P3a, SCRUM-150): foto, formatos, precio desde, stock y stock bajo los decide el backend.
  */
-export interface ProductoListadoPanel extends ProductoPanel {
-  /** URL pública de la imagen principal del formato predeterminado, o `null` sin imágenes. */
-  imagen: string | null;
-  /** Cantidad de formatos activos. */
-  formatos: number;
-  /**
-   * Menor precio con IVA entre sus formatos, del canal del producto (minorista si es general,
-   * mayorista si es exclusivo), en pesos enteros. `null` si ningún formato tiene precio.
-   */
-  precioDesde: number | null;
-  /** Unidades en bodegas activas, sumando sus formatos. */
-  stockTotal: number;
-  /** Algún formato está bajo su stock mínimo. */
-  stockBajo: boolean;
-}
+export type ProductoListadoPanel =
+  components['schemas']['ProductoListadoPanelDto'];
 
-/** Cuántos productos hay en cada filtro del listado, con la búsqueda aplicada. Simulado (SCRUM-100). */
-export interface ConteosProductosPanel {
-  todos: number;
-  exclusivos: number;
-  stockBajo: number;
-  inactivos: number;
-}
+/** Cuántos productos hay en cada filtro del listado, con la búsqueda aplicada. */
+export type ConteosProductosPanel = ListadoProductosPanel['conteos'];
 
-/** GET /api/catalogo/productos (panel). Simulado (SCRUM-100), ver `ProductoListadoPanel`. */
-export interface ListadoProductosPanel {
-  items: ProductoListadoPanel[];
-  total: number;
-  pagina: number;
-  limite: number;
-  conteos: ConteosProductosPanel;
-}
+/** GET /api/catalogo/productos (panel, SCRUM-150). */
+export type ListadoProductosPanel =
+  components['schemas']['ListadoProductosPanelDto'];
 
 /** backend: src/modulos/catalogo/imagenes.service.ts › ImagenPanel */
 export interface ImagenPanel {
@@ -559,9 +535,7 @@ export interface CambioPrecio {
 /**
  * backend: src/modulos/catalogo/precios.service.ts › PreciosArticulo. Lo que devuelven GET y PUT
  * /api/catalogo/articulos/{id}/precios (E3-H5), con el historial del más reciente al más antiguo.
- *
- * `porcentajeIva`, `precioMinoristaConIva` y `precioMayoristaConIva` se pidieron a SCRUM-30 (ver
- * docs/historias/SCRUM-104.md): mientras no lleguen, la pantalla muestra solo los netos.
+ * Con los valores con IVA desde SCRUM-150.
  */
 export interface PreciosArticulo {
   articuloId: number;
@@ -570,12 +544,12 @@ export interface PreciosArticulo {
   precioMinoristaNeto: number | null;
   precioMayoristaNeto: number | null;
   historial: CambioPrecio[];
-  /** Tasa de IVA vigente (`IVA_PORCENTAJE`), p. ej. 19. Pedido a SCRUM-30. */
-  porcentajeIva?: number;
-  /** Precio minorista con IVA en pesos enteros, como en la tienda. Pedido a SCRUM-30. */
-  precioMinoristaConIva?: number | null;
-  /** Precio mayorista con IVA en pesos enteros. Pedido a SCRUM-30. */
-  precioMayoristaConIva?: number | null;
+  /** Tasa de IVA vigente (`IVA_PORCENTAJE`), p. ej. 19. */
+  porcentajeIva: number;
+  /** Precio minorista con IVA en pesos enteros, como en la tienda. */
+  precioMinoristaConIva: number | null;
+  /** Precio mayorista con IVA en pesos enteros. */
+  precioMayoristaConIva: number | null;
 }
 
 /**
@@ -590,8 +564,8 @@ export type ListadoFormatosParaPack =
   components['schemas']['ListadoFormatosBuscadosDto'];
 
 /**
- * backend: src/modulos/catalogo/packs.service.ts › ComponentePackPanel. `stockTotal` y los
- * precios se pidieron a SCRUM-31 (ver docs/historias/SCRUM-105.md).
+ * backend: src/modulos/catalogo/packs.service.ts › ComponentePackPanel (con stock y precios
+ * desde SCRUM-150).
  */
 export interface ComponentePackPanel {
   formatoId: number;
@@ -599,18 +573,17 @@ export interface ComponentePackPanel {
   nombreFormato: string;
   producto: { id: number; nombre: string };
   cantidad: number;
-  /** Unidades del formato en bodegas activas. Pedido a SCRUM-31. */
-  stockTotal?: number;
-  /** Pedido a SCRUM-31. */
-  precioMinoristaNeto?: number | null;
-  /** En pesos enteros. Pedido a SCRUM-31. */
-  precioMinoristaConIva?: number | null;
+  /** Unidades vendibles del formato, las mismas que usa la tienda. */
+  stockTotal: number;
+  precioMinoristaNeto: number | null;
+  /** En pesos enteros. */
+  precioMinoristaConIva: number | null;
 }
 
 /**
  * backend: src/modulos/catalogo/packs.service.ts › PackPanel. Lo que devuelven GET, POST y PATCH
- * de /api/catalogo/packs (E3-H6). Los precios van aparte (E3-H5). `disponibilidad`,
- * `componenteLimitante` y `precioMinoristaPorSeparadoConIva` se pidieron a SCRUM-31.
+ * de /api/catalogo/packs (E3-H6). Los precios van aparte (E3-H5); disponibilidad, componente
+ * limitante y precio por separado desde SCRUM-150.
  */
 export interface PackPanel {
   id: number;
@@ -631,13 +604,13 @@ export interface PackPanel {
   imagenes: ImagenPanel[];
   /**
    * Packs que se pueden vender con el stock de hoy: los del componente más escaso, contando las
-   * unidades que lleva el pack (como `disponibilidad` de /tienda/packs/{id}). Pedido a SCRUM-31.
+   * unidades que lleva el pack (como `disponibilidad` de /tienda/packs/{id}).
    */
-  disponibilidad?: number;
-  /** El componente que limita la disponibilidad; `null` sin componentes. Pedido a SCRUM-31. */
-  componenteLimitante?: { formatoId: number; stockTotal: number } | null;
-  /** Lo que cuestan los componentes por separado, con IVA. Pedido a SCRUM-31. */
-  precioMinoristaPorSeparadoConIva?: number | null;
+  disponibilidad: number;
+  /** El componente que limita la disponibilidad; `null` sin componentes. */
+  componenteLimitante: { formatoId: number; stockTotal: number } | null;
+  /** Lo que cuestan los componentes por separado, con IVA; `null` si alguno no tiene precio. */
+  precioMinoristaPorSeparadoConIva: number | null;
 }
 
 /** backend: src/modulos/catalogo/packs.service.ts › ListadoPacks (GET /api/catalogo/packs). */

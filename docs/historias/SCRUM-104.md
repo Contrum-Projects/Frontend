@@ -89,3 +89,5 @@ la simulación no calcula. Sin esos campos la pantalla muestra solo los netos.
   guardar el producto y crear un formato. ¿Basta así? P3c Pack nuevo queda para SCRUM-105.
 - Pendiente: revisar a mano 1440 y 360 px con una cuenta de administrador y el backend real.
 - **PR:** https://github.com/Contrum-Projects/Frontend/pull/21, integrado el 28-10-2026. Hecha. Las rutas simuladas de precios siguen hasta que SCRUM-30 entregue los campos de IVA.
+
+**06-11-2026 (SCRUM-150):** `GET` y `PUT /catalogo/articulos/{id}/precios` traen `porcentajeIva` y los precios con IVA; se borraron las rutas simuladas. La referencia «con IVA» mientras se escribe usa ahora la misma regla que `precioConIva` del backend (el neto al peso y después el IVA redondeado), para no diferir en $1. Falta probar con el backend real.
