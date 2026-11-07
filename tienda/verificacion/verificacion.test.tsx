@@ -125,7 +125,18 @@ const elegirTipo = async (
 };
 
 const enviar = (usuario: ReturnType<typeof userEvent.setup>) =>
-  usuario.click(screen.getByRole('button', { name: 'Enviar solicitud' }));
+  usuario.click(screen.getByRole('button', { name: 'Enviar documentos' }));
+
+/** Paso 1: consultar el SII, sin documentos (flujo del 2 nov 2026). */
+const verificar = async (usuario: ReturnType<typeof userEvent.setup>) =>
+  usuario.click(
+    await screen.findByRole('button', { name: 'Verificar mi cuenta' }),
+  );
+
+/** La solicitud quedó `pendiente`: el SII no la aprobó y faltan los documentos. */
+const PENDIENTE = {
+  'GET /api/verificaciones/yo': () => responder(solicitud({})),
+};
 
 beforeEach(() => reiniciarParaPruebas());
 
@@ -136,7 +147,24 @@ afterEach(() => {
 });
 
 describe('E10-H1 FE · Verificación profesional', () => {
-  it('E10-H1 FE · formulario: con RUT y documentos envía la solicitud y muestra «En revisión»', async () => {
+  it('E10-H1 FE · paso 1: sin solicitud, consulta el SII sin pedir documentos', async () => {
+    simular(conDatos());
+    abrir();
+
+    expect(await screen.findByText('12.345.678-5')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Revisamos en el SII el inicio de actividades de tu RUT/,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Verificar mi cuenta' }),
+    ).toBeInTheDocument();
+    // Los documentos se piden solo si el SII no la aprueba
+    expect(screen.queryByLabelText(/PDF, JPG o PNG/)).not.toBeInTheDocument();
+  });
+
+  it('E10-H2 FE · si el SII no la aprueba, pide los documentos y al enviarlos queda «En revisión»', async () => {
     const usuario = userEvent.setup();
     const escrituras = simular({
       ...conDatos(),
@@ -147,9 +175,17 @@ describe('E10-H1 FE · Verificación profesional', () => {
     const multipart = espiarMultipart();
     abrir();
 
-    expect(await screen.findByText('12.345.678-5')).toBeInTheDocument();
+    await verificar(usuario);
+    expect(
+      await screen.findByText(/No pudimos verificarte con el SII/),
+    ).toBeInTheDocument();
+    // El foco pasa al formulario nuevo, no queda en body
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Sube un certificado, título o curso/),
+      ).toHaveFocus(),
+    );
     await subir(usuario, pdf());
-    expect(screen.getByText('certificado-peluqueria.pdf')).toBeInTheDocument();
     await elegirTipo(
       usuario,
       'certificado-peluqueria.pdf',
@@ -160,11 +196,7 @@ describe('E10-H1 FE · Verificación profesional', () => {
     const titulo = await screen.findByRole('heading', {
       name: 'Solicitud en revisión',
     });
-    // El foco no queda en body al cambiar de estado
     await waitFor(() => expect(titulo).toHaveFocus());
-    expect(
-      screen.getByText(/La recibimos el 12 de octubre de 2026/),
-    ).toBeInTheDocument();
     expect(escrituras).toEqual([
       'POST /api/verificaciones',
       'POST /api/verificaciones/yo/documentos',
@@ -175,7 +207,7 @@ describe('E10-H1 FE · Verificación profesional', () => {
     expect(tipo).toEqual(['tipos', 'certificado']);
   });
 
-  it('E10-H1 FE · formulario: si el SII la aprueba, no sube documentos, renueva la sesión y muestra la cuenta profesional', async () => {
+  it('E10-H1 FE · si el SII la aprueba, no pide documentos, renueva la sesión y muestra la cuenta profesional', async () => {
     const usuario = userEvent.setup();
     const escrituras = simular({
       ...conDatos(),
@@ -198,9 +230,7 @@ describe('E10-H1 FE · Verificación profesional', () => {
     });
     abrir();
 
-    await subir(usuario, pdf());
-    await elegirTipo(usuario, 'certificado-peluqueria.pdf', 'Título');
-    await enviar(usuario);
+    await verificar(usuario);
 
     expect(
       await screen.findByRole('heading', {
@@ -218,12 +248,12 @@ describe('E10-H1 FE · Verificación profesional', () => {
     expect(estado.tipo === 'activa' && estado.usuario.rol).toBe('profesional');
   });
 
-  it('E10-H1 FE · formulario: pide al menos un documento y el tipo de cada uno antes de enviar', async () => {
+  it('E10-H2 FE · documentos: pide al menos uno y el tipo de cada uno antes de enviar', async () => {
     const usuario = userEvent.setup();
-    const escrituras = simular(conDatos());
+    const escrituras = simular({ ...conDatos(), ...PENDIENTE });
     abrir();
 
-    await screen.findByText('12.345.678-5');
+    await screen.findByText(/No pudimos verificarte con el SII/);
     await enviar(usuario);
     expect(
       await screen.findByText('Adjunta al menos un documento.'),
@@ -243,9 +273,9 @@ describe('E10-H1 FE · Verificación profesional', () => {
     expect(escrituras).toEqual([]);
   });
 
-  it('E10-H1 FE · formulario: no agrega archivos que no son PDF, JPG ni PNG o que superan 4 MB, y deja quitar uno', async () => {
+  it('E10-H2 FE · documentos: no agrega archivos que no son PDF, JPG ni PNG o que superan 4 MB, y deja quitar uno', async () => {
     const usuario = userEvent.setup({ applyAccept: false });
-    simular(conDatos());
+    simular({ ...conDatos(), ...PENDIENTE });
     abrir();
 
     await subir(
@@ -270,7 +300,7 @@ describe('E10-H1 FE · Verificación profesional', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('E10-H1 FE · sin RUT: al intentar enviar le pide registrarlo en Mis datos', async () => {
+  it('E10-H1 FE · sin RUT: al intentar verificar le pide registrarlo en Mis datos', async () => {
     const usuario = userEvent.setup();
     const escrituras = simular(conDatos({ ...DATOS, rut: null }));
     abrir();
@@ -278,9 +308,7 @@ describe('E10-H1 FE · Verificación profesional', () => {
     expect(
       await screen.findByText('Aún no registras tu RUT'),
     ).toBeInTheDocument();
-    await subir(usuario, pdf());
-    await elegirTipo(usuario, 'certificado-peluqueria.pdf', 'Título');
-    await enviar(usuario);
+    await verificar(usuario);
 
     expect(
       await screen.findByText(
@@ -310,20 +338,16 @@ describe('E10-H1 FE · Verificación profesional', () => {
     });
     abrir();
 
-    await subir(usuario, pdf());
-    await elegirTipo(usuario, 'certificado-peluqueria.pdf', 'Título');
-    await enviar(usuario);
+    await verificar(usuario);
 
     expect(
       await screen.findByText(
         'Registra tu RUT en tus datos antes de solicitar la verificación.',
       ),
     ).toBeInTheDocument();
-    // Lo elegido sigue ahí
-    expect(screen.getByText('certificado-peluqueria.pdf')).toBeInTheDocument();
   });
 
-  it('E10-H1 FE · rechazada: ve el motivo y puede enviar una nueva solicitud', async () => {
+  it('E10-H1 FE · rechazada: ve el motivo y una nueva solicitud vuelve a consultar el SII', async () => {
     const usuario = userEvent.setup();
     const escrituras = simular({
       ...conDatos(),
@@ -350,8 +374,9 @@ describe('E10-H1 FE · Verificación profesional', () => {
       screen.getByRole('button', { name: 'Enviar nueva solicitud' }),
     );
     expect(
-      screen.getByText(/Sube un certificado, título o curso/),
+      screen.getByText(/Con tu cuenta verificada compras a precio profesional/),
     ).toHaveFocus();
+    await verificar(usuario);
     await subir(usuario, pdf('titulo-estilista.jpg'));
     await elegirTipo(usuario, 'titulo-estilista.jpg', 'Título');
     await enviar(usuario);
@@ -366,7 +391,7 @@ describe('E10-H1 FE · Verificación profesional', () => {
   });
 
   it('E10-H1 FE · archivos: informa que se borran a los 30 días de resuelta la solicitud', async () => {
-    simular(conDatos());
+    simular({ ...conDatos(), ...PENDIENTE });
     abrir();
 
     expect(
@@ -385,7 +410,7 @@ describe('E10-H1 FE · Verificación profesional', () => {
       );
     const escrituras = simular({
       ...conDatos(),
-      'GET /api/verificaciones/yo': () => responder(solicitud({})),
+      ...PENDIENTE,
       'POST /api/verificaciones/yo/documentos': () => documentos(),
     });
     abrir();
@@ -417,50 +442,6 @@ describe('E10-H1 FE · Verificación profesional', () => {
     ]);
   });
 
-  it('E10-H2 FE · primera solicitud: si el SII la deja pendiente y falla la subida, avisa y el reintento solo adjunta', async () => {
-    const usuario = userEvent.setup();
-    let miSolicitud = () =>
-      responder({ statusCode: 404, message: 'No tienes solicitudes.' }, 404);
-    let documentos = () =>
-      responder(
-        { statusCode: 413, message: 'Cada documento puede pesar hasta 4 MB.' },
-        413,
-      );
-    const escrituras = simular({
-      ...conDatos(),
-      'GET /api/verificaciones/yo': () => miSolicitud(),
-      'POST /api/verificaciones': () => {
-        miSolicitud = () => responder(solicitud({}));
-        return responder(solicitud({}), 201);
-      },
-      'POST /api/verificaciones/yo/documentos': () => documentos(),
-    });
-    abrir();
-
-    await subir(usuario, pdf());
-    await elegirTipo(usuario, 'certificado-peluqueria.pdf', 'Título');
-    await enviar(usuario);
-
-    expect(
-      await screen.findByText('Cada documento puede pesar hasta 4 MB.'),
-    ).toBeInTheDocument();
-    expect(
-      await screen.findByText(/No pudimos verificarte con el SII/),
-    ).toBeInTheDocument();
-    expect(screen.getByText('certificado-peluqueria.pdf')).toBeInTheDocument();
-
-    documentos = () => responder(EN_REVISION, 201);
-    await enviar(usuario);
-    expect(
-      await screen.findByRole('heading', { name: 'Solicitud en revisión' }),
-    ).toBeInTheDocument();
-    expect(escrituras).toEqual([
-      'POST /api/verificaciones',
-      'POST /api/verificaciones/yo/documentos',
-      'POST /api/verificaciones/yo/documentos',
-    ]);
-  });
-
   it('E10-H1 FE · otro rechazo del backend: muestra su mensaje junto al botón', async () => {
     const usuario = userEvent.setup();
     simular({
@@ -476,9 +457,7 @@ describe('E10-H1 FE · Verificación profesional', () => {
     });
     abrir();
 
-    await subir(usuario, pdf());
-    await elegirTipo(usuario, 'certificado-peluqueria.pdf', 'Título');
-    await enviar(usuario);
+    await verificar(usuario);
 
     expect(
       await screen.findByText(

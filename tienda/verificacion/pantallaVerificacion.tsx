@@ -18,11 +18,13 @@ import {
   SolicitudRechazada,
 } from './estadosSolicitud';
 import { FormularioVerificacion } from './formularioVerificacion';
+import { SolicitudSii } from './solicitudSii';
 
 /**
  * 08 Verificación profesional (Figma 2020:1666, 2020:3006, 2038:2518 y 2038:5337; E10-H1).
- * Muestra la solicitud más reciente según su estado; sin solicitud, pendiente de documentos o
- * tras pedir una nueva después de un rechazo, el formulario.
+ * Muestra la solicitud más reciente según su estado. En dos pasos, como el backend (flujo del 2
+ * nov 2026): sin solicitud, o al pedir una nueva después de un rechazo, se consulta el SII sin
+ * documentos; solo si queda pendiente se piden los documentos.
  */
 export function PantallaVerificacion() {
   const { usuario } = useSesion();
@@ -119,13 +121,10 @@ export function PantallaVerificacion() {
         />
       );
     }
-    return (
-      <FormularioVerificacion
-        rut={rut}
-        soloDocumentos={actual?.estado === 'pendiente'}
-        enfocar={reenviando}
-      />
-    );
+    if (actual?.estado === 'pendiente') {
+      return <FormularioVerificacion rut={rut} enfocar={cambio} />;
+    }
+    return <SolicitudSii rut={rut} enfocar={reenviando} />;
   }
 }
 

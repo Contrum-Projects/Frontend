@@ -33,16 +33,7 @@ export interface DocumentoElegido {
   tipo: TipoDocumentoVerificacion;
 }
 
-interface EnvioVerificacion {
-  documentos: DocumentoElegido[];
-  /**
-   * `true` si ya hay una solicitud `pendiente` (el SII no la aprobó): solo faltan los documentos.
-   * Si no, primero se solicita la verificación y se consulta al SII.
-   */
-  soloDocumentos: boolean;
-}
-
-const adjuntarDocumentos = async (documentos: DocumentoElegido[]) => {
+const adjuntar = async (documentos: DocumentoElegido[]) => {
   const datos = new FormData();
   for (const { archivo, tipo } of documentos) {
     datos.append('archivos', archivo);
@@ -58,32 +49,38 @@ const adjuntarDocumentos = async (documentos: DocumentoElegido[]) => {
 };
 
 /**
- * «Enviar solicitud»: un botón, dos llamadas (decisión de SCRUM-134). Primero
- * POST /verificaciones consulta el RUT de la cuenta en el SII; si lo aprueba, la cuenta ya es
- * profesional y los documentos no se suben. Si queda `pendiente`, se adjuntan los documentos y
- * pasa a revisión del personal.
+ * Paso 1 (E10-H1, flujo del 2 nov 2026): POST /verificaciones consulta en el SII el inicio de
+ * actividades del RUT de la cuenta, sin documentos. Con el giro de peluquería la aprueba al
+ * instante y la sesión se renueva para traer el rol profesional; si no, queda `pendiente` y la
+ * pantalla pide los documentos.
  */
-export const useEnviarVerificacion = () => {
+export const useSolicitarVerificacion = () => {
   const clienteConsultas = useQueryClient();
   return useMutation({
-    mutationFn: ({ documentos, soloDocumentos }: EnvioVerificacion) =>
+    mutationFn: () =>
       conErrorDeApi(async () => {
-        if (!soloDocumentos) {
-          const solicitud = exigir<SolicitudVerificacionCuenta>(
-            await api.POST('/api/verificaciones'),
-          );
-          if (solicitud.estado === 'aprobada') {
-            // E10-H4: el token nuevo trae el rol profesional y la tienda muestra el mayorista
-            await renovarSesion();
-            return solicitud;
-          }
-        }
-        return adjuntarDocumentos(documentos);
+        const solicitud = exigir<SolicitudVerificacionCuenta>(
+          await api.POST('/api/verificaciones'),
+        );
+        // E10-H4: el token nuevo trae el rol profesional y la tienda muestra el mayorista
+        if (solicitud.estado === 'aprobada') await renovarSesion();
+        return solicitud;
       }),
     onSuccess: (solicitud) =>
       clienteConsultas.setQueryData(CLAVE_VERIFICACION, solicitud),
-    // Si fallan los documentos, la solicitud ya quedó `pendiente`: la pantalla debe saberlo
-    onError: () =>
-      clienteConsultas.invalidateQueries({ queryKey: CLAVE_VERIFICACION }),
+  });
+};
+
+/**
+ * Paso 2 (E10-H2): con la solicitud `pendiente`, los documentos para que el personal la revise.
+ * La solicitud pasa a `revision_manual`.
+ */
+export const useAdjuntarDocumentos = () => {
+  const clienteConsultas = useQueryClient();
+  return useMutation({
+    mutationFn: (documentos: DocumentoElegido[]) =>
+      conErrorDeApi(() => adjuntar(documentos)),
+    onSuccess: (solicitud) =>
+      clienteConsultas.setQueryData(CLAVE_VERIFICACION, solicitud),
   });
 };
