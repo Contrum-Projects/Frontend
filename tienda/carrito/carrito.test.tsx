@@ -13,6 +13,8 @@ import type { Rol } from '@/compartido/sesion/roles';
 import { responder, simularBackend } from '@/tienda/cuenta/cuentaDePrueba';
 import { CarritoHeader } from '@/tienda/diseno/carritoHeader';
 import { Compra } from '@/tienda/ficha/compra';
+import { cerrarPanelCarrito } from './estadoPanelCarrito';
+import { PanelCarrito } from './panelCarrito';
 import { PantallaCarrito } from './pantallaCarrito';
 
 // El cliente con una base absoluta, para que `fetch` reciba un Request (como en misDatos.test)
@@ -37,6 +39,7 @@ const toast = vi.hoisted(() => ({ success: vi.fn() }));
 vi.mock('sonner', () => ({ toast }));
 
 afterEach(() => {
+  act(() => cerrarPanelCarrito());
   vi.unstubAllGlobals();
   vi.clearAllMocks();
   reiniciarParaPruebas();
@@ -96,20 +99,28 @@ const carrito = (
 const resumen = () => screen.getByRole('region', { name: 'Resumen' });
 
 describe('SCRUM-116 · Agregar desde la ficha', () => {
-  it('E5-H1 FE · agregar y cambiar: «Agregar al carrito» envía el formato y la cantidad, y avisa con «Ver carrito»', async () => {
+  it('E5-H1 FE · agregar y cambiar: «Agregar al carrito» envía el formato y la cantidad, y abre el panel del carrito', async () => {
     iniciarSesion();
+    // Como el backend: después de agregar, el carrito trae la línea
+    let agregado = false;
     const escrituras = simularBackend({
-      'GET /api/carrito': () => responder(carrito([])),
-      'POST /api/carrito/items': () =>
-        responder(carrito([linea({ cantidad: 2 })]), 201),
+      'GET /api/carrito': () =>
+        responder(carrito(agregado ? [linea({ cantidad: 2 })] : [])),
+      'POST /api/carrito/items': () => {
+        agregado = true;
+        return responder(carrito([linea({ cantidad: 2 })]), 201);
+      },
     });
     const persona = userEvent.setup();
     mostrar(
-      <Compra
-        articuloId={11}
-        disponibilidad="disponible"
-        articulo="Shampoo reparador 300 ml"
-      />,
+      <>
+        <Compra
+          articuloId={11}
+          disponibilidad="disponible"
+          articulo="Shampoo reparador 300 ml"
+        />
+        <PanelCarrito />
+      </>,
     );
 
     await persona.click(
@@ -119,17 +130,19 @@ describe('SCRUM-116 · Agregar desde la ficha', () => {
       screen.getByRole('button', { name: /Agregar al carrito/ }),
     );
 
-    await waitFor(() => expect(toast.success).toHaveBeenCalled());
+    const panel = await screen.findByRole('dialog', { name: 'Tu carrito' });
     expect(escrituras).toEqual([
       {
         peticion: 'POST /api/carrito/items',
         cuerpo: { articuloId: 11, cantidad: 2 },
       },
     ]);
-    const [mensaje, opciones] = toast.success.mock.calls[0];
-    expect(mensaje).toBe('Agregado al carrito');
-    opciones.action.onClick();
-    expect(push).toHaveBeenCalledWith('/carrito');
+    expect(
+      within(panel).getByRole('list', { name: 'Productos del carrito' }),
+    ).toBeInTheDocument();
+    expect(
+      within(panel).getByRole('link', { name: 'Ver carrito' }),
+    ).toHaveAttribute('href', '/carrito');
   });
 
   it('E5-H1 FE · agregar y cambiar: si el backend rechaza (stock), su mensaje queda bajo el botón', async () => {
@@ -432,11 +445,14 @@ describe('SCRUM-119 · Sin mínimo de unidades para el peluquero (SCRUM-146)', (
     });
     const persona = userEvent.setup();
     mostrar(
-      <Compra
-        articuloId={11}
-        disponibilidad="disponible"
-        articulo="Shampoo reparador 300 ml"
-      />,
+      <>
+        <Compra
+          articuloId={11}
+          disponibilidad="disponible"
+          articulo="Shampoo reparador 300 ml"
+        />
+        <PanelCarrito />
+      </>,
     );
 
     expect(screen.queryByText(/mínimo/)).not.toBeInTheDocument();
@@ -444,7 +460,9 @@ describe('SCRUM-119 · Sin mínimo de unidades para el peluquero (SCRUM-146)', (
       screen.getByRole('button', { name: 'Agregar al carrito' }),
     );
 
-    await waitFor(() => expect(toast.success).toHaveBeenCalled());
+    expect(
+      await screen.findByRole('dialog', { name: 'Tu carrito' }),
+    ).toBeInTheDocument();
     expect(escrituras).toEqual([
       {
         peticion: 'POST /api/carrito/items',
@@ -478,5 +496,56 @@ describe('SCRUM-119 · Sin mínimo de unidades para el peluquero (SCRUM-146)', (
     expect(
       within(resumen()).getByRole('link', { name: /Continuar con la compra/ }),
     ).toBeInTheDocument();
+  });
+});
+
+describe('Panel lateral del carrito', () => {
+  it('el ícono del header abre el panel con las líneas, el total del backend y los botones', async () => {
+    iniciarSesion();
+    simularBackend({
+      'GET /api/carrito': () => responder(carrito([linea({ cantidad: 2 })])),
+    });
+    const persona = userEvent.setup();
+    mostrar(
+      <>
+        <CarritoHeader />
+        <PanelCarrito />
+      </>,
+    );
+
+    await persona.click(await screen.findByRole('link', { name: /Carrito/ }));
+
+    const panel = await screen.findByRole('dialog', { name: 'Tu carrito' });
+    expect(
+      await within(panel).findByRole('list', { name: 'Productos del carrito' }),
+    ).toBeInTheDocument();
+    expect(within(panel).getByText('2 unidades')).toBeInTheDocument();
+    expect(
+      within(panel).getByRole('link', { name: /Continuar con la compra/ }),
+    ).toHaveAttribute('href', '/checkout');
+    // La navegación del panel no salió de la página
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it('sin productos, el panel lo dice y ofrece el catálogo', async () => {
+    iniciarSesion();
+    simularBackend({ 'GET /api/carrito': () => responder(carrito([])) });
+    const persona = userEvent.setup();
+    mostrar(
+      <>
+        <CarritoHeader />
+        <PanelCarrito />
+      </>,
+    );
+
+    await persona.click(screen.getByRole('link', { name: 'Carrito' }));
+
+    const panel = await screen.findByRole('dialog', { name: 'Tu carrito' });
+    expect(
+      await within(panel).findByText('Tu carrito está vacío'),
+    ).toBeInTheDocument();
+    expect(
+      within(panel).getByRole('link', { name: 'Ver catálogo' }),
+    ).toHaveAttribute('href', '/catalogo');
   });
 });

@@ -1,16 +1,14 @@
 'use client';
 
+import { abrirPanelCarrito } from '@/tienda/carrito/estadoPanelCarrito';
 import { ArrowRight } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { toast } from 'sonner';
 import type { Disponibilidad } from '@/compartido/api/respuestas';
 import { esperarRenovacion, leerEstado } from '@/compartido/sesion/almacen';
 import { Button } from '@/compartido/ui/button';
 import { Cantidad } from '@/compartido/ui/cantidad';
 import { agregarAlCarritoNavegador } from '@/tienda/carrito/carritoNavegador';
 import { useAgregarAlCarrito } from '@/tienda/carrito/consultasCarrito';
-import { RUTAS } from '@/tienda/diseno/enlaces';
 
 interface CompraProps {
   /** Id del formato elegido o del pack: es el artículo que se agrega al carrito. */
@@ -35,7 +33,6 @@ export const Compra = ({
   // Cubre también la espera de la sesión, antes de que empiece la mutación (sin doble clic)
   const [esperando, setEsperando] = useState(false);
   const [errorNavegador, setErrorNavegador] = useState<string | null>(null);
-  const router = useRouter();
   const agregarAlCarrito = useAgregarAlCarrito();
 
   if (disponibilidad === 'agotado') {
@@ -64,13 +61,8 @@ export const Compra = ({
     );
   };
 
-  const avisarAgregado = () =>
-    toast.success('Agregado al carrito', {
-      action: {
-        label: 'Ver carrito',
-        onClick: () => router.push(RUTAS.carrito),
-      },
-    });
+  // Agregado: se abre el panel lateral con el carrito (decisión del 7 nov 2026)
+  const avisarAgregado = () => abrirPanelCarrito();
 
   const selector = (
     <Cantidad

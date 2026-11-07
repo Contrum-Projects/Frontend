@@ -24,6 +24,11 @@ export interface LineaCarritoProps {
   linea: Linea;
   /** El backend ya entrega el mayorista: solo cambia la etiqueta del precio unitario. */
   profesional: boolean;
+  /**
+   * Siempre con el diseño de celular, aunque la pantalla sea ancha: para el panel lateral del
+   * carrito, que mide lo mismo en escritorio que en celular.
+   */
+  compacta?: boolean;
 }
 
 /**
@@ -36,8 +41,11 @@ export interface LineaCarritoProps {
 export function LineaCarrito({
   linea,
   profesional,
+  compacta = false,
   acciones,
 }: LineaCarritoProps & { acciones: AccionesLinea }) {
+  // En el panel lateral no se aplican los cambios de escritorio (md:)
+  const ancha = !compacta;
   const idAviso = useId();
   const { cantidad, ocupada, error } = acciones;
   const aviso = avisoDeLinea(linea);
@@ -47,16 +55,28 @@ export function LineaCarrito({
   return (
     <li
       className={cn(
-        'flex flex-col gap-3 rounded-lg border bg-fondo-superficie p-3 md:gap-4 md:p-4',
-        linea.impideCrearPedido &&
-          'border-[1.5px] border-estado-aviso-texto md:border-2',
+        'flex flex-col gap-3 rounded-lg border bg-fondo-superficie p-3',
+        ancha && 'md:gap-4 md:p-4',
+        linea.impideCrearPedido && 'border-[1.5px] border-estado-aviso-texto',
+        linea.impideCrearPedido && ancha && 'md:border-2',
       )}
     >
       {/* Celular: foto, datos y quitar; debajo, cantidad y subtotal. Escritorio: todo en una fila */}
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-3 md:grid-cols-[auto_minmax(0,1fr)_auto_auto_auto] md:items-center md:gap-x-6">
-        <FotoLinea imagen={linea.imagen} />
+      <div
+        className={cn(
+          'grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-3',
+          ancha &&
+            'md:grid-cols-[auto_minmax(0,1fr)_auto_auto_auto] md:items-center md:gap-x-6',
+        )}
+      >
+        <FotoLinea imagen={linea.imagen} ancha={ancha} />
         <div className="flex min-w-0 flex-col gap-1">
-          <h2 className="texto-cuerpo-fuerte text-texto-principal md:titulo-h3">
+          <h2
+            className={cn(
+              'texto-cuerpo-fuerte text-texto-principal',
+              ancha && 'md:titulo-h3',
+            )}
+          >
             {nombre}
           </h2>
           {linea.nombreFormato && (
@@ -73,7 +93,12 @@ export function LineaCarrito({
         </div>
         {/* Un artículo que ya no se vende no tiene cantidad ni subtotal: sin fila vacía */}
         {linea.aLaVenta && (
-          <div className="col-span-2 col-start-1 row-start-2 md:col-span-1 md:col-start-3 md:row-start-1">
+          <div
+            className={cn(
+              'col-span-2 col-start-1 row-start-2',
+              ancha && 'md:col-span-1 md:col-start-3 md:row-start-1',
+            )}
+          >
             <ControlCantidad
               linea={linea}
               cantidad={cantidad}
@@ -85,7 +110,12 @@ export function LineaCarrito({
           </div>
         )}
         {linea.subtotal !== null && (
-          <div className="col-start-3 row-start-2 justify-self-end md:col-start-4 md:row-start-1">
+          <div
+            className={cn(
+              'col-start-3 row-start-2 justify-self-end',
+              ancha && 'md:col-start-4 md:row-start-1',
+            )}
+          >
             <Subtotal subtotal={linea.subtotal} />
           </div>
         )}
@@ -97,7 +127,10 @@ export function LineaCarrito({
           aria-describedby={aviso ? idAviso : undefined}
           disabled={ocupada}
           onClick={acciones.onQuitar}
-          className="col-start-3 row-start-1 -mt-2 -mr-2 justify-self-end md:col-start-5 md:m-0"
+          className={cn(
+            'col-start-3 row-start-1 -mt-2 -mr-2 justify-self-end',
+            ancha && 'md:col-start-5 md:m-0',
+          )}
         >
           <Trash2 aria-hidden />
         </Button>
@@ -131,14 +164,25 @@ const avisoDeLinea = (linea: Linea): string | null => {
 };
 
 /** 72 px en celular y 96 px en escritorio, sobre menta mientras carga o si no tiene foto. */
-const FotoLinea = ({ imagen }: { imagen: string | null }) => (
-  <div className="relative size-18 shrink-0 overflow-hidden rounded-md bg-marca-acento-suave md:size-24">
+const FotoLinea = ({
+  imagen,
+  ancha,
+}: {
+  imagen: string | null;
+  ancha: boolean;
+}) => (
+  <div
+    className={cn(
+      'relative size-18 shrink-0 overflow-hidden rounded-md bg-marca-acento-suave',
+      ancha && 'md:size-24',
+    )}
+  >
     {imagen && (
       <Image
         src={imagen}
         alt=""
         fill
-        sizes="(min-width: 768px) 96px, 72px"
+        sizes={ancha ? '(min-width: 768px) 96px, 72px' : '72px'}
         className="object-cover"
       />
     )}

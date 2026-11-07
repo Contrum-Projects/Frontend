@@ -75,3 +75,10 @@ está en `compartido/api/respuestas.ts`. Exigen sesión de cliente o profesional
 - Pendiente: probar en el navegador con una cuenta de cliente del backend local (la semilla solo
   crea la del administrador).
 - PR: https://github.com/Contrum-Projects/Frontend/pull/39 (En revisión desde el 01-11-2026; sin capturas, falta probar en el navegador con una cuenta de cliente).
+
+**07-11-2026 (SCRUM-150) · panel lateral del carrito** (decisión del usuario; Figma no lo dibuja):
+el ícono del header y «Agregar al carrito» abren un `Sheet` a la derecha con las mismas líneas de
+la página (cantidad y quitar, en su diseño de celular con `compacta`), el total con IVA y
+«Continuar con la compra» según el backend, y «Ver carrito». Reemplaza el aviso flotante
+«Agregado al carrito». El ícono sigue siendo un enlace a `/carrito` (sin JavaScript, o con Ctrl
+o clic central, abre la página). Revisar en Figma.
