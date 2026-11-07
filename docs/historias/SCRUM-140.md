@@ -110,3 +110,13 @@ en `/api/marketing/campanas`, sin la API simulada, con estas decisiones del usua
 - Si se quiere el formato enriquecido de Figma, definir un formato estructurado (no HTML) y su
   validación en el backend; sería otra historia o un cambio a esta.
 - Hecha solo cuando se pruebe con el backend real y se borren las rutas simuladas.
+
+## Cambios posteriores (SCRUM-150, 07-11-2026)
+
+- **Marcadores:** `{nombre}`, `{apellido}`, `{nombre_completo}` y `{enlace_tienda}`, con botones para
+  insertarlos donde está el cursor (`panel/campanas/menuMarcadores.tsx`). Los completa el backend.
+- **Más filtros** (`panel/campanas/filtrosCuenta.tsx`): compras (compró en los últimos N días, no
+  compra hace más de N días, pedidos y gasto desde/hasta), ubicación (regiones y comunas por código
+  CUT), perfil (mes de cumpleaños, edad, género de la lista del registro) y cuenta (antigüedad, con
+  productos en el carrito). Solo cuentas: con suscriptores el backend responde 400 junto a los
+  tipos. Reglas en `reglas-de-negocio.md` del backend (E12-H3, 7 nov).

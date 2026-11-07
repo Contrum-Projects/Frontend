@@ -918,7 +918,7 @@ export interface paths {
         put?: never;
         /**
          * Sugerir la descripción y los ingredientes desde la foto del reverso (E4-H1)
-         * @description Recibe la foto del reverso del producto (JPEG, PNG o WebP de hasta 4 MB) en el campo `imagen` y devuelve una descripción de venta sugerida y los ingredientes transcritos, para revisarlos antes de guardarlos. No guarda la foto ni la sugerencia. `ingredientes` es `null` si la foto no los muestra. Hasta 15 por minuto por cuenta.
+         * @description Recibe la foto del reverso del producto (JPEG, PNG o WebP de hasta 4 MB) en el campo `imagen` y devuelve una descripción de venta sugerida y los ingredientes en español (con el nombre común de cada uno si el envase usa INCI), para revisarlos antes de guardarlos. No guarda la foto ni la sugerencia. `ingredientes` es `null` si la foto no los muestra. Hasta 15 por minuto por cuenta.
          */
         post: operations["SugerenciaDescripcionController_sugerir"];
         delete?: never;
@@ -1936,7 +1936,7 @@ export interface paths {
         put?: never;
         /**
          * Vista previa en vivo de un correo de campaña (SCRUM-150)
-         * @description Arma el correo con el asunto y el cuerpo que se están escribiendo, sin guardarlos. No cuenta destinatarios ni entrega la `confirmacion`: para enviar se guarda el borrador y se pide `POST /:id/vista-previa`.
+         * @description Arma el correo con el asunto y el cuerpo que se están escribiendo, sin guardarlos. Los marcadores ({nombre}, {apellido}, {nombre_completo}, {enlace_tienda}) se completan con los datos de quien la pide. No cuenta destinatarios ni entrega la `confirmacion`: para enviar se guarda el borrador y se pide `POST /:id/vista-previa`.
          */
         post: operations["CampanasController_vistaPreviaEnVivo"];
         delete?: never;
@@ -3442,6 +3442,36 @@ export interface components {
              * @example []
              */
             marcas: number[];
+            /** @description Con un pedido pagado en los últimos N días. */
+            compraEnUltimosDias: number | null;
+            /** @description Último pedido pagado hace más de N días. */
+            sinComprarHaceDias: number | null;
+            /** @description Mínimo de pedidos pagados. */
+            pedidosMinimo: number | null;
+            /** @description Máximo de pedidos pagados. */
+            pedidosMaximo: number | null;
+            /** @description Gasto mínimo con IVA, en pesos. */
+            gastoMinimo: number | null;
+            /** @description Gasto máximo con IVA, en pesos. */
+            gastoMaximo: number | null;
+            /** @description Edad mínima en años cumplidos. */
+            edadMinima: number | null;
+            /** @description Edad máxima en años cumplidos. */
+            edadMaxima: number | null;
+            /** @description Cuenta creada en los últimos N días. */
+            registroUltimosDias: number | null;
+            /** @description Cuenta creada hace más de N días. */
+            registroHaceMasDias: number | null;
+            /** @description Código CUT de las regiones de sus direcciones. */
+            regiones: string[];
+            /** @description Código CUT de las comunas de sus direcciones. */
+            comunas: string[];
+            /** @description Meses de cumpleaños (1 a 12). */
+            mesesCumpleanos: number[];
+            /** @description Géneros, tal como los escribió la cuenta. */
+            generos: string[];
+            /** @description Solo cuentas con productos en el carrito. */
+            conCarrito: boolean;
         };
         FilaReporteCampanaDto: {
             /**
@@ -3558,12 +3588,69 @@ export interface components {
              *     ]
              */
             marcas?: number[];
+            /**
+             * @description Con un pedido pagado en los últimos N días.
+             * @example 30
+             */
+            compraEnUltimosDias?: number | null;
+            /**
+             * @description Compró alguna vez, pero su último pedido pagado es de hace más de N días (para reactivar).
+             * @example 90
+             */
+            sinComprarHaceDias?: number | null;
+            /** @description Mínimo de pedidos pagados. */
+            pedidosMinimo?: number | null;
+            /** @description Máximo de pedidos pagados (0: nunca compró). */
+            pedidosMaximo?: number | null;
+            /** @description Mínimo gastado en pedidos pagados, en pesos con IVA. */
+            gastoMinimo?: number | null;
+            /** @description Máximo gastado en pedidos pagados, en pesos con IVA. */
+            gastoMaximo?: number | null;
+            /**
+             * @description Código CUT de regiones: cuentas con alguna dirección guardada en una de ellas o en las comunas indicadas.
+             * @example [
+             *       "13"
+             *     ]
+             */
+            regiones?: string[];
+            /**
+             * @description Código CUT de comunas: cuentas con alguna dirección guardada en una de ellas o en las regiones indicadas.
+             * @example [
+             *       "13101"
+             *     ]
+             */
+            comunas?: string[];
+            /**
+             * @description Mes de cumpleaños (1 a 12).
+             * @example [
+             *       11,
+             *       12
+             *     ]
+             */
+            mesesCumpleanos?: number[];
+            /** @description Edad mínima en años cumplidos (sin fecha de nacimiento no entra). */
+            edadMinima?: number | null;
+            /** @description Edad máxima en años cumplidos (sin fecha de nacimiento no entra). */
+            edadMaxima?: number | null;
+            /**
+             * @description Género que escribió la cuenta, tal cual.
+             * @example [
+             *       "Femenino"
+             *     ]
+             */
+            generos?: string[];
+            /** @description Cuenta creada en los últimos N días. */
+            registroUltimosDias?: number | null;
+            /** @description Cuenta creada hace más de N días. */
+            registroHaceMasDias?: number | null;
+            /** @description Solo cuentas con productos en el carrito, aún sin comprar. */
+            conCarrito?: boolean;
         };
         CrearCampanaDto: {
             /** @example Nueva línea reparadora con 20 % de descuento */
             asunto: string;
             /**
-             * @description Texto plano. Una línea en blanco separa los párrafos; el HTML se muestra tal cual, sin interpretarse.
+             * @description Texto plano. Una línea en blanco separa los párrafos; el HTML se muestra tal cual, sin interpretarse. Acepta los marcadores {nombre}, {apellido}, {nombre_completo} y {enlace_tienda}, que cada correo cambia por los datos de quien lo recibe.
              * @example Hola:
              *
              *     Llegó la nueva línea reparadora. Encuéntrala en la tienda.
@@ -3698,7 +3785,7 @@ export interface components {
             /** @example Nueva línea reparadora con 20 % de descuento */
             asunto: string;
             /**
-             * @description Texto plano. Una línea en blanco separa los párrafos; el HTML se muestra tal cual, sin interpretarse.
+             * @description Texto plano. Una línea en blanco separa los párrafos; el HTML se muestra tal cual, sin interpretarse. Acepta los marcadores {nombre}, {apellido}, {nombre_completo} y {enlace_tienda}, que cada correo cambia por los datos de quien lo recibe.
              * @example Hola:
              *
              *     Llegó la nueva línea reparadora. Encuéntrala en la tienda.

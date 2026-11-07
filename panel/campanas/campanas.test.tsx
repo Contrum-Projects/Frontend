@@ -18,6 +18,7 @@ import { Toaster } from '@/compartido/ui/sonner';
 import { puedeAbrir } from '@/panel/diseno/secciones';
 import { PantallaCampanaNueva, PantallaEditarCampana } from './pantallaCampana';
 import { PantallaCampanas } from './pantallaCampanas';
+import { FILTROS_VACIOS } from './esquemaCampana';
 
 // Cliente igual al de la app, con URL absoluta y el fetch simulado de cada prueba
 vi.mock('@/compartido/api/cliente', async (original) => {
@@ -71,10 +72,11 @@ const guardada = (
   asunto: datos.asunto,
   cuerpo: datos.cuerpo,
   segmento: {
-    tipos: datos.segmento.tipos,
+    ...FILTROS_VACIOS,
+    ...datos.segmento,
     categorias: datos.segmento.categorias ?? [],
     marcas: datos.segmento.marcas ?? [],
-  },
+  } as CampanaGestion['segmento'],
   enviada: false,
   fechaCreacion: '2026-11-04T13:20:00.000Z',
   fechaEnvio: null,
@@ -592,10 +594,110 @@ describe('Redactar una campaña (SCRUM-140)', () => {
       {
         asunto: 'Llegaron tonos nuevos para tu salón',
         cuerpo: 'Hola: llegaron tonos nuevos.',
-        segmento: { tipos: ['profesional'], categorias: [3], marcas: [] },
+        segmento: {
+          ...FILTROS_VACIOS,
+          tipos: ['profesional'],
+          categorias: [3],
+          marcas: [],
+        },
       },
     ]);
     expect(cambiarUrl).toHaveBeenCalledWith(null, '', '/panel/campanas/41');
+  });
+
+  it('SCRUM-150 · más filtros: compras, ubicación, perfil y carrito viajan en el segmento al guardar', async () => {
+    const usuario = userEvent.setup();
+    const { pedidas } = simularBackend({
+      'GET /api/territorio/regiones': () =>
+        Response.json([{ codigoCut: '13', nombre: 'Metropolitana' }]),
+      'GET /api/territorio/regiones/13/comunas': () =>
+        Response.json([{ codigoCut: '13101', nombre: 'Santiago' }]),
+    });
+    mostrar(<PantallaCampanaNueva />);
+
+    await usuario.type(screen.getByLabelText('Asunto'), 'Te extrañamos');
+    await usuario.type(screen.getByLabelText('Cuerpo'), 'Vuelve pronto.');
+    await usuario.click(
+      screen.getByRole('checkbox', { name: 'Suscriptores sin cuenta' }),
+    );
+    // Sin abrir no se pide la lista de regiones
+    expect(pedidas('GET /api/territorio/regiones')).toHaveLength(0);
+    await usuario.click(screen.getByRole('button', { name: /Más filtros/ }));
+
+    await usuario.type(screen.getByLabelText('No compra hace más de'), '9a0');
+    await usuario.type(screen.getByLabelText('Edad: desde'), '25');
+    await usuario.click(screen.getByRole('checkbox', { name: 'Femenino' }));
+    await usuario.click(
+      screen.getByRole('checkbox', { name: 'Con productos en el carrito' }),
+    );
+    await usuario.click(await screen.findByRole('button', { name: 'Comuna' }));
+    await usuario.click(
+      await screen.findByRole('menuitemcheckbox', {
+        name: 'Santiago · Metropolitana',
+      }),
+    );
+    await usuario.keyboard('{Escape}');
+    expect(
+      screen.getByRole('button', { name: 'Más filtros, activos: 5' }),
+    ).toBeInTheDocument();
+
+    await usuario.click(
+      screen.getAllByRole('button', { name: 'Guardar borrador' })[0]!,
+    );
+
+    expect(
+      (await screen.findAllByText('Borrador guardado.'))[0],
+    ).toBeInTheDocument();
+    expect(pedidas(`POST ${RUTA}`)).toHaveLength(1);
+    expect(pedidas(`POST ${RUTA}`).at(-1)?.cuerpo).toMatchObject({
+      segmento: {
+        tipos: ['cliente', 'profesional'],
+        sinComprarHaceDias: 90,
+        edadMinima: 25,
+        generos: ['Femenino'],
+        comunas: ['13101'],
+        conCarrito: true,
+        compraEnUltimosDias: null,
+      },
+    });
+  });
+
+  it('SCRUM-150 · más filtros: el rechazo del backend queda junto al filtro', async () => {
+    const usuario = userEvent.setup();
+    simularBackend({
+      [`POST ${RUTA}`]: () =>
+        Response.json(
+          {
+            statusCode: 400,
+            message: 'La edad máxima no puede ser menor que la mínima.',
+            errores: [
+              {
+                campo: 'segmento.edadMaxima',
+                mensaje: 'La edad máxima no puede ser menor que la mínima.',
+              },
+            ],
+          },
+          { status: 400 },
+        ),
+    });
+    mostrar(<PantallaCampanaNueva />);
+
+    await usuario.type(screen.getByLabelText('Asunto'), 'Hola');
+    await usuario.type(screen.getByLabelText('Cuerpo'), 'Mensaje');
+    await usuario.click(screen.getByRole('button', { name: /Más filtros/ }));
+    await usuario.type(screen.getByLabelText('Edad: desde'), '40');
+    // Pedidos, gasto y edad tienen su «hasta»: el de la edad es el tercero
+    const edadHasta = screen.getAllByLabelText('hasta')[2]!;
+    await usuario.type(edadHasta, '30');
+    await usuario.click(
+      screen.getAllByRole('button', { name: 'Guardar borrador' })[0]!,
+    );
+
+    const mensaje = await screen.findByText(
+      'La edad máxima no puede ser menor que la mínima.',
+    );
+    expect(edadHasta).toHaveAttribute('aria-invalid', 'true');
+    expect(edadHasta).toHaveAttribute('aria-describedby', mensaje.id);
   });
 
   it('E12-H3 FE · CA2 redactar: un borrador se abre con lo guardado y se guarda con PATCH', async () => {

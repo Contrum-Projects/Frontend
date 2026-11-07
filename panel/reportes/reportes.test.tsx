@@ -23,6 +23,7 @@ import {
 import { puedeAbrir } from '@/panel/diseno/secciones';
 import { PantallaReportes } from './pantallaReportes';
 import { lineasDelEje, rangoDelPeriodo } from './periodos';
+import { FILTROS_VACIOS } from '@/panel/campanas/esquemaCampana';
 
 // Cliente igual al de la app, con URL absoluta y el fetch simulado de cada prueba
 vi.mock('@/compartido/api/cliente', async (original) => {
@@ -202,6 +203,7 @@ const responderCarritos =
 
 /** El segmento a todos (SCRUM-150: el backend lo entrega estructurado). */
 const TODOS: ResultadoCampana['segmento'] = {
+  ...FILTROS_VACIOS,
   tipos: ['cliente', 'profesional', 'suscriptor'],
   categorias: [],
   marcas: [],
@@ -240,7 +242,7 @@ const CAMPANAS = [
     id: 11,
     nombre: 'Novedades para peluqueros',
     fecha: '2026-08-18T14:00:00.000Z',
-    segmento: { tipos: ['profesional'], categorias: [], marcas: [] },
+    segmento: { ...TODOS, tipos: ['profesional'] },
     enviados: 312,
     porcentajeAbiertos: 58,
     porcentajeClic: 17,

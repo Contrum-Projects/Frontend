@@ -12,7 +12,7 @@ import {
 import { Input } from '@/compartido/ui/input';
 import { Textarea } from '@/compartido/ui/textarea';
 import { CampoFormulario } from '@/tienda/cuenta/campoFormulario';
-import type { FormularioCampana } from './esquemaCampana';
+import { FILTROS_CUENTA, type FormularioCampana } from './esquemaCampana';
 import { insertarEn, type MarcadorCampana, textoMarcador } from './marcadores';
 import { MenuMarcadores } from './menuMarcadores';
 import { SelectorSegmento } from './selectorSegmento';
@@ -146,6 +146,12 @@ export const TarjetaSegmento = ({
             tipos: errors.segmento?.tipos?.message ?? errors.segmento?.message,
             categorias: errors.segmento?.categorias?.message,
             marcas: errors.segmento?.marcas?.message,
+            filtros: Object.fromEntries(
+              FILTROS_CUENTA.map((clave) => [
+                clave,
+                errors.segmento?.[clave]?.message,
+              ]),
+            ),
           }}
         />
       )}
