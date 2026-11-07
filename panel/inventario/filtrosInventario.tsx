@@ -84,14 +84,17 @@ export const Buscador = ({
   etiqueta,
   placeholder,
   alCambiar,
+  inicial = '',
 }: {
   id: string;
   /** Para lectores de pantalla: «Buscar entradas por proveedor o documento». */
   etiqueta: string;
   placeholder: string;
   alCambiar: (texto: string) => void;
+  /** Texto con que parte (p. ej. el `?q=` que llega desde el Resumen). */
+  inicial?: string;
 }) => {
-  const [texto, setTexto] = useState('');
+  const [texto, setTexto] = useState(inicial);
   // alCambiar cambia en cada render del padre: solo el texto vuelve a programar la búsqueda
   const buscar = useEffectEvent((valor: string) => alCambiar(valor));
   useEffect(() => {

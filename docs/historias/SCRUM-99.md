@@ -49,9 +49,9 @@ rol no tiene el permiso. Sin rutas simuladas.
 - **Cliente en el panel:** cliente y profesional van a la tienda; sin sesión, a
   `/ingresar?volver=…`. El cierre de sesión sigue a «Mi cuenta» (en este dispositivo, a la
   tienda; en todos, a ingresar).
-- **Resumen:** solo el título. Los indicadores y tablas de Figma llegan con SCRUM-130 (pedidos),
-  SCRUM-135 (verificaciones) y SCRUM-115 (stock bajo); no hay endpoints y el equipo prefirió no
-  simularlos (28-10-2026). La búsqueda del panel tampoco tiene endpoint ni historia.
+- **Resumen:** solo el título al cerrar esta historia (28-10-2026). Desde SCRUM-150 (07-11-2026)
+  tiene los indicadores, «Pedidos recientes» y «Stock bajo el mínimo» de Figma, cada parte según
+  el permiso del rol; el buscador lleva a `/panel/pedidos?q=` (la búsqueda la hace el backend).
 - **«Más» en celular:** Figma no tiene la hoja abierta. Es una hoja desde abajo con las secciones
   del rol que no caben en la barra, la persona y «Cerrar sesión» (decisión del 28-10-2026).
 - **Aviso de 403 solo en el panel:** en la tienda cada formulario muestra su error junto al

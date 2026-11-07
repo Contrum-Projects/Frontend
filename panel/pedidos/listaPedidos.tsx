@@ -29,7 +29,7 @@ const CELDA = 'px-2 py-3 align-middle texto-pequeno text-texto-principal';
 export const rutaPedido = (codigo: string) =>
   `/panel/pedidos/${encodeURIComponent(codigo)}` as Route;
 
-const Entrega = ({ tipo }: { tipo: PedidoGestion['tipoEntrega'] }) => {
+export const Entrega = ({ tipo }: { tipo: PedidoGestion['tipoEntrega'] }) => {
   const Icono = tipo === 'retiro' ? Store : Truck;
   return (
     <span className="flex items-center gap-2">
