@@ -211,6 +211,12 @@ const Productos = ({ pedido }: { pedido: DetallePedidoGestion }) => {
           />
         ))}
         {pedido.envio && <Fila texto="Despacho" monto={pedido.envio.costo} />}
+        {pedido.montos.descuento > 0 && (
+          <Fila
+            texto={`Cupón${pedido.cupon ? ` ${pedido.cupon}` : ''}`}
+            monto={-pedido.montos.descuento}
+          />
+        )}
         <Fila
           texto="Total"
           monto={pedido.montos.total}

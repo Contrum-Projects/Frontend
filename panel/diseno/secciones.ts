@@ -7,6 +7,7 @@ import {
   Mail,
   ReceiptText,
   Tag,
+  TicketPercent,
   UsersRound,
   type LucideIcon,
 } from 'lucide-react';
@@ -74,6 +75,14 @@ export const SECCIONES: readonly SeccionPanel[] = [
     href: '/panel/campanas',
     icono: Mail,
     permiso: PERMISOS.CAMPANAS_GESTIONAR,
+  },
+  {
+    // No está en el menú de Figma: se agregó con SCRUM-150, con el permiso de las campañas
+    texto: 'Cupones',
+    href: '/panel/cupones' as Route,
+    icono: TicketPercent,
+    permiso: PERMISOS.CAMPANAS_GESTIONAR,
+    enLaBarra: false,
   },
   {
     texto: 'Reportes',

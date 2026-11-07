@@ -789,7 +789,10 @@ export interface DetallePedidoCuenta {
   tipoEntrega: 'despacho' | 'retiro';
   tipoDocumento: 'boleta' | 'factura';
   porcentajeIva: number;
-  montos: { neto: number; iva: number; total: number };
+  /** `descuento`: lo que descontó el cupón, con IVA, ya restado de los demás (SCRUM-150). */
+  montos: { neto: number; iva: number; total: number; descuento: number };
+  /** Código del cupón aplicado; `null` sin cupón (SCRUM-150). */
+  cupon: string | null;
   items: LineaPedido[];
   /** `null` si es retiro en tienda. */
   envio: EnvioPedido | null;
@@ -838,7 +841,9 @@ export interface CotizacionDespacho {
   costo: number;
   /** Total del carrito con IVA, sin el despacho. */
   totalCarrito: number;
-  /** Lo que pagaría: carrito más despacho. */
+  /** Lo que descuenta el cupón indicado, con IVA (SCRUM-150); 0 sin cupón. */
+  descuento: number;
+  /** Lo que pagaría: carrito menos el descuento, más despacho. */
   total: number;
 }
 
@@ -1192,3 +1197,10 @@ export type ResultadoCampana = components['schemas']['FilaReporteCampanaDto'];
 /** GET /api/reportes/campanas?desde&hasta (E14-H3, SCRUM-150). Las más recientes primero. */
 export type ReporteCampanas =
   components['schemas']['ReportePeriodoCampanasDto'];
+
+/** Cupones del panel (SCRUM-150): GET, POST y PATCH /api/marketing/cupones. */
+export type CuponPanel = components['schemas']['CuponPanelDto'];
+export type DatosCupon = components['schemas']['CrearCuponDto'];
+
+/** POST /api/carrito/cupon: lo que descuenta un cupón sobre el carrito de la cuenta. */
+export type CuponCarrito = components['schemas']['CuponCarritoDto'];

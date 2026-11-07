@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 100.
+ * Versión de la API: 0.1.0. Rutas: 103.
  */
 
 export interface paths {
@@ -1430,6 +1430,71 @@ export interface paths {
          * @description Avanza el pedido por su secuencia (pagado → en preparación → despachado → entregado, o en preparación → listo para retiro → retirado si es retiro en tienda) o lo devuelve un paso con un comentario obligatorio. Al pasar a despachado exige el código de seguimiento de Chilexpress (E7-H3). Guarda el cambio en el historial con fecha, quién lo hizo y el comentario, y en los cambios clave (despachado, listo para retiro, entregado) deja encolado el correo al cliente. La cancelación tiene su propia ruta.
          */
         post: operations["CambiarEstadoPedidoController_cambiar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/cupones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar los cupones (SCRUM-150)
+         * @description Del más nuevo al más antiguo, con sus usos y lo descontado.
+         */
+        get: operations["CuponesController_listar"];
+        put?: never;
+        /**
+         * Crear un cupón (SCRUM-150)
+         * @description Porcentaje (con tope opcional) o monto fijo, sobre todo el pedido, ciertos formatos o packs, o categorías y marcas. Con `campanaId`, solo lo usan las cuentas a las que se envió esa campaña.
+         */
+        post: operations["CuponesController_crear"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/cupones/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ver un cupón (SCRUM-150) */
+        get: operations["CuponesController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Editar o desactivar un cupón (SCRUM-150)
+         * @description Cada campo que llega reemplaza al anterior. Los pedidos que ya lo usaron conservan su descuento.
+         */
+        patch: operations["CuponesController_actualizar"];
+        trace?: never;
+    };
+    "/api/carrito/cupon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ver cuánto descuenta un cupón en mi carrito (SCRUM-150)
+         * @description Revisa el código con las mismas reglas que el pedido (vigencia, campaña, usos, rol, compra mínima y lo que cubre) y devuelve el descuento con IVA. No reserva el cupón: se aplica al crear el pedido con `codigoCupon`.
+         */
+        post: operations["CuponCarritoController_validar"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3068,6 +3133,211 @@ export interface components {
              */
             codigoSeguimiento?: string;
         };
+        ElegidoCuponDto: {
+            /** @example 12 */
+            id: number;
+            /** @example L'Oréal */
+            nombre: string;
+        };
+        CampanaCuponDto: {
+            /** @example 12 */
+            id: number;
+            /** @example Novedades para tu salón */
+            asunto: string;
+            /** @description Si ya se envió. */
+            enviada: boolean;
+        };
+        CuponPanelDto: {
+            /** @example 3 */
+            id: number;
+            /** @example LOREAL20 */
+            codigo: string;
+            descripcion: string | null;
+            /** @enum {string} */
+            tipoDescuento: "porcentaje" | "monto_fijo";
+            /** @example 20 */
+            valor: number;
+            topeDescuento: number | null;
+            /** @enum {string} */
+            alcance: "pedido" | "articulos" | "categorias_marcas";
+            /** @description Formatos y packs, con su nombre. */
+            articulos: components["schemas"]["ElegidoCuponDto"][];
+            categorias: components["schemas"]["ElegidoCuponDto"][];
+            marcas: components["schemas"]["ElegidoCuponDto"][];
+            compraMinima: number | null;
+            /** Format: date-time */
+            fechaInicio: string | null;
+            /** Format: date-time */
+            fechaFin: string | null;
+            usosMaximos: number | null;
+            usosPorCuenta: number | null;
+            incluyeProfesionales: boolean;
+            activo: boolean;
+            campana: components["schemas"]["CampanaCuponDto"] | null;
+            /**
+             * @description Pedidos no cancelados que lo usaron.
+             * @example 18
+             */
+            usos: number;
+            /**
+             * @description Total descontado en esos pedidos, en pesos con IVA.
+             * @example 54000
+             */
+            descontado: number;
+            /** Format: date-time */
+            fechaCreacion: string;
+        };
+        CrearCuponDto: {
+            /**
+             * @description Letras, números y guiones; se guarda en mayúsculas. Es el que escribe el comprador.
+             * @example LOREAL20
+             */
+            codigo: string;
+            /**
+             * @description Lo que verá el comprador al aplicarlo.
+             * @example 20 % en productos L'Oréal
+             */
+            descripcion?: string | null;
+            /**
+             * @example porcentaje
+             * @enum {string}
+             */
+            tipoDescuento: "porcentaje" | "monto_fijo";
+            /**
+             * @description Porcentaje (1 a 100) o monto en pesos con IVA.
+             * @example 20
+             */
+            valor: number;
+            /**
+             * @description Tope en pesos del descuento; solo con porcentaje.
+             * @example 10000
+             */
+            topeDescuento?: number | null;
+            /**
+             * @example categorias_marcas
+             * @enum {string}
+             */
+            alcance: "pedido" | "articulos" | "categorias_marcas";
+            /** @description Formatos o packs (ids de artículo); con alcance `articulos`. */
+            articulos?: number[];
+            /** @description Categorías (con sus subcategorías); con alcance `categorias_marcas`. */
+            categorias?: number[];
+            /** @description Marcas; con alcance `categorias_marcas`. */
+            marcas?: number[];
+            /**
+             * @description Subtotal de productos con IVA mínimo para usarlo.
+             * @example 30000
+             */
+            compraMinima?: number | null;
+            /** Format: date-time */
+            fechaInicio?: string | null;
+            /** Format: date-time */
+            fechaFin?: string | null;
+            /**
+             * @description Usos en total (pedidos no cancelados).
+             * @example 100
+             */
+            usosMaximos?: number | null;
+            /**
+             * @description Usos por cuenta.
+             * @example 1
+             */
+            usosPorCuenta?: number | null;
+            /** @description También sobre el precio profesional (mayorista). */
+            incluyeProfesionales?: boolean;
+            /** @description Si se puede usar. Por omisión, sí. */
+            activo?: boolean;
+            /**
+             * @description Campaña de envío único: solo lo usan las cuentas a las que se les envió.
+             * @example 12
+             */
+            campanaId?: number | null;
+        };
+        ActualizarCuponDto: {
+            /**
+             * @description Letras, números y guiones; se guarda en mayúsculas. Es el que escribe el comprador.
+             * @example LOREAL20
+             */
+            codigo?: string;
+            /**
+             * @description Lo que verá el comprador al aplicarlo.
+             * @example 20 % en productos L'Oréal
+             */
+            descripcion?: string | null;
+            /**
+             * @example porcentaje
+             * @enum {string}
+             */
+            tipoDescuento?: "porcentaje" | "monto_fijo";
+            /**
+             * @description Porcentaje (1 a 100) o monto en pesos con IVA.
+             * @example 20
+             */
+            valor?: number;
+            /**
+             * @description Tope en pesos del descuento; solo con porcentaje.
+             * @example 10000
+             */
+            topeDescuento?: number | null;
+            /**
+             * @example categorias_marcas
+             * @enum {string}
+             */
+            alcance?: "pedido" | "articulos" | "categorias_marcas";
+            /** @description Formatos o packs (ids de artículo); con alcance `articulos`. */
+            articulos?: number[];
+            /** @description Categorías (con sus subcategorías); con alcance `categorias_marcas`. */
+            categorias?: number[];
+            /** @description Marcas; con alcance `categorias_marcas`. */
+            marcas?: number[];
+            /**
+             * @description Subtotal de productos con IVA mínimo para usarlo.
+             * @example 30000
+             */
+            compraMinima?: number | null;
+            /** Format: date-time */
+            fechaInicio?: string | null;
+            /** Format: date-time */
+            fechaFin?: string | null;
+            /**
+             * @description Usos en total (pedidos no cancelados).
+             * @example 100
+             */
+            usosMaximos?: number | null;
+            /**
+             * @description Usos por cuenta.
+             * @example 1
+             */
+            usosPorCuenta?: number | null;
+            /** @description También sobre el precio profesional (mayorista). */
+            incluyeProfesionales?: boolean;
+            /** @description Si se puede usar. Por omisión, sí. */
+            activo?: boolean;
+            /**
+             * @description Campaña de envío único: solo lo usan las cuentas a las que se les envió.
+             * @example 12
+             */
+            campanaId?: number | null;
+        };
+        ValidarCuponDto: {
+            /** @example LOREAL20 */
+            codigo: string;
+        };
+        CuponCarritoDto: {
+            /** @example LOREAL20 */
+            codigo: string;
+            descripcion: string | null;
+            /**
+             * @description En pesos con IVA.
+             * @example 4000
+             */
+            descuento: number;
+            /**
+             * @description Total de los productos del carrito con el descuento, con IVA y sin el despacho.
+             * @example 16000
+             */
+            totalProductos: number;
+        };
         CrearPedidoDto: {
             /**
              * @description UUID que el navegador genera para esta confirmación y repite si reintenta.
@@ -3094,6 +3364,11 @@ export interface components {
              * @example 3
              */
             datosFacturacionId?: number;
+            /**
+             * @description Código de un cupón (SCRUM-150): se valida y se aplica al crear el pedido. Sin mayúsculas ni espacios también vale.
+             * @example LOREAL20
+             */
+            codigoCupon?: string | null;
         };
         CancelarPedidoDto: {
             /**
@@ -3161,6 +3436,11 @@ export interface components {
             iva: number;
             /** @example 25990 */
             total: number;
+            /**
+             * @description Lo que descontó el cupón, con IVA (SCRUM-150); ya va restado del neto, el IVA y el total.
+             * @example 0
+             */
+            descuento: number;
         };
         LineaPedidoDto: {
             /** @example 21 */
@@ -3267,6 +3547,11 @@ export interface components {
             /** @example 19 */
             porcentajeIva: number;
             montos: components["schemas"]["MontosDto"];
+            /**
+             * @description Código del cupón aplicado (SCRUM-150).
+             * @example LOREAL20
+             */
+            cupon: string | null;
             items: components["schemas"]["LineaPedidoDto"][];
             envio: components["schemas"]["EnvioPedidoDto"] | null;
             documento: components["schemas"]["DocumentoPedidoDto"] | null;
@@ -7908,6 +8193,8 @@ export interface operations {
             query: {
                 /** @description Id de una dirección de la cuenta. */
                 direccionId: number;
+                /** @description Cupón que se aplicará (SCRUM-150): el total ya trae su descuento. Si no aplica, 400 junto a `codigoCupon`. */
+                codigoCupon?: string | null;
             };
             header?: never;
             path?: never;
@@ -8025,6 +8312,236 @@ export interface operations {
             };
             /** @description El cambio no está permitido desde el estado actual del pedido, o el pedido no tiene los datos del envío. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CuponesController_listar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuponPanelDto"][];
+                };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CuponesController_crear: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrearCuponDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuponPanelDto"];
+                };
+            };
+            /** @description Datos inválidos, reglas que no calzan entre sí, o artículos, categorías, marcas o campaña que no existen. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ya existe un cupón con ese código. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CuponesController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuponPanelDto"];
+                };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El cupón no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CuponesController_actualizar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActualizarCuponDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuponPanelDto"];
+                };
+            };
+            /** @description Datos inválidos. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El cupón no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ya existe un cupón con ese código. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CuponCarritoController_validar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ValidarCuponDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuponCarritoDto"];
+                };
+            };
+            /** @description El cupón no existe, no está vigente, no es para la cuenta, se agotó o no aplica al carrito; el mensaje va en el campo `codigoCupon`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

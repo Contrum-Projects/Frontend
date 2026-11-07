@@ -3,7 +3,7 @@
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useState, type ReactNode } from 'react';
-import type { CarritoCuenta } from '@/compartido/api/respuestas';
+import type { CarritoCuenta, CuponCarrito } from '@/compartido/api/respuestas';
 import { ErrorDeApi } from '@/compartido/api/errores';
 import { esPersonal } from '@/compartido/sesion/roles';
 import { useSesion } from '@/compartido/sesion/sesion';
@@ -14,6 +14,7 @@ import { contarUnidades, useCarrito } from '@/tienda/carrito/consultasCarrito';
 import { CuentaProtegida } from '@/tienda/cuenta/cuentaProtegida';
 import { RUTAS } from '@/tienda/diseno/enlaces';
 import { ErrorProfesional } from '@/tienda/profesional/errorProfesional';
+import { CampoCupon } from './campoCupon';
 import { useConfirmarPedido } from './consultasCheckout';
 import { PasosCheckout } from './pasosCheckout';
 import { ResumenCheckout } from './resumenCheckout';
@@ -38,7 +39,9 @@ function Checkout() {
   const { usuario } = useSesion();
   const consulta = useCarrito();
   const confirmar = useConfirmarPedido();
-  const entrega = useEntrega();
+  // SCRUM-150 · El cupón aplicado: la cotización del despacho lo incluye en su total
+  const [cupon, setCupon] = useState<CuponCarrito | null>(null);
+  const entrega = useEntrega(cupon?.codigo ?? null);
   const documento = useDocumento();
   // El resumen que se confirmó: si el pedido ya se creó, el carrito del backend viene vacío
   const [confirmado, setConfirmado] = useState<CarritoCuenta | null>(null);
@@ -107,12 +110,24 @@ function Checkout() {
             unidades={contarUnidades(carrito)}
             despacho={despachoDelResumen(entrega)}
             bloqueado={!entrega.listaParaPagar || !documento.eleccion}
+            cupon={cupon}
+            campoCupon={
+              <CampoCupon
+                cupon={cupon}
+                alCambiar={setCupon}
+                deshabilitado={confirmar.isPending || confirmar.isSuccess}
+              />
+            }
             // Tras el éxito el navegador ya va hacia Mercado Pago: no se vuelve a habilitar
             enviando={confirmar.isPending || confirmar.isSuccess}
             onPagar={() => {
               if (!entrega.eleccion || !documento.eleccion) return;
               setConfirmado(carrito);
-              confirmar.mutate({ ...entrega.eleccion, ...documento.eleccion });
+              confirmar.mutate({
+                ...entrega.eleccion,
+                ...documento.eleccion,
+                ...(cupon && { codigoCupon: cupon.codigo }),
+              });
             }}
           />
         </div>

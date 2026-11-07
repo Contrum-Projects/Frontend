@@ -83,7 +83,8 @@ const DETALLE: DetallePedidoGestion = {
   tipoEntrega: 'despacho',
   tipoDocumento: 'boleta',
   porcentajeIva: 19,
-  montos: { neto: 24345, iva: 4625, total: 28970 },
+  montos: { neto: 24345, iva: 4625, total: 28970, descuento: 0 },
+  cupon: null,
   items: [
     {
       articuloId: 11,

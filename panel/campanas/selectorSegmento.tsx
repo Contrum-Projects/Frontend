@@ -32,7 +32,7 @@ interface SelectorSegmentoProps {
 const TIPOS = Object.keys(NOMBRES_TIPO) as TipoDestinatario[];
 
 /** Las categorías con sus subcategorías, en orden y con la ruta en el nombre («Cabello › Tinturas»). */
-const opcionesCategorias = (
+export const opcionesCategorias = (
   categorias: CategoriaTienda[],
   padre = '',
 ): Opcion[] =>

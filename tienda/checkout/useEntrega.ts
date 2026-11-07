@@ -23,7 +23,7 @@ const SIN_COTIZACION = [409, 503];
  * Chilexpress hasta que elige despacho. Con despacho usa la dirección que eligió o, si no eligió,
  * la principal de la cuenta, y la cotiza.
  */
-export const useEntrega = () => {
+export const useEntrega = (codigoCupon: string | null = null) => {
   const [tipo, setTipo] = useState<TipoEntrega>('retiro');
   const [idElegida, setIdElegida] = useState<number | null>(null);
   // El personal de tienda no compra: no se le piden direcciones
@@ -39,6 +39,7 @@ export const useEntrega = () => {
   const conDespacho = tipo === 'despacho';
   const cotizacion = useCotizacionDespacho(
     conDespacho ? (direccion?.id ?? null) : null,
+    codigoCupon,
   );
   // Despacho sin dirección no se envía: nunca se cambia a retiro sin avisar
   const eleccion: EleccionEntrega | null = !conDespacho
