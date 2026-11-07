@@ -26,8 +26,9 @@ export const RUTAS = {
   misPedidos: '/cuenta/pedidos' as Route,
   verificacion: '/cuenta/verificacion',
   perfilProfesional: '/cuenta/perfil-profesional',
-  // Sin historia: listado de packs, ayuda, profesionales y legales
+  // Listado de packs (sin historia ni Figma, SCRUM-150: sigue el catálogo)
   packs: '/packs' as Route,
+  // Sin historia: ayuda, profesionales y legales
   precioProfesional: '/precio-profesional' as Route,
   despacho: '/ayuda/despacho-y-retiro' as Route,
   comprobantes: '/ayuda/comprobante-y-factura' as Route,
