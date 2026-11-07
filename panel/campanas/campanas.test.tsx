@@ -439,6 +439,34 @@ describe('Redactar una campaña (SCRUM-140)', () => {
     expect(pedidas(`POST ${RUTA}`)).toHaveLength(0);
   });
 
+  it('SCRUM-150 · marcadores: el menú agrega el dato donde está el cursor, en el último campo usado', async () => {
+    const usuario = userEvent.setup();
+    simularBackend();
+    mostrar(<PantallaCampanaNueva />);
+
+    const cuerpo = screen.getByLabelText('Cuerpo');
+    const asunto = screen.getByLabelText('Asunto');
+    // Sin tocar ningún campo, va al cuerpo
+    await usuario.click(screen.getByRole('button', { name: 'Nombre' }));
+    expect(cuerpo).toHaveValue('{nombre}');
+
+    await usuario.type(asunto, 'Novedades para ');
+    await usuario.click(screen.getByRole('button', { name: 'Nombre' }));
+    expect(asunto).toHaveValue('Novedades para {nombre}');
+    expect(asunto).toHaveFocus();
+
+    // Con texto seleccionado en el cuerpo, el dato lo reemplaza
+    act(() => {
+      (cuerpo as HTMLTextAreaElement).focus();
+      (cuerpo as HTMLTextAreaElement).setSelectionRange(0, '{nombre}'.length);
+    });
+    await usuario.click(
+      screen.getByRole('button', { name: 'Enlace a la tienda' }),
+    );
+    expect(cuerpo).toHaveValue('{enlace_tienda}');
+    expect(asunto).toHaveValue('Novedades para {nombre}');
+  });
+
   it('E12-H3 FE · CA2 redactar: el segmento admite varios tipos y varias categorías y marcas', async () => {
     const usuario = userEvent.setup();
     simularBackend();

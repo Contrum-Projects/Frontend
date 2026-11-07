@@ -67,6 +67,7 @@ export function FormularioCampana({
     register,
     control,
     handleSubmit,
+    setValue,
     setError,
     formState: { errors, isSubmitting },
   } = useForm<Formulario>({
@@ -246,7 +247,12 @@ export function FormularioCampana({
               aria-label="Campaña"
               className="flex flex-col gap-4 lg:gap-6"
             >
-              <TarjetaMensaje id={id} register={register} errors={errors} />
+              <TarjetaMensaje
+                id={id}
+                register={register}
+                setValue={setValue}
+                errors={errors}
+              />
               <TarjetaSegmento id={id} control={control} />
             </form>
           </TabsContent>
