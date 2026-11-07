@@ -4076,6 +4076,11 @@ export interface components {
              *     Llegó la nueva línea reparadora. Encuéntrala en la tienda.
              */
             cuerpo: string;
+            /**
+             * @description El borrador que se está editando: con él, `{cupon}` muestra el código de su cupón activo (SCRUM-150).
+             * @example 12
+             */
+            campanaId?: number;
         };
         CorreoCampanaDto: {
             /** @example Nueva línea reparadora */

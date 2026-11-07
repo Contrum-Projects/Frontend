@@ -9,6 +9,7 @@ export const MARCADORES_CAMPANA = [
   { clave: 'apellido', etiqueta: 'Apellido' },
   { clave: 'nombre_completo', etiqueta: 'Nombre completo' },
   { clave: 'enlace_tienda', etiqueta: 'Enlace a la tienda' },
+  { clave: 'cupon', etiqueta: 'Cupón de la campaña' },
 ] as const;
 
 export type MarcadorCampana = (typeof MARCADORES_CAMPANA)[number]['clave'];

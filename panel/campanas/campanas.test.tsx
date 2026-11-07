@@ -700,6 +700,35 @@ describe('Redactar una campaña (SCRUM-140)', () => {
     expect(edadHasta).toHaveAttribute('aria-describedby', mensaje.id);
   });
 
+  it('SCRUM-150 · {cupon}: el botón lo agrega y la vista previa de un borrador pide el código de su cupón', async () => {
+    const usuario = userEvent.setup();
+    const { pedidas } = simularBackend({
+      [`GET ${RUTA}/7`]: () =>
+        Response.json(
+          guardada(7, {
+            asunto: 'Tu cupón',
+            cuerpo: 'Hola:',
+            segmento: { tipos: ['cliente'], categorias: [], marcas: [] },
+          }),
+        ),
+    });
+    mostrar(<PantallaEditarCampana id="7" />);
+
+    const cuerpo = await screen.findByLabelText('Cuerpo');
+    await usuario.click(cuerpo);
+    await usuario.click(
+      screen.getByRole('button', { name: 'Cupón de la campaña' }),
+    );
+    expect(cuerpo).toHaveValue('Hola:{cupon}');
+    await waitFor(() =>
+      expect(pedidas(`POST ${RUTA}/vista-previa`).at(-1)?.cuerpo).toEqual({
+        asunto: 'Tu cupón',
+        cuerpo: 'Hola:{cupon}',
+        campanaId: 7,
+      }),
+    );
+  });
+
   it('E12-H3 FE · CA2 redactar: un borrador se abre con lo guardado y se guarda con PATCH', async () => {
     const usuario = userEvent.setup();
     const borrador = guardada(7, {

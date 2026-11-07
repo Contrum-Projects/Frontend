@@ -90,9 +90,17 @@ export interface TextoCampana {
  * destinatarios ni sirve para enviar. Mientras se pide la nueva, se sigue mostrando la anterior.
  * Sin asunto o sin mensaje no pide nada (el backend no arma un correo vacío).
  */
-export const useVistaPrevia = (texto: TextoCampana) => {
+export const useVistaPrevia = (
+  texto: TextoCampana,
+  /** El borrador guardado: con él, `{cupon}` muestra el código de su cupón (SCRUM-150). */
+  campanaId: number | null = null,
+) => {
   const estable = useValorEstable(
-    { asunto: texto.asunto.trim(), cuerpo: texto.cuerpo.trim() },
+    {
+      asunto: texto.asunto.trim(),
+      cuerpo: texto.cuerpo.trim(),
+      ...(campanaId !== null && { campanaId }),
+    },
     ESPERA_VISTA_PREVIA,
   );
   return useQuery({

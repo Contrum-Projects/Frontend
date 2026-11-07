@@ -116,7 +116,8 @@ export function TarjetaMensaje({
       >
         Separa los párrafos con una línea en blanco. Los datos entre llaves,
         como {'{nombre}'}, se cambian por los de cada destinatario; en la vista
-        previa ves los tuyos.
+        previa ves los tuyos. {'{cupon}'} es el código del cupón activo de esta
+        campaña: créalo en Cupones eligiendo la campaña.
       </p>
     </Tarjeta>
   );

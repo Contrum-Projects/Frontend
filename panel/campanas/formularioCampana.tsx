@@ -82,7 +82,7 @@ export function FormularioCampana({
   });
   const asunto = useWatch({ control, name: 'asunto' });
   const cuerpo = useWatch({ control, name: 'cuerpo' });
-  const vista = useVistaPrevia({ asunto, cuerpo });
+  const vista = useVistaPrevia({ asunto, cuerpo }, idCampana);
   const errorVista = vista.isError ? vista.error.message : undefined;
   const incompleta = asunto.trim() === '' || cuerpo.trim() === '';
 
