@@ -18,7 +18,11 @@ import {
   MAXIMO_PAGINAS,
   POR_PAGINA,
 } from '@/tienda/catalogo/parametrosCatalogo';
-import { TAMANOS_FOTO } from '@/tienda/catalogo/tarjetaProducto';
+import {
+  MARCO_TARJETA,
+  MARCO_TARJETA_ESQUELETO,
+  TAMANOS_FOTO,
+} from '@/tienda/catalogo/tarjetaProducto';
 import { RUTAS, urlCatalogo, urlPack } from '@/tienda/diseno/enlaces';
 
 /** 4 por fila en escritorio (sin columna de filtros), 3 en tableta y 2 en celular. */
@@ -153,7 +157,7 @@ const TarjetaPack = ({
   pack: PackTienda;
   prioridad: boolean;
 }) => (
-  <article className="group relative flex h-full flex-col rounded-lg border bg-fondo-superficie p-2 pb-4">
+  <article className={MARCO_TARJETA}>
     <div className="relative aspect-[11/10] overflow-hidden rounded-md bg-marca-acento-suave">
       <Image
         src={pack.imagen}
@@ -212,7 +216,7 @@ export const ListaPacksEsqueleto = () => (
     <ul aria-hidden className={CLASE_GRILLA}>
       {Array.from({ length: 8 }, (_, i) => (
         <li key={i}>
-          <div className="flex h-full flex-col rounded-lg border bg-fondo-superficie p-2 pb-4">
+          <div className={MARCO_TARJETA_ESQUELETO}>
             <Skeleton className="aspect-[11/10] rounded-md" />
             <div className="flex flex-col gap-1 px-2 pt-3">
               <Skeleton className="h-4 w-20" />

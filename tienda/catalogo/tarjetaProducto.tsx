@@ -21,6 +21,18 @@ export const TAMANOS_FOTO = {
     '(min-width: 1280px) 330px, (min-width: 1024px) 22vw, (min-width: 768px) 30vw, 45vw',
 } as const;
 
+/**
+ * Marco de las tarjetas de producto y de pack (SCRUM-150): en reposo una sombra tenue; al pasar
+ * el mouse o con el foco dentro se eleva, sube 2 px y el borde toma el menta. Sin movimiento con
+ * `prefers-reduced-motion`.
+ */
+export const MARCO_TARJETA =
+  'group relative flex h-full flex-col rounded-lg border bg-fondo-superficie p-2 pb-4 shadow-tarjeta transition-[box-shadow,transform,border-color] duration-200 ease-out hover:-translate-y-0.5 hover:border-marca-acento-suave hover:shadow-tarjeta-elevada focus-within:border-marca-acento-suave focus-within:shadow-tarjeta-elevada motion-reduce:transition-none motion-reduce:hover:translate-y-0';
+
+/** El esqueleto con el mismo marco en reposo, para que nada salte al cargar. */
+export const MARCO_TARJETA_ESQUELETO =
+  'flex h-full flex-col rounded-lg border bg-fondo-superficie p-2 pb-4 shadow-tarjeta';
+
 interface TarjetaProductoProps {
   producto: ProductoTienda | ProductoTiendaProfesional;
   tamanos: string;
@@ -42,7 +54,7 @@ export const TarjetaProducto = ({
 }: TarjetaProductoProps) => {
   const profesional = 'precioMayorista' in producto ? producto : null;
   return (
-    <article className="group relative flex h-full flex-col rounded-lg border bg-fondo-superficie p-2 pb-4">
+    <article className={MARCO_TARJETA}>
       {/* 264 × 240 en Figma (11:10). Las fotos van en esa proporción; el menta se ve mientras cargan */}
       <div className="relative aspect-[11/10] overflow-hidden rounded-md bg-marca-acento-suave">
         {/* El nombre ya está en el enlace de la tarjeta: la foto no lo repite */}
@@ -124,10 +136,7 @@ export const TarjetaProductoEsqueleto = ({
 }: {
   profesional?: boolean;
 }) => (
-  <div
-    aria-hidden
-    className="flex h-full flex-col rounded-lg border bg-fondo-superficie p-2 pb-4"
-  >
+  <div aria-hidden className={MARCO_TARJETA_ESQUELETO}>
     <Skeleton className="aspect-[11/10] rounded-md" />
     <div className="flex flex-col gap-1 px-2 pt-3">
       <Skeleton className="h-4 w-16" />
