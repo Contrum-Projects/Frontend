@@ -52,7 +52,7 @@ export const BuscadorProductos = ({
         type="search"
         value={texto}
         onChange={(evento) => setTexto(evento.target.value)}
-        placeholder="Nombre del producto"
+        placeholder="Nombre, marca o SKU"
         autoComplete="off"
         className="min-w-0 flex-1 bg-transparent py-3 texto-pequeno text-texto-principal outline-none placeholder:text-texto-secundario"
       />

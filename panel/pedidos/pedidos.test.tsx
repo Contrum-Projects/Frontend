@@ -63,13 +63,15 @@ const LISTADO: ListadoPedidosGestion = {
 };
 
 const cambio = (
-  estado: string,
+  estado: CambioPermitido['estado'],
   datos: Partial<CambioPermitido> = {},
 ): CambioPermitido => ({
   estado,
   sentido: 'avance',
   pideCodigoSeguimiento: false,
   avisaAlCliente: false,
+  // Como el backend: volver atrás pide comentario
+  pideComentario: datos.sentido === 'retroceso',
   ...datos,
 });
 

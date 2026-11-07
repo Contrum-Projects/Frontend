@@ -3102,6 +3102,243 @@ export interface components {
              */
             comentario?: string;
         };
+        PedidoGestionDto: {
+            /** @example AB12CD34EF56 */
+            codigoPublico: string;
+            /** Format: date-time */
+            fechaPedido: string;
+            /**
+             * @description Razón social si pidió factura; si no, nombre y apellido de la cuenta.
+             * @example Camila Rojas
+             */
+            cliente: string;
+            /** @enum {string} */
+            tipoEntrega: "despacho" | "retiro";
+            /** @enum {string} */
+            estado: "pendiente_pago" | "pagado" | "en_preparacion" | "despachado" | "entregado" | "listo_para_retiro" | "retirado" | "cancelado";
+            /**
+             * @description Total con IVA, en pesos.
+             * @example 25990
+             */
+            total: number;
+            /**
+             * @description Suma de las cantidades del pedido.
+             * @example 3
+             */
+            unidades: number;
+        };
+        GrupoPedidosDto: {
+            /** @example por_preparar */
+            clave: string;
+            /** @example Por preparar */
+            nombre: string;
+            /**
+             * @description `null`: el grupo no muestra cuántos pedidos tiene.
+             * @example 4
+             */
+            cantidad: number | null;
+        };
+        ListadoPedidosGestionDto: {
+            items: components["schemas"]["PedidoGestionDto"][];
+            /** @example 12 */
+            total: number;
+            /** @example 1 */
+            pagina: number;
+            /** @example 20 */
+            limite: number;
+            /** @description Los chips del filtro, en orden. */
+            grupos: components["schemas"]["GrupoPedidosDto"][];
+            /**
+             * @description El grupo aplicado.
+             * @example por_preparar
+             */
+            grupo: string;
+        };
+        MontosDto: {
+            /** @example 21840 */
+            neto: number;
+            /** @example 4150 */
+            iva: number;
+            /** @example 25990 */
+            total: number;
+        };
+        LineaPedidoDto: {
+            /** @example 21 */
+            articuloId: number;
+            /** @enum {string} */
+            tipo: "formato" | "pack";
+            /** @example Shampoo reparador */
+            nombre: string;
+            /** @example 300 ml */
+            nombreFormato: string | null;
+            imagen: string | null;
+            /** @example 2 */
+            cantidad: number;
+            /**
+             * @description Precio unitario con IVA que se cobró.
+             * @example 12990
+             */
+            precioUnitario: number;
+            /** @example 25980 */
+            subtotal: number;
+        };
+        ComunaDto: {
+            /** @example 13101 */
+            codigoCut: string;
+            /** @example Santiago */
+            nombre: string;
+        };
+        EnvioPedidoDto: {
+            /** @example DIA HABIL SIGUIENTE */
+            servicio: string;
+            /**
+             * @description Costo con IVA, en pesos.
+             * @example 3990
+             */
+            costo: number;
+            /** @example pendiente */
+            estado: string;
+            codigoSeguimiento: string | null;
+            /** Format: date */
+            fechaEstimada: string | null;
+            destinatario: string;
+            telefonoContacto: string | null;
+            calle: string;
+            numero: string;
+            referencia: string | null;
+            comuna: components["schemas"]["ComunaDto"];
+        };
+        DocumentoPedidoDto: {
+            /** @enum {string} */
+            tipo: "factura";
+            /** @enum {string} */
+            estado: "pendiente" | "disponible";
+            folio: number | null;
+            /** Format: date */
+            fechaEmision: string | null;
+        };
+        ClientePedidoDto: {
+            /** @example Camila Rojas */
+            nombre: string;
+            /** @example camila@correo.cl */
+            correo: string;
+            telefono: string | null;
+        };
+        CambioHistorialDto: {
+            /** @enum {string} */
+            estado: "pendiente_pago" | "pagado" | "en_preparacion" | "despachado" | "entregado" | "listo_para_retiro" | "retirado" | "cancelado";
+            /** Format: date-time */
+            fecha: string;
+            comentario: string | null;
+            /**
+             * @description «Sistema», «Cliente» o el nombre del personal.
+             * @example Sistema
+             */
+            realizadoPor: string;
+        };
+        CambioPermitidoDto: {
+            /** @enum {string} */
+            estado: "pendiente_pago" | "pagado" | "en_preparacion" | "despachado" | "entregado" | "listo_para_retiro" | "retirado" | "cancelado";
+            /** @enum {string} */
+            sentido: "avance" | "retroceso";
+            /** @description Al despachar se pide la OT de Chilexpress (E7-H3). */
+            pideCodigoSeguimiento: boolean;
+            /** @description Se avisa al cliente por correo. */
+            avisaAlCliente: boolean;
+            /** @description Volver a un estado anterior exige un comentario. */
+            pideComentario: boolean;
+        };
+        DetallePedidoGestionDto: {
+            /** @example AB12CD34EF56 */
+            codigoPublico: string;
+            /** Format: date-time */
+            fechaPedido: string;
+            /** @enum {string} */
+            estado: "pendiente_pago" | "pagado" | "en_preparacion" | "despachado" | "entregado" | "listo_para_retiro" | "retirado" | "cancelado";
+            /**
+             * Format: date-time
+             * @description Hasta cuándo se puede pagar; solo mientras espera el pago.
+             */
+            pagarHasta: string | null;
+            /** @enum {string} */
+            tipoEntrega: "despacho" | "retiro";
+            /** @enum {string} */
+            tipoDocumento: "boleta" | "factura";
+            /** @example 19 */
+            porcentajeIva: number;
+            montos: components["schemas"]["MontosDto"];
+            items: components["schemas"]["LineaPedidoDto"][];
+            envio: components["schemas"]["EnvioPedidoDto"] | null;
+            documento: components["schemas"]["DocumentoPedidoDto"] | null;
+            idTransaccionPago: string | null;
+            cliente: components["schemas"]["ClientePedidoDto"];
+            /** @description Del primero al último. */
+            historial: components["schemas"]["CambioHistorialDto"][];
+            cambiosPermitidos: components["schemas"]["CambioPermitidoDto"][];
+            /** @description Solo un pedido pendiente de pago (E8-H3). */
+            sePuedeCancelar: boolean;
+        };
+        FacturaGestionDto: {
+            /** @example AB12CD34EF56 */
+            codigoPedido: string;
+            /** @example Peluquería Bella Ltda. */
+            razonSocial: string;
+            /** @example 76123456-0 */
+            rut: string;
+            /**
+             * @description Total con IVA, en pesos.
+             * @example 25990
+             */
+            total: number;
+            /** @enum {string} */
+            estado: "por_emitir" | "emitida";
+            /** @description `null` mientras está por emitir. */
+            folio: number | null;
+        };
+        ListadoFacturasGestionDto: {
+            items: components["schemas"]["FacturaGestionDto"][];
+            /**
+             * @description Cuántas quedan por emitir.
+             * @example 3
+             */
+            porEmitir: number;
+            /** @example 10 */
+            total: number;
+            /** @example 1 */
+            pagina: number;
+            /** @example 20 */
+            limite: number;
+        };
+        ReceptorFacturaDto: {
+            razonSocial: string;
+            /** @example 76123456-0 */
+            rut: string;
+            giro: string;
+            direccion: string;
+            /** @description Nombre de la comuna. */
+            comuna: string;
+        };
+        MontosFacturaDto: {
+            /** @example 21840 */
+            neto: number;
+            /** @example 4150 */
+            iva: number;
+            /** @example 25990 */
+            total: number;
+        };
+        DetalleFacturaGestionDto: {
+            /** @example AB12CD34EF56 */
+            codigoPedido: string;
+            /** @enum {string} */
+            estado: "por_emitir" | "emitida";
+            receptor: components["schemas"]["ReceptorFacturaDto"];
+            montos: components["schemas"]["MontosFacturaDto"];
+            /** @example 19 */
+            porcentajeIva: number;
+            folio: number | null;
+            /** Format: date */
+            fechaEmision: string | null;
+        };
         ConfirmarPagoDto: {
             /**
              * @description Id del pago que Mercado Pago entrega al volver a la tienda (`payment_id`).
@@ -7942,7 +8179,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ListadoPedidosGestionDto"];
+                };
             };
             /** @description Grupo, búsqueda o paginación inválidos. */
             400: {
@@ -7983,7 +8222,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetallePedidoGestionDto"];
+                };
             };
             /** @description Falta iniciar sesión. */
             401: {
@@ -8025,7 +8266,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ListadoFacturasGestionDto"];
+                };
             };
             /** @description Paginación inválida. */
             400: {
@@ -8066,7 +8309,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetalleFacturaGestionDto"];
+                };
             };
             /** @description Falta iniciar sesión. */
             401: {

@@ -28,7 +28,7 @@ export const crearEsquemaCambioEstado = (cambios: readonly CambioPermitido[]) =>
     .superRefine((datos, contexto) => {
       const cambio = cambios.find(({ estado }) => estado === datos.estado);
       if (!cambio) return;
-      if (cambio.sentido === 'retroceso' && !datos.comentario) {
+      if (cambio.pideComentario && !datos.comentario) {
         contexto.addIssue({
           code: 'custom',
           path: ['comentario'],

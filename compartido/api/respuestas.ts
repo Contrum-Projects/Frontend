@@ -841,78 +841,21 @@ export interface CotizacionDespacho {
 }
 
 /**
- * backend: src/modulos/pedidos/gestion-pedidos.service.ts › PedidoGestion. Un pedido de la lista
- * del panel (E8-H2, SCRUM-150). El Swagger no declara la respuesta.
+ * backend: src/modulos/pedidos/dto/gestion-pedidos-respuesta.dto.ts. Lista y detalle de pedidos
+ * del panel (E8-H2, SCRUM-150): los grupos, los cambios permitidos y si se puede cancelar los
+ * decide el backend.
  */
-export interface PedidoGestion {
-  codigoPublico: string;
-  /** ISO 8601. */
-  fechaPedido: string;
-  /** Nombre o razón social de quien compró. */
-  cliente: string;
-  tipoEntrega: 'despacho' | 'retiro';
-  estado: string;
-  /** Total con IVA, en pesos. */
-  total: number;
-  /** Suma de las cantidades del pedido. */
-  unidades: number;
-}
+export type ListadoPedidosGestion =
+  components['schemas']['ListadoPedidosGestionDto'];
 
-/** Un grupo del filtro de la lista: qué estados entran en cada uno lo decide el backend. */
-export interface GrupoPedidos {
-  clave: string;
-  nombre: string;
-  /** `null`: el grupo no muestra cuántos pedidos tiene. */
-  cantidad: number | null;
-}
+export type PedidoGestion = ListadoPedidosGestion['items'][number];
 
-/** GET /api/gestion/pedidos (E8-H2). backend: gestion-pedidos.service.ts › ListadoPedidosGestion. */
-export interface ListadoPedidosGestion {
-  /** Del más reciente al más antiguo. */
-  items: PedidoGestion[];
-  total: number;
-  pagina: number;
-  limite: number;
-  grupos: GrupoPedidos[];
-  /** El grupo que se aplicó: sin `grupo` en la consulta, el que el backend elige por defecto. */
-  grupo: string;
-}
+export type GrupoPedidos = ListadoPedidosGestion['grupos'][number];
 
-/**
- * Un cambio de estado que el personal puede hacer desde el estado actual del pedido (E8-H2). Sale
- * de `transiciones-estado-pedido.ts` del backend: el frontend no conoce la secuencia.
- */
-export interface CambioPermitido {
-  estado: string;
-  sentido: 'avance' | 'retroceso';
-  /** Al despachar se pide el número de la OT de Chilexpress (E7-H3). */
-  pideCodigoSeguimiento: boolean;
-  /** Si el backend avisa al cliente por correo (`ESTADOS_CON_AVISO`). */
-  avisaAlCliente: boolean;
-}
+export type DetallePedidoGestion =
+  components['schemas']['DetallePedidoGestionDto'];
 
-/** GET /api/gestion/pedidos/{codigoPedido} (E8-H2). backend: gestion-pedidos.service.ts › DetallePedidoGestion. */
-export interface DetallePedidoGestion extends Omit<
-  DetallePedidoCuenta,
-  'historial'
-> {
-  cliente: { nombre: string; correo: string; telefono: string | null };
-  historial: {
-    estado: string;
-    /** ISO 8601. */
-    fecha: string;
-    comentario: string | null;
-    /** «Sistema», «Cliente» o el nombre de quien lo cambió. */
-    realizadoPor: string;
-  }[];
-  /** Vacío si el pedido ya no cambia desde el panel (entregado, retirado, cancelado). */
-  cambiosPermitidos: CambioPermitido[];
-  /**
-   * Si el personal puede cancelarlo (E8-H3): hoy, solo un pedido pendiente de pago. Lo decide el
-   * backend.
-   */
-  sePuedeCancelar: boolean;
-}
+export type CambioPermitido = DetallePedidoGestion['cambiosPermitidos'][number];
 
 /**
  * POST /api/pedidos/{codigoPedido}/cancelar (E8-H3). Backend `cancelar-pedido.service.ts` ›
@@ -939,55 +882,17 @@ export interface PedidoConNuevoEstado {
  */
 export type EstadoFacturaGestion = 'por_emitir' | 'emitida';
 
-/** Un pedido de la pestaña «Facturas por emitir» (E9-H3). */
-export interface FacturaGestion {
-  codigoPedido: string;
-  razonSocial: string;
-  /** Como lo guarda el backend: 76123456-0. */
-  rut: string;
-  /** Total con IVA, en pesos. */
-  total: number;
-  estado: EstadoFacturaGestion;
-  /** `null` mientras está por emitir. */
-  folio: number | null;
-}
-
 /**
- * GET /api/gestion/facturas (E9-H3). Los pedidos que pidieron factura y ya se pagaron; cuáles
- * entran y en qué orden lo decide el backend (SCRUM-150: primero las por emitir). backend:
- * src/modulos/facturacion/gestion-facturas.service.ts. El Swagger no declara la respuesta.
+ * backend: src/modulos/facturacion/dto/gestion-facturas-respuesta.dto.ts. Lista y detalle de las
+ * facturas del panel (E9-H3, SCRUM-150): primero las por emitir.
  */
-export interface ListadoFacturasGestion {
-  items: FacturaGestion[];
-  /** Cuántos quedan por emitir, para la pestaña. */
-  porEmitir: number;
-  total: number;
-  pagina: number;
-  limite: number;
-}
+export type ListadoFacturasGestion =
+  components['schemas']['ListadoFacturasGestionDto'];
 
-/**
- * GET /api/gestion/facturas/{codigoPedido} (E9-H3). Los datos para emitirla en el SII: el
- * receptor (de los datos de facturación del pedido) y los montos del pedido. Ya emitida, los que
- * copió el documento. backend: gestion-facturas.service.ts › DetalleFacturaGestion.
- */
-export interface DetalleFacturaGestion {
-  codigoPedido: string;
-  estado: EstadoFacturaGestion;
-  receptor: {
-    razonSocial: string;
-    rut: string;
-    giro: string;
-    direccion: string;
-    /** Nombre de la comuna. */
-    comuna: string;
-  };
-  montos: { neto: number; iva: number; total: number };
-  porcentajeIva: number;
-  folio: number | null;
-  /** AAAA-MM-DD; `null` mientras está por emitir. */
-  fechaEmision: string | null;
-}
+export type FacturaGestion = ListadoFacturasGestion['items'][number];
+
+export type DetalleFacturaGestion =
+  components['schemas']['DetalleFacturaGestionDto'];
 
 /**
  * POST /api/pedidos/{codigoPedido}/factura (E9-H3). Backend `registrar-factura.service.ts` ›

@@ -69,7 +69,7 @@ export function FormularioEstado({
   });
   const estado = useWatch({ control, name: 'estado' });
   const cambio = cambios.find((opcion) => opcion.estado === estado);
-  const comentarioObligatorio = cambio?.sentido === 'retroceso';
+  const comentarioObligatorio = cambio?.pideComentario ?? false;
 
   const mostrarError = (fallo: ErrorDeApi) => {
     // 400 y 409 traen mensajes para la persona; el resto, el genérico de su estado
