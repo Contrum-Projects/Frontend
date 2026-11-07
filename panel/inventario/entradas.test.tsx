@@ -46,6 +46,7 @@ const PROVEEDOR: Proveedor = {
   telefono: null,
   email: null,
   activo: true,
+  cantidadEntradas: 0,
 };
 
 const UBICACIONES: UbicacionInventario[] = [
@@ -405,33 +406,6 @@ describe('Entradas de inventario · nueva (SCRUM-111)', () => {
     expect(
       await screen.findByText('Registramos la entrada de Factura F-004512.'),
     ).toBeInTheDocument();
-  });
-
-  it('E11-H2 FE · CA2 confirmación: si el backend aún no envía los subtotales, no los inventa', async () => {
-    const { subtotalNeto: _s, ...detalle } = REGISTRADA.detalles[0];
-    simularBackend({
-      'POST /api/inventario/entradas': () =>
-        Response.json(
-          {
-            ...REGISTRADA,
-            detalles: [detalle],
-            unidades: undefined,
-            costoNetoTotal: undefined,
-          },
-          { status: 201 },
-        ),
-    });
-    const usuario = userEvent.setup();
-    mostrar(<PantallaEntradaNueva />);
-
-    await completarEntrada(usuario);
-    await registrar(usuario);
-
-    const tabla = await screen.findByRole('table', {
-      name: 'Formatos de la entrada registrada',
-    });
-    expect(within(tabla).getAllByText('Sin dato')).toHaveLength(3);
-    expect(within(tabla).queryByText('$100.812')).not.toBeInTheDocument();
   });
 
   it('E11-H2 FE · CA3 falta un dato: señala cada campo y la lista vacía sin llamar al backend', async () => {

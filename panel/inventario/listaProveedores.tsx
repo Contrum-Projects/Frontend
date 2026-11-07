@@ -13,8 +13,8 @@ interface ListaProps {
   proveedores: Proveedor[];
 }
 
-/** Hasta que el backend envíe `cantidadEntradas` (pedido a SCRUM-36), «—». */
-const entradas = (proveedor: Proveedor) => proveedor.cantidadEntradas ?? '—';
+/** Lo cuenta el backend (SCRUM-150). */
+const entradas = (proveedor: Proveedor) => proveedor.cantidadEntradas;
 
 /** Une los datos presentes con «·»: un contacto sin teléfono no deja separadores sueltos. */
 const unir = (...partes: (string | null)[]) =>

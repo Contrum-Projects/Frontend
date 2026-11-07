@@ -287,8 +287,7 @@ export interface CuentaPersonal {
 
 /**
  * backend: src/modulos/inventario/proveedores.service.ts › listar y crear (fila de `proveedor`,
- * E11-H1). TODO(SCRUM-110): la cantidad de entradas no llega todavía; pedida a SCRUM-36 como
- * `cantidadEntradas` (ver docs/historias/SCRUM-110.md).
+ * E11-H1), con `cantidadEntradas` desde SCRUM-150. El Swagger no declara la respuesta.
  */
 export interface Proveedor {
   id: number;
@@ -299,7 +298,7 @@ export interface Proveedor {
   telefono: string | null;
   email: string | null;
   activo: boolean;
-  cantidadEntradas?: number;
+  cantidadEntradas: number;
 }
 
 /** backend: src/common/dominio/valores.ts › TIPOS_DOCUMENTO_PROVEEDOR */
@@ -321,48 +320,13 @@ export type UbicacionInventario =
   components['schemas']['UbicacionInventarioDto'];
 
 /**
- * backend: src/modulos/inventario/entradas.service.ts › EntradaRegistrada (respuesta del POST
- * /api/inventario/entradas, E11-H2; el Swagger no la declara). TODO(SCRUM-111): los subtotales
- * y totales no llegan todavía; pedidos a SCRUM-37 como `subtotalNeto`, `unidades` y
- * `costoNetoTotal` (el frontend no los calcula).
+ * backend: src/modulos/inventario/dto/entrada-respuesta.dto.ts. Respuesta del POST
+ * /api/inventario/entradas (E11-H2), con los subtotales y totales que suma el backend (SCRUM-150).
  */
-export interface EntradaRegistrada {
-  id: number;
-  proveedor: { id: number; rut: string; razonSocial: string };
-  /** AAAA-MM-DD */
-  fechaRecepcion: string;
-  tipoDocumento: TipoDocumentoProveedor;
-  numeroDocumento: string;
-  observacion: string | null;
-  ubicacion: UbicacionResumen;
-  detalles: {
-    formatoId: number;
-    cantidad: number;
-    costoUnitarioNeto: number;
-    movimientoId: number;
-    subtotalNeto?: number;
-  }[];
-  unidades?: number;
-  costoNetoTotal?: number;
-}
+export type EntradaRegistrada = components['schemas']['EntradaRegistradaDto'];
 
-/**
- * Una fila de GET /api/inventario/entradas (E11-H2 criterio 1). TODO(SCRUM-111): no existe en el
- * backend; simulado con la forma pedida a SCRUM-37 (ver docs/historias/SCRUM-111.md).
- */
-export interface EntradaListado {
-  id: number;
-  /** AAAA-MM-DD */
-  fechaRecepcion: string;
-  tipoDocumento: TipoDocumentoProveedor;
-  numeroDocumento: string;
-  proveedor: { id: number; razonSocial: string };
-  ubicacion: UbicacionResumen;
-  cantidadFormatos: number;
-  unidades: number;
-  costoNetoTotal: number;
-  registradoPor: { nombre: string };
-}
+/** Una fila de GET /api/inventario/entradas (E11-H2 criterio 1, SCRUM-150). */
+export type EntradaListado = components['schemas']['EntradaListadoDto'];
 
 /** backend: src/common/dominio/valores.ts › TIPOS_SALIDA */
 export type TipoSalida =
@@ -443,12 +407,7 @@ export interface StockFormato {
 }
 
 /** GET /api/inventario/entradas?bodegaId&buscar&desde&hasta&pagina. Simulado (SCRUM-111). */
-export interface ListadoEntradas {
-  items: EntradaListado[];
-  total: number;
-  pagina: number;
-  limite: number;
-}
+export type ListadoEntradas = components['schemas']['ListadoEntradasDto'];
 
 /** backend: src/common/dominio/valores.ts › TIPOS_MOVIMIENTO */
 export type TipoMovimiento =
@@ -473,41 +432,21 @@ export type StockListado = components['schemas']['StockListadoDto'];
 export type ListadoStock = components['schemas']['ListadoStockDto'];
 
 /**
- * Una fila de GET /api/inventario/movimientos (E11-H5 criterio 2). TODO(SCRUM-114): no existe
- * en el backend; simulado con la forma pedida a SCRUM-40 (ver docs/historias/SCRUM-114.md).
+ * backend: src/modulos/inventario/dto/movimiento-listado.dto.ts. Una fila de GET
+ * /api/inventario/movimientos (E11-H5 criterio 2, SCRUM-150): `cantidad` con signo (la
+ * transferencia, positiva) y `registradoPor` nulo en ventas y reingresos.
  */
-export interface MovimientoListado {
-  id: number;
-  /** ISO 8601 */
-  fechaHora: string;
-  tipo: TipoMovimiento;
-  formato: { id: number; producto: string; nombreFormato: string };
-  /** Con signo; la transferencia, positiva. */
-  cantidad: number;
-  /** El origen, en la transferencia. */
-  ubicacion: UbicacionResumen;
-  /** Solo en la transferencia. */
-  destino: UbicacionResumen | null;
-  /** N.º de documento, código del pedido u observación. */
-  referencia: string | null;
-  /** Nulo: lo registró el sistema (ventas y reingresos). */
-  registradoPor: { nombre: string } | null;
-}
+export type MovimientoListado = components['schemas']['MovimientoListadoDto'];
 
-/** Grupos de los chips de «Movimientos»; el backend decide qué tipos entran en cada uno. */
+/** backend: src/common/dominio/valores.ts › GRUPOS_MOVIMIENTO (qué tipos entran lo decide el backend). */
 export type GrupoMovimientos =
   'entradas' | 'ventas' | 'salidas' | 'transferencias';
 
 /**
  * GET /api/inventario/movimientos?bodegaId&grupo&desde&hasta&buscar&pagina&limite, del más
- * reciente al más antiguo. Simulado (SCRUM-114).
+ * reciente al más antiguo (SCRUM-150).
  */
-export interface ListadoMovimientos {
-  items: MovimientoListado[];
-  total: number;
-  pagina: number;
-  limite: number;
-}
+export type ListadoMovimientos = components['schemas']['ListadoMovimientosDto'];
 
 /** backend: src/common/dominio/valores.ts › ORIGENES_DESCRIPCION */
 export type OrigenDescripcion = 'manual' | 'ia' | 'ia_editada';

@@ -49,6 +49,7 @@ const SIN_CONTACTO: Proveedor = {
   telefono: null,
   email: null,
   activo: true,
+  cantidadEntradas: 0,
 };
 
 type Manejador = (peticion: Request) => Response | Promise<Response>;
@@ -166,14 +167,14 @@ describe('Pantalla Proveedores (SCRUM-110)', () => {
     ]);
   });
 
-  it('E11-H1 FE · listado: sin la cantidad de entradas del backend, muestra «—»', async () => {
+  it('E11-H1 FE · listado: un proveedor sin entradas muestra 0', async () => {
     simularBackend([SIN_CONTACTO]);
     mostrarPantalla();
 
     await screen.findByRole('table');
     expect(
       within(filaDe('Insumos del Sur Ltda.')).getAllByRole('cell')[5],
-    ).toHaveTextContent('—');
+    ).toHaveTextContent('0');
   });
 
   it('E11-H1 FE · listado: en celular, cada fila muestra RUT, contacto y entradas', async () => {
@@ -251,6 +252,7 @@ describe('Pantalla Proveedores (SCRUM-110)', () => {
       telefono: null,
       email: null,
       activo: true,
+      cantidadEntradas: 0,
     };
     const { estado, fetch } = simularBackend([DISTRIBUIDORA], {
       'POST /api/inventario/proveedores': () => {

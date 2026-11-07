@@ -37,7 +37,7 @@ Estado al 01-11-2026 (`pnpm api:tipos` contra el backend local): **Parcial**.
   `number` y `0` es «sin mínimo» (la columna es `Int @default(0)`); `bajoMinimo` sigue la regla
   del aviso de E11-H6 (stock total de todas las ubicaciones), aunque se elija una bodega. Se borró
   su ruta simulada.
-- **Falta (simulado):** el listado de movimientos. Forma propuesta a SCRUM-40 (el stock, ya real):
+- **Existe desde SCRUM-150:** también `GET /api/inventario/movimientos`, con la agrupación propuesta (`GRUPOS_MOVIMIENTO` en `valores.ts`). Forma propuesta a SCRUM-40, ya real:
 
 `GET /api/inventario/stock?bodegaId&buscar&bajoMinimo=true&pagina&limite`
 
@@ -122,3 +122,5 @@ Pendiente en el backend (SCRUM-40):
 
 Al llegar los endpoints: `pnpm api:tipos`, borrar `simulado/panelStock.ts`, quitar el cast de
 `consultasStock.ts` y los tipos simulados de `respuestas.ts`, y probar sin `API_SIMULADA`.
+
+**06-11-2026 (SCRUM-150):** stock y movimientos vienen del backend real; se borró `simulado/panelStock.ts` y los casts de `consultasStock.ts`. Falta probar la pantalla con el backend real.

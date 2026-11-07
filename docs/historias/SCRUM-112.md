@@ -77,3 +77,5 @@ simulado: `GET /catalogo/formatos`, desde SCRUM-105).
 **01-11-2026:** pasa a «Hecha» por decisión del equipo. Sigue pendiente del backend
 `GET /catalogo/formatos` con permiso para `inventario.registrar` (ver arriba): al tenerlo, quitar
 la ruta simulada y probar la pantalla con el backend real.
+
+**06-11-2026 (SCRUM-150):** la búsqueda de formatos, las ubicaciones y la observación tipada como texto en el Swagger ya vienen del backend (sin rutas simuladas ni casts). Falta probar la pantalla con el backend real.

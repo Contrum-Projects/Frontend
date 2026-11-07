@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 94.
+ * Versión de la API: 0.1.0. Rutas: 95.
  */
 
 export interface paths {
@@ -416,7 +416,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Listar las entradas de inventario (E11-H2)
+         * @description De la recepción más reciente a la más antigua (el mismo día, la registrada después), con proveedor, documento, ubicación de destino, formatos, unidades, costo neto total y quién la registró. Filtra por bodega de destino, por razón social o número de documento y por fecha de recepción.
+         */
+        get: operations["EntradasController_listar"];
         put?: never;
         /**
          * Registrar una entrada de inventario (E11-H2)
@@ -561,6 +565,26 @@ export interface paths {
          * @description Ubicaciones activas de bodegas activas, ordenadas por bodega y código: el destino de una entrada, un ajuste o una transferencia, y el filtro por bodega del inventario.
          */
         get: operations["UbicacionesController_listar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inventario/movimientos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar los movimientos de inventario (E11-H5)
+         * @description Del más reciente al más antiguo: entradas, ventas, mermas, consumo, ajustes, transferencias y reingresos, con su referencia y quién los registró (`null` en ventas y reingresos, que registra el sistema). Filtra por bodega (origen o destino), grupo, período en hora de Chile y búsqueda.
+         */
+        get: operations["MovimientosController_listar"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2131,6 +2155,62 @@ export interface components {
             /** @example ventas@distribuidora.cl */
             email?: Record<string, never>;
         };
+        ProveedorListadoDto: {
+            /** @example 1 */
+            id: number;
+            /** @example Distribuidora Capilar SpA */
+            razonSocial: string;
+        };
+        UbicacionResumenDto: {
+            /** @example 3 */
+            id: number;
+            /** @example A-01 */
+            codigo: string;
+            /**
+             * @description Nombre de la bodega.
+             * @example Bodega principal
+             */
+            bodega: string;
+        };
+        RegistradoPorEntradaDto: {
+            /** @example Camila Rojas */
+            nombre: string;
+        };
+        EntradaListadoDto: {
+            /** @example 12 */
+            id: number;
+            /**
+             * Format: date
+             * @example 2026-11-06
+             */
+            fechaRecepcion: string;
+            /** @enum {string} */
+            tipoDocumento: "factura" | "guia_despacho";
+            /** @example F-1234 */
+            numeroDocumento: string;
+            proveedor: components["schemas"]["ProveedorListadoDto"];
+            /** @description La ubicación de destino de la entrada. */
+            ubicacion: components["schemas"]["UbicacionResumenDto"];
+            /**
+             * @description Formatos distintos recibidos.
+             * @example 2
+             */
+            cantidadFormatos: number;
+            /** @example 30 */
+            unidades: number;
+            /** @example 95772 */
+            costoNetoTotal: number;
+            registradoPor: components["schemas"]["RegistradoPorEntradaDto"];
+        };
+        ListadoEntradasDto: {
+            items: components["schemas"]["EntradaListadoDto"][];
+            /** @example 1 */
+            total: number;
+            /** @example 1 */
+            pagina: number;
+            /** @example 20 */
+            limite: number;
+        };
         DetalleEntradaDto: {
             /**
              * @description Id del formato recibido.
@@ -2174,9 +2254,62 @@ export interface components {
              */
             ubicacionId: number;
             /** @example Llegó una caja abierta */
-            observacion?: Record<string, never> | null;
+            observacion?: string | null;
             /** @description Formatos recibidos; cada uno una sola vez. */
             detalles: components["schemas"]["DetalleEntradaDto"][];
+        };
+        ProveedorEntradaRegistradaDto: {
+            /** @example 1 */
+            id: number;
+            /** @example 76086430-7 */
+            rut: string;
+            /** @example Distribuidora Capilar SpA */
+            razonSocial: string;
+        };
+        DetalleEntradaRegistradoDto: {
+            /** @example 21 */
+            formatoId: number;
+            /** @example 24 */
+            cantidad: number;
+            /** @example 1990.5 */
+            costoUnitarioNeto: number;
+            /**
+             * @description Cantidad por costo unitario neto.
+             * @example 47772
+             */
+            subtotalNeto: number;
+            /**
+             * @description El movimiento de entrada del formato.
+             * @example 90
+             */
+            movimientoId: number;
+        };
+        EntradaRegistradaDto: {
+            /** @example 12 */
+            id: number;
+            proveedor: components["schemas"]["ProveedorEntradaRegistradaDto"];
+            /**
+             * Format: date
+             * @example 2026-11-06
+             */
+            fechaRecepcion: string;
+            /** @enum {string} */
+            tipoDocumento: "factura" | "guia_despacho";
+            /** @example F-1234 */
+            numeroDocumento: string;
+            observacion: string | null;
+            ubicacion: components["schemas"]["UbicacionResumenDto"];
+            detalles: components["schemas"]["DetalleEntradaRegistradoDto"][];
+            /**
+             * @description Unidades recibidas en total.
+             * @example 30
+             */
+            unidades: number;
+            /**
+             * @description Suma de los subtotales netos.
+             * @example 95772
+             */
+            costoNetoTotal: number;
         };
         CrearSalidaDto: {
             /**
@@ -2197,7 +2330,7 @@ export interface components {
             /** @example 2 */
             cantidad: number;
             /** @example Envase roto al reponer */
-            observacion?: Record<string, never> | null;
+            observacion?: string | null;
         };
         CrearAjusteDto: {
             /**
@@ -2240,7 +2373,7 @@ export interface components {
             /** @example 5 */
             cantidad: number;
             /** @example Reposición de la góndola */
-            observacion?: Record<string, never> | null;
+            observacion?: string | null;
         };
         UbicacionConStockDto: {
             /** @example 3 */
@@ -2316,6 +2449,55 @@ export interface components {
             /** @example A-01 */
             codigo: string;
             bodega: components["schemas"]["BodegaDeUbicacionDto"];
+        };
+        FormatoDelMovimientoDto: {
+            /** @example 21 */
+            id: number;
+            /** @example Shampoo reparador */
+            producto: string;
+            /** @example 300 ml */
+            nombreFormato: string;
+        };
+        RegistradoPorDto: {
+            /** @example Camila Rojas */
+            nombre: string;
+        };
+        MovimientoListadoDto: {
+            /** @example 90 */
+            id: number;
+            /**
+             * Format: date-time
+             * @example 2026-11-06T13:15:00.000Z
+             */
+            fechaHora: string;
+            /** @enum {string} */
+            tipo: "entrada" | "merma_vencimiento" | "merma_dano" | "consumo_peluqueria" | "ajuste_positivo" | "ajuste_negativo" | "transferencia" | "venta" | "reingreso";
+            formato: components["schemas"]["FormatoDelMovimientoDto"];
+            /**
+             * @description Con signo: positiva si suma stock y negativa si lo resta; la transferencia, positiva.
+             * @example -2
+             */
+            cantidad: number;
+            /** @description La ubicación del movimiento; en la transferencia, la de origen. */
+            ubicacion: components["schemas"]["UbicacionResumenDto"];
+            /** @description Solo en la transferencia: la ubicación de destino. */
+            destino: components["schemas"]["UbicacionResumenDto"] | null;
+            /**
+             * @description N.º de documento de la entrada, código del pedido (venta y reingreso) u observación.
+             * @example F-1234
+             */
+            referencia: string | null;
+            /** @description `null`: lo registró el sistema (ventas y reingresos de pedidos). */
+            registradoPor: components["schemas"]["RegistradoPorDto"] | null;
+        };
+        ListadoMovimientosDto: {
+            items: components["schemas"]["MovimientoListadoDto"][];
+            /** @example 1 */
+            total: number;
+            /** @example 1 */
+            pagina: number;
+            /** @example 20 */
+            limite: number;
         };
         CrearMarcaDto: {
             /** @example L'Oréal Professionnel */
@@ -4261,6 +4443,58 @@ export interface operations {
             };
         };
     };
+    EntradasController_listar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+                /** @description Solo las entradas recibidas en una ubicación de esta bodega. */
+                bodegaId?: number;
+                /** @description Texto contenido en la razón social del proveedor o en el número de documento. */
+                buscar?: string;
+                /** @description Recibidas desde este día. */
+                desde?: string;
+                /** @description Recibidas hasta este día incluido. */
+                hasta?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Entradas, paginadas. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListadoEntradasDto"];
+                };
+            };
+            /** @description Filtros inválidos o `hasta` anterior a `desde`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de registrar inventario. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     EntradasController_registrar: {
         parameters: {
             query?: never;
@@ -4274,12 +4508,14 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Entrada registrada. */
+            /** @description Entrada registrada, con sus subtotales y totales. */
             201: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["EntradaRegistradaDto"];
+                };
             };
             /** @description Faltan datos o son inválidos, un formato está repetido, la fecha es futura, o el proveedor, la ubicación o algún formato no existe o está desactivado. */
             400: {
@@ -4580,6 +4816,60 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["UbicacionInventarioDto"][];
                 };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de consultar inventario. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MovimientosController_listar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+                /** @description Solo los movimientos con origen o destino en una ubicación de esta bodega. */
+                bodegaId?: number;
+                /** @description «entradas»: entrada, ajuste positivo y reingreso; «salidas»: mermas, consumo y ajuste negativo. Sin él, todos. */
+                grupo?: "entradas" | "ventas" | "salidas" | "transferencias";
+                /** @description Desde este día, en hora de Chile. */
+                desde?: string;
+                /** @description Hasta este día incluido, en hora de Chile. */
+                hasta?: string;
+                /** @description Texto contenido en el producto, el formato o la referencia (documento, código del pedido u observación). */
+                buscar?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Movimientos, paginados. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListadoMovimientosDto"];
+                };
+            };
+            /** @description Filtros inválidos o `hasta` anterior a `desde`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Falta iniciar sesión. */
             401: {

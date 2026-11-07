@@ -127,15 +127,13 @@ const conObservacion = (observacion: string) =>
   observacion ? { observacion } : {};
 
 /** Cuerpo del POST de salidas. */
-export const cuerpoSalida = (datos: DatosSalida): CuerpoSalida =>
-  ({
-    formatoId: datos.formato!.formatoId,
-    ubicacionId: Number(datos.ubicacionId),
-    tipo: datos.tipo as TipoSalida,
-    cantidad: Number(datos.cantidad),
-    ...conObservacion(datos.observacion),
-    // TODO(SCRUM-112): el Swagger tipa la observación como objeto (falta el `type`)
-  }) as CuerpoSalida;
+export const cuerpoSalida = (datos: DatosSalida): CuerpoSalida => ({
+  formatoId: datos.formato!.formatoId,
+  ubicacionId: Number(datos.ubicacionId),
+  tipo: datos.tipo as TipoSalida,
+  cantidad: Number(datos.cantidad),
+  ...conObservacion(datos.observacion),
+});
 
 /** Cuerpo del POST de ajustes: la cantidad lleva el signo del sentido elegido. */
 export const cuerpoAjuste = (datos: DatosSalida): CuerpoAjuste => ({
@@ -149,15 +147,15 @@ export const cuerpoAjuste = (datos: DatosSalida): CuerpoAjuste => ({
 });
 
 /** Cuerpo del POST de transferencias. */
-export const cuerpoTransferencia = (datos: DatosSalida): CuerpoTransferencia =>
-  ({
-    formatoId: datos.formato!.formatoId,
-    ubicacionOrigenId: Number(datos.ubicacionId),
-    ubicacionDestinoId: Number(datos.destinoId),
-    cantidad: Number(datos.cantidad),
-    ...conObservacion(datos.observacion),
-    // TODO(SCRUM-113): el Swagger tipa la observación como objeto (falta el `type`)
-  }) as CuerpoTransferencia;
+export const cuerpoTransferencia = (
+  datos: DatosSalida,
+): CuerpoTransferencia => ({
+  formatoId: datos.formato!.formatoId,
+  ubicacionOrigenId: Number(datos.ubicacionId),
+  ubicacionDestinoId: Number(datos.destinoId),
+  cantidad: Number(datos.cantidad),
+  ...conObservacion(datos.observacion),
+});
 
 /**
  * A qué campo del formulario va cada campo que el backend indica en `errores` (SCRUM-150). Sirve

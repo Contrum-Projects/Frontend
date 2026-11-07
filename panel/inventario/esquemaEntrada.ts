@@ -86,23 +86,19 @@ export const ENTRADA_VACIA: FormularioEntrada = {
 };
 
 /** Cuerpo del POST. La observación vacía no se envía. */
-export const cuerpoEntrada = (datos: SalidaEntrada): CuerpoEntrada =>
-  ({
-    proveedorId: Number(datos.proveedorId),
-    fechaRecepcion: datos.fechaRecepcion,
-    tipoDocumento: datos.tipoDocumento as TipoDocumentoProveedor,
-    numeroDocumento: datos.numeroDocumento,
-    ubicacionId: Number(datos.ubicacionId),
-    ...(datos.observacion && { observacion: datos.observacion }),
-    detalles: datos.detalles.map(
-      ({ formato, cantidad, costoUnitarioNeto }) => ({
-        formatoId: formato.formatoId,
-        cantidad: Number(cantidad),
-        costoUnitarioNeto: aNumero(costoUnitarioNeto),
-      }),
-    ),
-    // TODO(SCRUM-111): el Swagger tipa la observación como objeto (falta el `type`)
-  }) as CuerpoEntrada;
+export const cuerpoEntrada = (datos: SalidaEntrada): CuerpoEntrada => ({
+  proveedorId: Number(datos.proveedorId),
+  fechaRecepcion: datos.fechaRecepcion,
+  tipoDocumento: datos.tipoDocumento as TipoDocumentoProveedor,
+  numeroDocumento: datos.numeroDocumento,
+  ubicacionId: Number(datos.ubicacionId),
+  ...(datos.observacion && { observacion: datos.observacion }),
+  detalles: datos.detalles.map(({ formato, cantidad, costoUnitarioNeto }) => ({
+    formatoId: formato.formatoId,
+    cantidad: Number(cantidad),
+    costoUnitarioNeto: aNumero(costoUnitarioNeto),
+  })),
+});
 
 /** A qué parte del formulario apunta un error del backend. */
 export type DestinoError =

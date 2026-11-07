@@ -80,3 +80,5 @@ Estado al 01-11-2026 (`compartido/api/esquema.d.ts` de `main` y repo del backend
 
 **PR:** https://github.com/Contrum-Projects/Frontend/pull/36 (En revisión; endpoints simulados:
 `GET /inventario/ubicaciones`, desde SCRUM-111, y `GET /catalogo/formatos`, desde SCRUM-105).
+
+**06-11-2026 (SCRUM-150):** la búsqueda de formatos, las ubicaciones y la observación tipada como texto en el Swagger ya vienen del backend (sin rutas simuladas ni casts). Falta probar la pantalla con el backend real.
