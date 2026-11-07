@@ -120,3 +120,5 @@ el backend lo tenga.
 **Hecha el 30-10-2026** (PR #24 integrado), por decisión del equipo antes de que el backend tenga
 lo pedido: `categoriaId`/`marcaId` repetidos y `GET /api/tienda/facetas` (SCRUM-33) siguen simulados. Cuando el backend los tenga, borrar las rutas simuladas y
 probar la pantalla con el backend real.
+
+**06-11-2026 (SCRUM-150):** el backend acepta `categoriaId` y `marcaId` repetidos (hasta 30) y entrega `GET /api/tienda/facetas` con la forma acordada, tipados en el Swagger. Se borraron la ruta simulada, los casts y los tipos copiados. Diferencia con lo acordado: un id inexistente sigue respondiendo **404** (no 400), como antes. Falta probar el catálogo y la búsqueda con el backend real.

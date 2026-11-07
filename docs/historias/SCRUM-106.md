@@ -89,3 +89,5 @@ con un parámetro simulado.
   tarjeta «Packs» (`fondo-hueso-oscuro`) y sobre el arco del banner (`fondo-hueso`). En la tarjeta,
   la foto queda abajo a la derecha y un poco afuera, como en Figma (2016:1277), con
   `object-contain`.
+
+**06-11-2026 (SCRUM-150):** el backend acepta `orden=mas-vendidos|novedades` (decisión del 6 nov: más vendidos = unidades de los últimos 30 días en pedidos pagados y no cancelados; novedades = fecha de creación del producto; empates por nombre). Se borró `simulado/tienda.ts` y el cast de `consultaProductos`. Falta probar el inicio con el backend real.

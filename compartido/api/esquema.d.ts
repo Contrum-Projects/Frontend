@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 95.
+ * Versión de la API: 0.1.0. Rutas: 96.
  */
 
 export interface paths {
@@ -936,9 +936,29 @@ export interface paths {
         };
         /**
          * Explorar, buscar y filtrar productos (E2-H1, E2-H2 y E2-H4)
-         * @description Productos activos y a la venta, ordenados por nombre y paginados, con imagen, nombre y precio minorista con IVA. Con `categoriaId` incluye los de sus subcategorías. Con `buscar`, cada palabra debe estar en el nombre, la marca o la categoría (propia o superior), sin distinguir mayúsculas. Búsqueda y filtros se combinan; sin coincidencias devuelve una lista vacía. La sesión es opcional: con el token de una cuenta profesional se incluyen los productos exclusivos y cada producto trae además `precioMayorista` con IVA y `exclusivo` (`precio` es `null` en los exclusivos). Visitantes, clientes y personal ven solo los de venta general, sin precio mayorista.
+         * @description Productos activos y a la venta, ordenados por nombre y paginados, con imagen, nombre y precio minorista con IVA. `categoriaId` y `marcaId` se repiten para marcar varias: dentro de cada grupo basta una y entre grupos se exigen las dos; cada categoría incluye sus subcategorías. Con `buscar`, cada palabra debe estar en el nombre, la marca o la categoría (propia o superior), sin distinguir mayúsculas. Búsqueda y filtros se combinan; sin coincidencias devuelve una lista vacía. La sesión es opcional: con el token de una cuenta profesional se incluyen los productos exclusivos y cada producto trae además `precioMayorista` con IVA y `exclusivo` (`precio` es `null` en los exclusivos). Visitantes, clientes y personal ven solo los de venta general, sin precio mayorista.
          */
         get: operations["TiendaController_listarProductos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tienda/facetas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Conteos de los filtros de la tienda (E2-H2)
+         * @description Cuántos productos hay en cada categoría (con sus subcategorías) y en cada marca, con la misma búsqueda, filtros y visibilidad que `GET /tienda/productos`. Cada grupo cuenta con la búsqueda y los filtros del otro grupo, no con los suyos, así marcar una categoría no deja en 0 a las demás. Solo trae las opciones con productos.
+         */
+        get: operations["TiendaController_facetas"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2797,6 +2817,21 @@ export interface components {
             precioMayoristaNeto?: number;
             /** @example Alza del proveedor */
             motivo: string;
+        };
+        FacetaTiendaDto: {
+            /** @example 3305 */
+            id: number;
+            /**
+             * @description Productos con la búsqueda y los filtros.
+             * @example 24
+             */
+            total: number;
+        };
+        FacetasTiendaDto: {
+            /** @description Por categoría, con sus subcategorías; cuenta con la búsqueda y las marcas marcadas. */
+            categorias: components["schemas"]["FacetaTiendaDto"][];
+            /** @description Por marca; cuenta con la búsqueda y las categorías marcadas. */
+            marcas: components["schemas"]["FacetaTiendaDto"][];
         };
         RechazarSolicitudDto: {
             /**
@@ -6139,14 +6174,16 @@ export interface operations {
     TiendaController_listarProductos: {
         parameters: {
             query?: {
-                pagina?: number;
-                limite?: number;
                 /** @description Texto a buscar, sin distinguir mayúsculas. Cada palabra debe estar en el nombre del producto, en su marca o en su categoría o subcategoría. Hasta 5 palabras. Vacío no filtra. */
                 buscar?: string;
-                /** @description Productos de esta categoría y de todas sus subcategorías, a cualquier profundidad. */
-                categoriaId?: number;
-                /** @description Solo productos de esta marca. */
-                marcaId?: number;
+                /** @description Productos de estas categorías y de todas sus subcategorías, a cualquier profundidad. Se repite para marcar varias (`categoriaId=3&categoriaId=5`): basta estar en una. */
+                categoriaId?: number[];
+                /** @description Productos de estas marcas. Se repite para marcar varias: basta ser de una. Entre categorías y marcas se exigen las dos. */
+                marcaId?: number[];
+                pagina?: number;
+                limite?: number;
+                /** @description Sin él, por nombre. `mas-vendidos`: unidades vendidas en los últimos 30 días en pedidos pagados (no cancelados); `novedades`: los creados más recientemente. Los empates, por nombre. */
+                orden?: "mas-vendidos" | "novedades";
             };
             header?: never;
             path?: never;
@@ -6175,7 +6212,55 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description La categoría no existe, o la marca no existe o no está activa. */
+            /** @description Alguna categoría no existe, o alguna marca no existe o no está activa. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TiendaController_facetas: {
+        parameters: {
+            query?: {
+                /** @description Texto a buscar, sin distinguir mayúsculas. Cada palabra debe estar en el nombre del producto, en su marca o en su categoría o subcategoría. Hasta 5 palabras. Vacío no filtra. */
+                buscar?: string;
+                /** @description Productos de estas categorías y de todas sus subcategorías, a cualquier profundidad. Se repite para marcar varias (`categoriaId=3&categoriaId=5`): basta estar en una. */
+                categoriaId?: number[];
+                /** @description Productos de estas marcas. Se repite para marcar varias: basta ser de una. Entre categorías y marcas se exigen las dos. */
+                marcaId?: number[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Conteos por categoría y marca. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FacetasTiendaDto"];
+                };
+            };
+            /** @description Filtros inválidos. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Llegó un token de acceso inválido, vencido o de una sesión cerrada. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Alguna categoría no existe, o alguna marca no existe o no está activa. */
             404: {
                 headers: {
                     [name: string]: unknown;
