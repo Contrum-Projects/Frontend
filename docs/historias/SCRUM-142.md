@@ -81,3 +81,5 @@ GET /api/reportes/objetivos?desde=AAAA-MM-DD&hasta=AAAA-MM-DD     (permiso repor
   Lo define el backend.
 
 **PR:** https://github.com/Contrum-Projects/Frontend/pull/66 (En revisión, 05-11-2026).
+
+**06-11-2026 (SCRUM-150):** la pantalla usa `GET /api/reportes/indicadores` (la ruta real), con `indicadores`, `cumplidos` y el `estado` frente a la meta que ahora calcula el backend; se borró la ruta simulada. Los textos de OE1 y OE2 siguen la definición del backend: «N de M cuentas verificadas en el período compraron a precio mayorista», «No hay cuentas verificadas en el período.» y «No hay solicitudes presentadas en el período.» (revisar contra Figma). Falta probar con el backend real.

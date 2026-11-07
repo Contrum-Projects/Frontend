@@ -8,10 +8,8 @@
 import type { RutaSimulada } from './index';
 import { rutasPanelFacturas } from './panelFacturas';
 import { rutasPanelPedidos } from './panelPedidos';
-import { rutasPanelReportes } from './panelReportes';
 
 export const rutasSimuladas: readonly RutaSimulada[] = [
   ...rutasPanelPedidos,
   ...rutasPanelFacturas,
-  ...rutasPanelReportes,
 ];

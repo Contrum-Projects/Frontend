@@ -1256,59 +1256,25 @@ export interface ReporteVentas {
 /** Objetivos específicos del proyecto (E14-H1). */
 export type CodigoObjetivo = 'OE1' | 'OE2' | 'OE3';
 
-/** Lo decide el backend al comparar el porcentaje con la meta (RNF-03). */
-export type EstadoObjetivo = 'sobre-la-meta' | 'bajo-la-meta' | 'sin-datos';
-
-export interface IndicadorObjetivo {
-  codigo: CodigoObjetivo;
-  /** Meta en porcentaje: 30, 70 u 80. */
-  meta: number;
-  /** De 0 a 100; `null` cuando no hay registros en el período. */
-  porcentaje: number | null;
-  /** Registros que cumplen (OE1: cuentas verificadas que compraron a precio mayorista). */
-  cumplen: number;
-  /** Registros considerados (OE1: cuentas con solicitud). */
-  total: number;
-  estado: EstadoObjetivo;
-}
-
 /**
- * GET /api/reportes/objetivos?desde&hasta (E14-H1). API SIMULADA: el endpoint aún no existe;
- * forma propuesta a SCRUM-74 (ver docs/historias/SCRUM-142.md). El backend calcula porcentaje,
- * meta y estado; el frontend solo los muestra.
+ * backend: src/modulos/reportes/dto/indicadores-carritos-respuesta.dto.ts. Un objetivo de
+ * GET /api/reportes/indicadores (E14-H1): el backend calcula porcentaje y estado frente a la meta
+ * (`ESTADOS_OBJETIVO`, SCRUM-150).
  */
-export interface ReporteObjetivos {
-  /** AAAA-MM-DD */
-  desde: string;
-  /** AAAA-MM-DD */
-  hasta: string;
-  objetivos: IndicadorObjetivo[];
-}
+export type IndicadorObjetivo = components['schemas']['IndicadorDto'];
 
-/** Carritos abandonados de un mes (E14-H3). */
-export interface CarritosDelMes {
-  /** AAAA-MM */
-  mes: string;
-  /** Carritos que recibieron al menos un recordatorio en el mes (E12-H4). */
-  abandonados: number;
-  /** De los abandonados, los que terminaron en compra. */
-  recuperados: number;
-  /** 0 a 100, calculado por el backend; `null` si no hubo abandonados. */
-  porcentajeRecuperados: number | null;
-}
+export type EstadoObjetivo = IndicadorObjetivo['estado'];
 
-/**
- * GET /api/reportes/carritos?desde&hasta (E14-H3). API SIMULADA: el endpoint aún no existe;
- * forma propuesta a SCRUM-76 (ver docs/historias/SCRUM-144.md). Un elemento por mes del
- * período, del más antiguo al más reciente, aunque esté en cero.
- */
-export interface ReporteCarritos {
-  /** AAAA-MM-DD */
-  desde: string;
-  /** AAAA-MM-DD */
-  hasta: string;
-  meses: CarritosDelMes[];
-}
+/** GET /api/reportes/indicadores?desde&hasta (E14-H1), días AAAA-MM-DD. */
+export type ReporteObjetivos =
+  components['schemas']['ReporteIndicadoresRespuestaDto'];
+
+/** Carritos abandonados de un mes (E14-H3), con el porcentaje recuperado que calcula el backend. */
+export type CarritosDelMes = components['schemas']['CarritosDelMesDto'];
+
+/** GET /api/reportes/carritos-abandonados?desde&hasta (E14-H3), meses AAAA-MM. */
+export type ReporteCarritos =
+  components['schemas']['ReporteCarritosRespuestaDto'];
 
 /**
  * Resultado de una campaña, o del saludo de cumpleaños de un mes, en el período (E14-H3). Los

@@ -122,3 +122,5 @@ GET /api/reportes/campanas?desde=AAAA-MM-DD&hasta=AAAA-MM-DD     (permiso report
   define el backend.
 
 **PR:** https://github.com/Contrum-Projects/Frontend/pull/67 (En revisión, 05-11-2026).
+
+**06-11-2026 (SCRUM-150):** los carritos vienen de `GET /api/reportes/carritos-abandonados` con meses AAAA-MM (los del primer y el último día del período) y el `porcentajeRecuperados` que calcula el backend; se borró `simulado/panelReportes.ts`. Falta probar con el backend real.

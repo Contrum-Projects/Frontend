@@ -129,10 +129,19 @@ const objetivo = (
   codigo: IndicadorObjetivo['codigo'],
   meta: number,
   porcentaje: number | null,
-  cumplen: number,
+  cumplidos: number,
   total: number,
   estado: IndicadorObjetivo['estado'],
-): IndicadorObjetivo => ({ codigo, meta, porcentaje, cumplen, total, estado });
+): IndicadorObjetivo => ({
+  codigo,
+  nombre: codigo,
+  meta,
+  porcentaje,
+  cumplidos,
+  total,
+  sinDatos: estado === 'sin-datos',
+  estado,
+});
 
 /** El backend calcula porcentaje y estado; aquí, valores fijos. */
 const OBJETIVOS_SEIS_MESES = [
@@ -151,14 +160,18 @@ const objetivosConDatos: Responder = (desde, hasta) =>
   Response.json({
     desde,
     hasta,
-    objetivos:
+    indicadores:
       desde === '2026-09-01' ? OBJETIVOS_ESTE_MES : OBJETIVOS_SEIS_MESES,
   } satisfies ReporteObjetivos);
 
 const responderObjetivos =
   (objetivos: IndicadorObjetivo[]): Responder =>
   (desde, hasta) =>
-    Response.json({ desde, hasta, objetivos } satisfies ReporteObjetivos);
+    Response.json({
+      desde,
+      hasta,
+      indicadores: objetivos,
+    } satisfies ReporteObjetivos);
 
 /** El backend cuenta; aquí, cifras fijas por mes (Figma P6 2041:1429). */
 const carritos = (
@@ -180,7 +193,12 @@ const CARRITOS_SEIS_MESES = [
 const responderCarritos =
   (meses: CarritosDelMes[]): Responder =>
   (desde, hasta) =>
-    Response.json({ desde, hasta, meses } satisfies ReporteCarritos);
+    Response.json({
+      desde,
+      hasta,
+      meses,
+      total: { abandonados: 0, recuperados: 0, porcentajeRecuperados: null },
+    } satisfies ReporteCarritos);
 
 /** El segmento a todos (SCRUM-150: el backend lo entrega estructurado). */
 const TODOS: ResultadoCampana['segmento'] = {
@@ -270,11 +288,11 @@ const simularBackend = (
     const url = new URL(peticion.url);
     const desde = url.searchParams.get('desde') ?? '';
     const hasta = url.searchParams.get('hasta') ?? '';
-    if (url.pathname === '/api/reportes/objetivos') {
+    if (url.pathname === '/api/reportes/indicadores') {
       objetivosPedidos.push(`${desde}|${hasta}`);
       return responderObjetivosDe(desde, hasta);
     }
-    if (url.pathname === '/api/reportes/carritos') {
+    if (url.pathname === '/api/reportes/carritos-abandonados') {
       carritosPedidos.push(`${desde}|${hasta}`);
       return responderCarritosDe(desde, hasta);
     }
@@ -475,7 +493,7 @@ describe('Reporte de objetivos (SCRUM-142)', () => {
     expect(oe1.getByText('Bajo la meta')).toBeInTheDocument();
     expect(
       oe1.getByText(
-        '41 de 171 cuentas con solicitud están verificadas y compraron a precio mayorista',
+        '41 de 171 cuentas verificadas en el período compraron a precio mayorista',
       ),
     ).toBeInTheDocument();
 
@@ -547,7 +565,7 @@ describe('Reporte de objetivos (SCRUM-142)', () => {
     expect(oe1.getByText('meta 30%')).toBeInTheDocument();
     expect(oe1.queryByText(/la meta$/)).not.toBeInTheDocument();
     expect(
-      oe1.getByText('No hay cuentas con solicitud en el período.'),
+      oe1.getByText('No hay cuentas verificadas en el período.'),
     ).toBeInTheDocument();
     // Sin valor no hay avance que medir: la barra vacía solo se ve
     expect(oe1.queryByRole('meter')).not.toBeInTheDocument();
@@ -621,7 +639,8 @@ describe('Reporte de carritos y campañas (SCRUM-144)', () => {
     mostrar();
 
     const tarjeta = await seccion('Carritos abandonados');
-    expect(carritosPedidos).toEqual(['2026-04-01|2026-09-15']);
+    // El backend recibe meses: los del primer y el último día del período
+    expect(carritosPedidos).toEqual(['2026-04|2026-09']);
     const meses = within(
       tarjeta.getByRole('list', { name: 'Carritos por mes' }),
     ).getAllByRole('listitem');
@@ -656,7 +675,7 @@ describe('Reporte de carritos y campañas (SCRUM-144)', () => {
     const { carritosPedidos } = simularBackend(conDatos, objetivosConDatos, {
       carritos: (desde, hasta) =>
         responderCarritos(
-          desde === '2026-09-01'
+          desde === '2026-09'
             ? [carritos('2026-09', 3, 1, 33)]
             : CARRITOS_SEIS_MESES,
         )(desde, hasta),
@@ -671,7 +690,7 @@ describe('Reporte de carritos y campañas (SCRUM-144)', () => {
         'Sep: 3 carritos abandonados, 1 terminó en compra (33%).',
       ),
     ).toBeInTheDocument();
-    expect(carritosPedidos).toContain('2026-09-01|2026-09-15');
+    expect(carritosPedidos).toContain('2026-09|2026-09');
   });
 
   it('E14-H3 FE · CA1 carritos: sin abandonos en el período, lo dice', async () => {

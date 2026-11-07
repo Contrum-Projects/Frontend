@@ -43,15 +43,6 @@ export const useVentasDelPeriodo = (fechas: Fechas) =>
 export const useVentasPorMes = (meses: MesDelPeriodo[]) =>
   useQueries({ queries: meses.map(consultaVentas) });
 
-/**
- * TODO(SCRUM-142): `/api/reportes/objetivos` aún no está en el Swagger (API simulada, pedida a
- * SCRUM-74). Quitar el cast cuando `pnpm api:tipos` la traiga.
- */
-const pedirObjetivos = api.GET as unknown as (
-  ruta: '/api/reportes/objetivos',
-  opciones: { params: { query: Fechas } },
-) => Promise<{ data?: unknown; error?: unknown; response: Response }>;
-
 /** Indicadores OE1 a OE3 del período (E14-H1 criterios 1 y 2). */
 export const useObjetivosDelPeriodo = ({ desde, hasta }: Fechas) =>
   useQuery({
@@ -59,33 +50,27 @@ export const useObjetivosDelPeriodo = ({ desde, hasta }: Fechas) =>
     queryFn: () =>
       conErrorDeApi(async () =>
         exigir<ReporteObjetivos>(
-          await pedirObjetivos('/api/reportes/objetivos', {
+          await api.GET('/api/reportes/indicadores', {
             params: { query: { desde, hasta } },
           }),
         ),
       ),
   });
 
-type RutaSimulada = '/api/reportes/carritos';
-
 /**
- * TODO(SCRUM-144): `/api/reportes/carritos` no está en el backend, que tiene
- * `/api/reportes/carritos-abandonados` con otra forma (API simulada). Quitar el cast al alinearlo.
+ * Carritos abandonados y recuperados por mes del período (E14-H3 criterio 1). El backend recibe
+ * meses (AAAA-MM): los del primer y el último día del período.
  */
-const pedirReporteSimulado = api.GET as unknown as (
-  ruta: RutaSimulada,
-  opciones: { params: { query: Fechas } },
-) => Promise<{ data?: unknown; error?: unknown; response: Response }>;
-
-/** Carritos abandonados y recuperados por mes del período (E14-H3 criterio 1). */
 export const useCarritosDelPeriodo = ({ desde, hasta }: Fechas) =>
   useQuery({
     queryKey: [...CLAVE_REPORTES, 'carritos', desde, hasta],
     queryFn: () =>
       conErrorDeApi(async () =>
         exigir<ReporteCarritos>(
-          await pedirReporteSimulado('/api/reportes/carritos', {
-            params: { query: { desde, hasta } },
+          await api.GET('/api/reportes/carritos-abandonados', {
+            params: {
+              query: { desde: desde.slice(0, 7), hasta: hasta.slice(0, 7) },
+            },
           }),
         ),
       ),

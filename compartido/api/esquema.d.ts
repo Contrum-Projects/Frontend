@@ -3029,6 +3029,83 @@ export interface components {
              */
             pagoId: string;
         };
+        IndicadorDto: {
+            /** @enum {string} */
+            codigo: "OE1" | "OE2" | "OE3";
+            /** @example Profesionales verificados que compran */
+            nombre: string;
+            /**
+             * @description Meta en porcentaje.
+             * @example 30
+             */
+            meta: number;
+            /**
+             * @description Con un decimal; `null` sin nada que medir en el período.
+             * @example 42.9
+             */
+            porcentaje: number | null;
+            /**
+             * @description Lo que cumple el objetivo, de `total`.
+             * @example 3
+             */
+            cumplidos: number;
+            /** @example 7 */
+            total: number;
+            sinDatos: boolean;
+            /**
+             * @description Frente a la meta: `sobre-la-meta` si la alcanza o la supera, `bajo-la-meta` si no, `sin-datos` sin nada que medir.
+             * @enum {string}
+             */
+            estado: "sobre-la-meta" | "bajo-la-meta" | "sin-datos";
+        };
+        ReporteIndicadoresRespuestaDto: {
+            /**
+             * Format: date
+             * @example 2026-11-01
+             */
+            desde: string;
+            /**
+             * Format: date
+             * @example 2026-11-30
+             */
+            hasta: string;
+            indicadores: components["schemas"]["IndicadorDto"][];
+        };
+        CarritosDelMesDto: {
+            /**
+             * @description AAAA-MM, en hora de Chile.
+             * @example 2026-11
+             */
+            mes: string;
+            /** @example 12 */
+            abandonados: number;
+            /**
+             * @description De los abandonados ese mes, cuántos terminaron en una compra pagada.
+             * @example 3
+             */
+            recuperados: number;
+            /**
+             * @description Recuperados sobre abandonados, de 0 a 100 al entero; `null` sin abandonos.
+             * @example 25
+             */
+            porcentajeRecuperados: number | null;
+        };
+        TotalCarritosDto: {
+            /** @example 30 */
+            abandonados: number;
+            /** @example 6 */
+            recuperados: number;
+            /** @example 20 */
+            porcentajeRecuperados: number | null;
+        };
+        ReporteCarritosRespuestaDto: {
+            /** @example 2026-01 */
+            desde: string;
+            /** @example 2026-12 */
+            hasta: string;
+            meses: components["schemas"]["CarritosDelMesDto"][];
+            total: components["schemas"]["TotalCarritosDto"];
+        };
         SegmentoGuardadoDto: {
             /**
              * @example [
@@ -8024,12 +8101,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description `desde`, `hasta` e `indicadores`: por cada objetivo `codigo`, `nombre`, `meta`, `porcentaje` (con un decimal, o `null`), `cumplidos`, `total` y `sinDatos`. */
+            /** @description `desde`, `hasta` e `indicadores`: por cada objetivo `codigo`, `nombre`, `meta`, `porcentaje` (con un decimal, o `null`), `cumplidos`, `total`, `sinDatos` y `estado` frente a la meta. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ReporteIndicadoresRespuestaDto"];
+                };
             };
             /** @description Fechas inválidas, la fecha hasta anterior a la desde o un período de más de 366 días. */
             400: {
@@ -8066,12 +8145,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description `desde`, `hasta`, `meses` (cada uno con `mes`, `abandonados` y `recuperados`) y `total`. */
+            /** @description `desde`, `hasta`, `meses` (cada uno con `mes`, `abandonados`, `recuperados` y `porcentajeRecuperados`) y `total`. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ReporteCarritosRespuestaDto"];
+                };
             };
             /** @description Meses inválidos, el mes hasta anterior al desde o un período de más de 24 meses. */
             400: {
