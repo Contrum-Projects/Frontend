@@ -4,7 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { ErrorDeApi, errorDeApi } from '@/compartido/api/errores';
+import {
+  ErrorDeApi,
+  errorDeApi,
+  repartirErrores,
+} from '@/compartido/api/errores';
 import type { FormatoPanel } from '@/compartido/api/respuestas';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Input } from '@/compartido/ui/input';
@@ -26,7 +30,7 @@ import { useGuardarFormato } from './consultasProductos';
 import {
   FORMATO_VACIO,
   UNIDADES,
-  camposDelErrorFormato,
+  CAMPOS_FORMATO,
   cuerpoFormato,
   esquemaFormato,
   formatoAFormulario,
@@ -113,14 +117,11 @@ function FormularioFormatoPanel({
       return;
     }
     const porCampo = new Map<CampoFormato, string[]>();
-    const generales: string[] = [];
-    for (const mensaje of fallo.mensajes) {
-      const campos = camposDelErrorFormato(mensaje);
-      if (campos.length === 0) generales.push(mensaje);
-      for (const campo of campos) {
-        porCampo.set(campo, [...(porCampo.get(campo) ?? []), mensaje]);
-      }
+    const repartidos = repartirErrores(fallo, CAMPOS_FORMATO);
+    for (const [campo, mensaje] of repartidos.porCampo) {
+      porCampo.set(campo, [...(porCampo.get(campo) ?? []), mensaje]);
     }
+    const { generales } = repartidos;
     for (const [campo, mensajes] of porCampo) {
       setError(
         campo,

@@ -9,13 +9,18 @@ import { useCambiarCantidad, useQuitarDelCarrito } from './consultasCarrito';
 import { LineaCarrito, type LineaCarritoProps } from './lineaCarrito';
 
 /** Línea del carrito de la cuenta: cada cambio va al backend y vuelve el carrito entero. */
-export function LineaCuenta({ linea, profesional }: LineaCarritoProps) {
+export function LineaCuenta({
+  linea,
+  profesional,
+  compacta,
+}: LineaCarritoProps) {
   const cambiar = useCambiarCantidad(linea.articuloId);
   const quitar = useQuitarDelCarrito(linea.articuloId);
   return (
     <LineaCarrito
       linea={linea}
       profesional={profesional}
+      compacta={compacta}
       acciones={{
         cantidad: cambiar.isPending ? cambiar.variables : linea.cantidad,
         ocupada: cambiar.isPending || quitar.isPending,
@@ -35,15 +40,18 @@ export const LineaVisitante = ({
   linea,
   cantidad,
   ocupada,
+  compacta,
 }: {
   linea: Linea;
   cantidad: number;
   /** Mientras el backend cotiza el último cambio (también frena clics de más a `cotizar`). */
   ocupada: boolean;
+  compacta?: boolean;
 }) => (
   <LineaCarrito
     linea={linea}
     profesional={false}
+    compacta={compacta}
     acciones={{
       cantidad,
       ocupada,

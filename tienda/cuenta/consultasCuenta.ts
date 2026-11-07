@@ -33,14 +33,16 @@ export const conErrorDeApi = async <T>(pedir: () => Promise<T>): Promise<T> => {
   }
 };
 
-export const useMisDatos = () =>
-  useQuery({
-    queryKey: CLAVES_CUENTA.datos,
-    queryFn: () =>
-      conErrorDeApi(async () =>
-        exigir<DatosPersonales>(await api.GET('/api/cuentas/yo')),
-      ),
-  });
+/** La consulta de los datos de la cuenta: la comparten «Mis datos» y las ofertas (E12-H2). */
+export const consultaMisDatos = {
+  queryKey: CLAVES_CUENTA.datos,
+  queryFn: () =>
+    conErrorDeApi(async () =>
+      exigir<DatosPersonales>(await api.GET('/api/cuentas/yo')),
+    ),
+};
+
+export const useMisDatos = () => useQuery(consultaMisDatos);
 
 /** `activa: false` no pide la lista (por ejemplo, el personal de tienda en el checkout). */
 export const useDirecciones = ({ activa = true }: { activa?: boolean } = {}) =>

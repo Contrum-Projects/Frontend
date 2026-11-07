@@ -50,17 +50,9 @@ export async function leerFacetas(
   filtros: Pick<FiltrosProductos, 'buscar' | 'categoriaIds' | 'marcaIds'>,
 ): Promise<FacetasTienda | null> {
   await connection();
-  /**
-   * TODO(SCRUM-107): `GET /api/tienda/facetas` aún no está en el Swagger (API simulada, pedido a
-   * SCRUM-33). Quitar el cast cuando `pnpm api:tipos` lo traiga.
-   */
-  const pedirFacetas = apiServidor().GET as unknown as (
-    ruta: '/api/tienda/facetas',
-    opciones: { params: { query: ReturnType<typeof consultaProductos> } },
-  ) => Promise<{ data?: unknown; error?: unknown; response: Response }>;
   try {
     return exigir<FacetasTienda>(
-      await pedirFacetas('/api/tienda/facetas', {
+      await apiServidor().GET('/api/tienda/facetas', {
         params: { query: consultaProductos(filtros) },
       }),
     );

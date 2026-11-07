@@ -27,7 +27,7 @@ vi.mock('next/navigation', () => ({
 const responder = (cuerpo: unknown, status = 200) =>
   Response.json(cuerpo, { status });
 
-// Textos de la API simulada (compartido/api/simulado/ofertas.ts), hasta que SCRUM-69 los defina
+// Textos de la respuesta del backend (marketing/bajas.service.ts)
 const BAJA = 'Ya no recibirás publicidad en esta dirección de correo.';
 const ENLACE_INVALIDO = 'El enlace de baja no es válido.';
 

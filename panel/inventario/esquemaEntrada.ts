@@ -86,70 +86,48 @@ export const ENTRADA_VACIA: FormularioEntrada = {
 };
 
 /** Cuerpo del POST. La observación vacía no se envía. */
-export const cuerpoEntrada = (datos: SalidaEntrada): CuerpoEntrada =>
-  ({
-    proveedorId: Number(datos.proveedorId),
-    fechaRecepcion: datos.fechaRecepcion,
-    tipoDocumento: datos.tipoDocumento as TipoDocumentoProveedor,
-    numeroDocumento: datos.numeroDocumento,
-    ubicacionId: Number(datos.ubicacionId),
-    ...(datos.observacion && { observacion: datos.observacion }),
-    detalles: datos.detalles.map(
-      ({ formato, cantidad, costoUnitarioNeto }) => ({
-        formatoId: formato.formatoId,
-        cantidad: Number(cantidad),
-        costoUnitarioNeto: aNumero(costoUnitarioNeto),
-      }),
-    ),
-    // TODO(SCRUM-111): el Swagger tipa la observación como objeto (falta el `type`)
-  }) as CuerpoEntrada;
+export const cuerpoEntrada = (datos: SalidaEntrada): CuerpoEntrada => ({
+  proveedorId: Number(datos.proveedorId),
+  fechaRecepcion: datos.fechaRecepcion,
+  tipoDocumento: datos.tipoDocumento as TipoDocumentoProveedor,
+  numeroDocumento: datos.numeroDocumento,
+  ubicacionId: Number(datos.ubicacionId),
+  ...(datos.observacion && { observacion: datos.observacion }),
+  detalles: datos.detalles.map(({ formato, cantidad, costoUnitarioNeto }) => ({
+    formatoId: formato.formatoId,
+    cantidad: Number(cantidad),
+    costoUnitarioNeto: aNumero(costoUnitarioNeto),
+  })),
+});
 
-/** A qué parte del formulario apunta un mensaje del backend. */
+/** A qué parte del formulario apunta un error del backend. */
 export type DestinoError =
   | { tipo: 'campo'; campo: CampoEntrada }
-  /** La lista de formatos, sin decir cuál (el backend no indica la línea). */
-  | { tipo: 'formatos' }
-  /** Estas líneas, por el id de su formato. */
-  | { tipo: 'filas'; formatoIds: number[] }
-  /** Las líneas cuyo formato aparece más de una vez. */
-  | { tipo: 'repetidos' };
+  /** Una línea de formatos, por su posición en lo que se envió (`detalles.1.cantidad`). */
+  | { tipo: 'linea'; indice: number }
+  /** La lista de formatos entera (cuántos, repetidos), sin una línea. */
+  | { tipo: 'formatos' };
+
+/** Los campos de la recepción, con los nombres de `CrearEntradaDto` (SCRUM-150). */
+const CAMPOS_ENTRADA: Partial<Record<string, CampoEntrada>> = {
+  proveedorId: 'proveedorId',
+  fechaRecepcion: 'fechaRecepcion',
+  tipoDocumento: 'tipoDocumento',
+  numeroDocumento: 'numeroDocumento',
+  ubicacionId: 'ubicacionId',
+  observacion: 'observacion',
+};
+
+const LINEA = /^detalles\.(\d+)(?:\.|$)/;
 
 /**
- * El backend responde los errores como una lista de mensajes, sin decir a qué campo pertenecen
- * (400 de validación, 409 de documento repetido). Se reconocen por cómo empiezan, según
- * CrearEntradaDto y entradas.service.ts.
+ * El destino de un campo que el backend indica en `errores` (SCRUM-150), o `null` si no es de una
+ * parte del formulario. El backend dice la línea por su índice, en el orden en que se envió.
  */
-const INICIOS: [inicio: string, destino: DestinoError][] = [
-  ['El proveedor', { tipo: 'campo', campo: 'proveedorId' }],
-  ['La fecha de recepción', { tipo: 'campo', campo: 'fechaRecepcion' }],
-  ['El tipo de documento', { tipo: 'campo', campo: 'tipoDocumento' }],
-  ['El número de documento', { tipo: 'campo', campo: 'numeroDocumento' }],
-  ['Ya hay una entrada', { tipo: 'campo', campo: 'numeroDocumento' }],
-  ['La ubicación', { tipo: 'campo', campo: 'ubicacionId' }],
-  ['La observación', { tipo: 'campo', campo: 'observacion' }],
-  ['Cada formato', { tipo: 'repetidos' }],
-  ['Indica los formatos', { tipo: 'formatos' }],
-  ['Indica el formato', { tipo: 'formatos' }],
-  ['Algún formato', { tipo: 'formatos' }],
-  ['Una entrada tiene hasta', { tipo: 'formatos' }],
-  ['La cantidad recibida', { tipo: 'formatos' }],
-  ['El costo unitario neto', { tipo: 'formatos' }],
-];
-
-/** «El formato 11 no existe.», «Los formatos 11, 12 no existen.», «El stock del formato 11…». */
-const FORMATOS_NOMBRADOS = /^(?:El|Los) (?:stock del )?formatos? ([\d, ]+)/;
-
-/** El destino de un mensaje del backend, o `null` si no es de una parte del formulario. */
-export const destinoDelError = (mensaje: string): DestinoError | null => {
-  const nombrados = FORMATOS_NOMBRADOS.exec(mensaje);
-  if (nombrados) {
-    return {
-      tipo: 'filas',
-      formatoIds: nombrados[1]
-        .split(',')
-        .map((id) => Number(id.trim()))
-        .filter(Number.isInteger),
-    };
-  }
-  return INICIOS.find(([inicio]) => mensaje.startsWith(inicio))?.[1] ?? null;
+export const destinoDelError = (campo: string): DestinoError | null => {
+  const linea = LINEA.exec(campo);
+  if (linea) return { tipo: 'linea', indice: Number(linea[1]) };
+  if (campo === 'detalles') return { tipo: 'formatos' };
+  const delFormulario = CAMPOS_ENTRADA[campo];
+  return delFormulario ? { tipo: 'campo', campo: delFormulario } : null;
 };

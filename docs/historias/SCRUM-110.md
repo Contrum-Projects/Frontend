@@ -53,3 +53,5 @@ las respuestas**: el tipo `Proveedor` está en `compartido/api/respuestas.ts` ci
 - El buscador «RUT o razón social» filtra en el navegador la lista ya cargada: la API no busca.
 - En celular se omite «Bodega principal ▾»: es de Stock (SCRUM-114).
 - Pendiente del backend: `cantidadEntradas` en el GET y declarar las respuestas en el Swagger.
+
+**06-11-2026 (SCRUM-150):** el backend envía `cantidadEntradas` en el listado y en el alta: la columna «Entradas» ya no muestra «—».

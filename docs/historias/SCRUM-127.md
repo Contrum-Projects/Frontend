@@ -133,3 +133,5 @@ Errores: 401, 403 (sin `facturacion.gestionar`), 404 (el pedido no existe o no p
     «Se muestran X de Y».
   - El calendario de la fecha de emisión ofrece desde el 1 de enero del año anterior hasta hoy.
     El backend solo exige que no sea futura: ¿hace falta un límite hacia atrás?
+
+**06-11-2026 (SCRUM-150):** el backend entrega `GET /api/gestion/facturas` y `GET /api/gestion/facturas/{codigoPedido}` con la forma de arriba (`ESTADOS_FACTURA_GESTION`). Orden (decisión del 6 nov): primero las por emitir, del pedido más antiguo al más nuevo; después las emitidas, la más reciente primero. Se borraron `simulado/panelFacturas.ts` y el cast. Falta probar con el backend real.

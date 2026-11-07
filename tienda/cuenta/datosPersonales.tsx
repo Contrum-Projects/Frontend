@@ -14,7 +14,7 @@ import { Skeleton } from '@/compartido/ui/skeleton';
 import { Spinner } from '@/compartido/ui/spinner';
 import { CamposDatos } from './camposDatos';
 import { CLAVES_CUENTA, useMisDatos } from './consultasCuenta';
-import { repartirErrores } from './erroresRegistro';
+import { repartirErroresRegistro } from './erroresRegistro';
 import {
   cuerpoDatos,
   datosAFormulario,
@@ -92,7 +92,7 @@ function FormularioDatosPersonales({ datos }: { datos: Datos }) {
       setAviso(fallo.message);
       return;
     }
-    const { campos, generales } = repartirErrores(fallo.mensajes);
+    const { campos, generales } = repartirErroresRegistro(fallo);
     const conError = CAMPOS.filter((campo) => campos[campo]);
     conError.forEach((campo, i) =>
       setError(

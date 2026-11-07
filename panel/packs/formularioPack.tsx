@@ -8,7 +8,12 @@ import { useId, useState, type ReactNode } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { api } from '@/compartido/api/cliente';
-import { ErrorDeApi, errorDeApi, exigir } from '@/compartido/api/errores';
+import {
+  ErrorDeApi,
+  errorDeApi,
+  exigir,
+  repartirErrores,
+} from '@/compartido/api/errores';
 import type { PackPanel } from '@/compartido/api/respuestas';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Button } from '@/compartido/ui/button';
@@ -28,7 +33,7 @@ import {
 } from './consultasPacks';
 import {
   PACK_VACIO,
-  campoDelErrorPack,
+  CAMPOS_PACK,
   cuerpoPack,
   esquemaPack,
   packAFormulario,
@@ -78,11 +83,9 @@ export function FormularioPackPanel({
       setAviso(fallo.message);
       return;
     }
-    const generales: string[] = [];
-    for (const mensaje of fallo.mensajes) {
-      const campo = campoDelErrorPack(mensaje);
-      if (campo) setError(campo, { type: 'server', message: mensaje });
-      else generales.push(mensaje);
+    const { porCampo, generales } = repartirErrores(fallo, CAMPOS_PACK);
+    for (const [campo, mensaje] of porCampo) {
+      setError(campo, { type: 'server', message: mensaje });
     }
     if (generales.length > 0) setAviso(generales.join(' '));
   };

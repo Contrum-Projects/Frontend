@@ -106,6 +106,12 @@ describe('Activar la cuenta del personal (SCRUM-98)', () => {
         {
           statusCode: 400,
           message: 'El enlace de invitación no es válido o ya venció.',
+          errores: [
+            {
+              campo: 'token',
+              mensaje: 'El enlace de invitación no es válido o ya venció.',
+            },
+          ],
         },
         { status: 400 },
       ),

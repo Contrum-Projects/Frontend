@@ -5,7 +5,12 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import { api } from '@/compartido/api/cliente';
-import { ErrorDeApi, errorDeApi, exigir } from '@/compartido/api/errores';
+import {
+  ErrorDeApi,
+  errorDeApi,
+  exigir,
+  repartirErrores,
+} from '@/compartido/api/errores';
 import type { MensajeApi } from '@/compartido/api/respuestas';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Button } from '@/compartido/ui/button';
@@ -13,8 +18,8 @@ import { Input } from '@/compartido/ui/input';
 import { Spinner } from '@/compartido/ui/spinner';
 import { CampoFormulario } from './campoFormulario';
 import {
-  campoDelError,
-  esErrorDelEnlace,
+  CAMPOS_RESTABLECER,
+  errorDelEnlace,
   esquemaRestablecer,
   type DatosRestablecer,
 } from './esquemaRecuperacion';
@@ -51,22 +56,15 @@ export function FormularioRestablecer({
     defaultValues: { contrasena: '', confirmacionContrasena: '' },
   });
 
-  const mostrarErrores = (mensajes: string[]) => {
-    const generales: string[] = [];
-    let primero = true;
-    for (const mensaje of mensajes) {
-      const campo = campoDelError(mensaje);
-      if (!campo) {
-        generales.push(mensaje);
-        continue;
-      }
+  const mostrarErrores = (fallo: ErrorDeApi) => {
+    const { porCampo, generales } = repartirErrores(fallo, CAMPOS_RESTABLECER);
+    porCampo.forEach(([campo, mensaje], i) =>
       setError(
         campo,
         { type: 'server', message: mensaje },
-        { shouldFocus: primero },
-      );
-      primero = false;
-    }
+        { shouldFocus: i === 0 },
+      ),
+    );
     if (generales.length > 0) setErrorServidor(new ErrorDeApi(400, generales));
   };
 
@@ -88,12 +86,12 @@ export function FormularioRestablecer({
         setErrorServidor(fallo);
         return;
       }
-      const delEnlace = fallo.mensajes.find(esErrorDelEnlace);
+      const delEnlace = errorDelEnlace(fallo);
       if (delEnlace) {
         alRechazarEnlace(delEnlace);
         return;
       }
-      mostrarErrores(fallo.mensajes);
+      mostrarErrores(fallo);
     }
   };
 

@@ -46,6 +46,7 @@ const PROVEEDOR: Proveedor = {
   telefono: null,
   email: null,
   activo: true,
+  cantidadEntradas: 0,
 };
 
 const UBICACIONES: UbicacionInventario[] = [
@@ -59,6 +60,9 @@ const SHAMPOO: FormatoParaPack = {
   nombreFormato: '300 ml',
   producto: { id: 1, nombre: 'Shampoo reparador' },
   canalVenta: 'general',
+  stockTotal: 0,
+  precioMinoristaNeto: null,
+  precioMinoristaConIva: null,
 };
 const TINTE: FormatoParaPack = {
   formatoId: 12,
@@ -66,6 +70,9 @@ const TINTE: FormatoParaPack = {
   nombreFormato: 'Tono 7.1',
   producto: { id: 2, nombre: 'Tinte permanente' },
   canalVenta: 'general',
+  stockTotal: 0,
+  precioMinoristaNeto: null,
+  precioMinoristaConIva: null,
 };
 
 const ENTRADA: EntradaListado = {
@@ -111,8 +118,24 @@ const simularBackend = (rutas: Record<string, Manejador> = {}) => {
   return { pedidas };
 };
 
-const error = (status: number, message: string | string[]) =>
-  Response.json({ statusCode: status, message }, { status });
+const error = (
+  status: number,
+  message: string | string[],
+  /** Campos a los que pertenece el error (`errores` del backend, SCRUM-150). */
+  campos: string[] = [],
+) =>
+  Response.json(
+    {
+      statusCode: status,
+      message,
+      ...(campos.length > 0 && {
+        errores: campos.flatMap((campo) =>
+          [message].flat().map((mensaje) => ({ campo, mensaje })),
+        ),
+      }),
+    },
+    { status },
+  );
 
 const mostrar = (pantalla: ReactNode) =>
   render(
@@ -385,33 +408,6 @@ describe('Entradas de inventario · nueva (SCRUM-111)', () => {
     ).toBeInTheDocument();
   });
 
-  it('E11-H2 FE · CA2 confirmación: si el backend aún no envía los subtotales, no los inventa', async () => {
-    const { subtotalNeto: _s, ...detalle } = REGISTRADA.detalles[0];
-    simularBackend({
-      'POST /api/inventario/entradas': () =>
-        Response.json(
-          {
-            ...REGISTRADA,
-            detalles: [detalle],
-            unidades: undefined,
-            costoNetoTotal: undefined,
-          },
-          { status: 201 },
-        ),
-    });
-    const usuario = userEvent.setup();
-    mostrar(<PantallaEntradaNueva />);
-
-    await completarEntrada(usuario);
-    await registrar(usuario);
-
-    const tabla = await screen.findByRole('table', {
-      name: 'Formatos de la entrada registrada',
-    });
-    expect(within(tabla).getAllByText('Sin dato')).toHaveLength(3);
-    expect(within(tabla).queryByText('$100.812')).not.toBeInTheDocument();
-  });
-
   it('E11-H2 FE · CA3 falta un dato: señala cada campo y la lista vacía sin llamar al backend', async () => {
     const { pedidas } = simularBackend();
     const usuario = userEvent.setup();
@@ -463,6 +459,7 @@ describe('Entradas de inventario · nueva (SCRUM-111)', () => {
         error(
           409,
           'Ya hay una entrada registrada con ese documento del proveedor.',
+          ['numeroDocumento'],
         ),
     });
     const usuario = userEvent.setup();
@@ -487,7 +484,7 @@ describe('Entradas de inventario · nueva (SCRUM-111)', () => {
   it('E11-H2 FE · CA3 el servidor rechaza un formato: señala su fila', async () => {
     simularBackend({
       'POST /api/inventario/entradas': () =>
-        error(400, ['El formato 11 no existe.']),
+        error(400, ['El formato 11 no existe.'], ['detalles.0.formatoId']),
     });
     const usuario = userEvent.setup();
     mostrar(<PantallaEntradaNueva />);
@@ -527,7 +524,11 @@ describe('Entradas de inventario · errores del servidor (SCRUM-111)', () => {
   it('E11-H2 FE · CA3 formato repetido según el servidor: el mensaje va bajo la lista de formatos', async () => {
     simularBackend({
       'POST /api/inventario/entradas': () =>
-        error(400, ['Cada formato debe aparecer una sola vez en la entrada.']),
+        error(
+          400,
+          ['Cada formato debe aparecer una sola vez en la entrada.'],
+          ['detalles'],
+        ),
     });
     const usuario = userEvent.setup();
     mostrar(<PantallaEntradaNueva />);
@@ -568,38 +569,30 @@ describe('Entradas de inventario · errores del servidor (SCRUM-111)', () => {
   });
 });
 
-describe('destinoDelError (SCRUM-111)', () => {
-  it('E11-H2 FE · CA3 reconoce a qué parte del formulario apunta cada mensaje del backend', () => {
-    expect(
-      destinoDelError(
-        'El proveedor está desactivado: no se le pueden registrar entradas.',
-      ),
-    ).toEqual({ tipo: 'campo', campo: 'proveedorId' });
-    expect(
-      destinoDelError('La fecha de recepción no puede ser posterior a hoy.'),
-    ).toEqual({ tipo: 'campo', campo: 'fechaRecepcion' });
-    expect(
-      destinoDelError(
-        'La ubicación o su bodega está desactivada: elige otra ubicación.',
-      ),
-    ).toEqual({ tipo: 'campo', campo: 'ubicacionId' });
-    expect(
-      destinoDelError('Cada formato debe aparecer una sola vez en la entrada.'),
-    ).toEqual({ tipo: 'repetidos' });
-    expect(destinoDelError('Los formatos 11, 12 no existen.')).toEqual({
-      tipo: 'filas',
-      formatoIds: [11, 12],
+describe('destinoDelError (SCRUM-111, SCRUM-150)', () => {
+  it('E11-H2 FE · CA3 cada campo que indica el backend va a su parte del formulario', () => {
+    expect(destinoDelError('proveedorId')).toEqual({
+      tipo: 'campo',
+      campo: 'proveedorId',
     });
-    expect(
-      destinoDelError(
-        'El stock del formato 12 en esa ubicación superaría el máximo permitido.',
-      ),
-    ).toEqual({ tipo: 'filas', formatoIds: [12] });
-    expect(
-      destinoDelError(
-        'La cantidad recibida debe ser un número entero desde 1 y hasta 1000000.',
-      ),
-    ).toEqual({ tipo: 'formatos' });
-    expect(destinoDelError('Algo inesperado.')).toBeNull();
+    expect(destinoDelError('fechaRecepcion')).toEqual({
+      tipo: 'campo',
+      campo: 'fechaRecepcion',
+    });
+    expect(destinoDelError('ubicacionId')).toEqual({
+      tipo: 'campo',
+      campo: 'ubicacionId',
+    });
+    // La línea, por su posición en lo enviado
+    expect(destinoDelError('detalles.1.formatoId')).toEqual({
+      tipo: 'linea',
+      indice: 1,
+    });
+    expect(destinoDelError('detalles.0.cantidad')).toEqual({
+      tipo: 'linea',
+      indice: 0,
+    });
+    expect(destinoDelError('detalles')).toEqual({ tipo: 'formatos' });
+    expect(destinoDelError('otro')).toBeNull();
   });
 });

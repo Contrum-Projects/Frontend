@@ -100,3 +100,5 @@ formato de respuesta acordaste con quien hace la historia backend.
 - **Pedidos al backend (SCRUM-26):** los campos, conteos y filtros del listado (ver «API»), la
   búsqueda por marca y SKU, y una ruta para reactivar un producto si el equipo la quiere.
 - **PR:** https://github.com/Contrum-Projects/Frontend/pull/17 (En revisión).
+
+**06-11-2026 (SCRUM-150):** el backend entrega el listado con `imagen`, `formatos`, `precioDesde`, `stockTotal`, `stockBajo` y `conteos`, los filtros `canalVenta`, `stockBajo` y `soloInactivos`, y busca también por marca y SKU; todo tipado en el Swagger. Se borró la ruta simulada y el cast de `useProductos`. El buscador dice «Nombre, marca o SKU», como en Figma. Falta probar la pantalla con el backend real.

@@ -44,6 +44,15 @@
    * Usa solo esos pasos (p-4, gap-6, mt-12…).
    */
 
+  /*
+   * Elevación de las tarjetas de la tienda (SCRUM-150): sombras tenues teñidas con marca/profundo,
+   * no negras. «tarjeta» en reposo y «tarjeta-elevada» al pasar el mouse o con el foco dentro.
+   */
+  --shadow-tarjeta:
+    0 1px 2px rgb(11 59 58 / 0.05), 0 4px 12px -6px rgb(11 59 58 / 0.1);
+  --shadow-tarjeta-elevada:
+    0 2px 4px rgb(11 59 58 / 0.06), 0 16px 32px -12px rgb(11 59 58 / 0.22);
+
   /* Tipografía: next/font define --fuente-fraunces y --fuente-dm-sans en app/layout.tsx */
   --font-titulo: var(--fuente-fraunces), Georgia, serif;
   --font-sans: var(--fuente-dm-sans), system-ui, sans-serif;

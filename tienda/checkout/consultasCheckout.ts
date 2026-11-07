@@ -6,6 +6,7 @@ import { api } from '@/compartido/api/cliente';
 import { ErrorDeApi, exigir } from '@/compartido/api/errores';
 import type {
   CotizacionDespacho,
+  CuponCarrito,
   DetallePedidoCuenta,
 } from '@/compartido/api/respuestas';
 import {
@@ -25,8 +26,9 @@ export type EleccionDocumento =
   | { tipoDocumento: 'boleta' }
   | { tipoDocumento: 'factura'; datosFacturacionId: number };
 
-/** Lo que el comprador eligió en el checkout y se envía al crear el pedido. */
-export type EleccionCheckout = EleccionEntrega & EleccionDocumento;
+/** Lo que el comprador eligió en el checkout y se envía al crear el pedido (con su cupón). */
+export type EleccionCheckout = EleccionEntrega &
+  EleccionDocumento & { codigoCupon?: string };
 
 /**
  * E7-H1, criterio 2 · El costo del despacho del carrito a una dirección de la cuenta
@@ -34,17 +36,31 @@ export type EleccionCheckout = EleccionEntrega & EleccionDocumento;
  * Chilexpress (RNF-03). Cuelga de la clave del carrito: si el carrito cambia, se vuelve a
  * cotizar. Sin reintentos automáticos: el backend limita a 10 cotizaciones por minuto.
  */
-export const useCotizacionDespacho = (direccionId: number | null) => {
+export const useCotizacionDespacho = (
+  direccionId: number | null,
+  /** Con cupón, el total ya trae su descuento (SCRUM-150). */
+  codigoCupon: string | null = null,
+) => {
   const cuenta = useCuentaCompradora();
   return useQuery({
-    queryKey: [...CLAVES_CARRITO.carrito(cuenta), 'despacho', direccionId],
+    queryKey: [
+      ...CLAVES_CARRITO.carrito(cuenta),
+      'despacho',
+      direccionId,
+      codigoCupon,
+    ],
     enabled: cuenta !== '' && direccionId !== null,
     retry: false,
     queryFn: () =>
       conErrorDeApi(async () =>
         exigir<CotizacionDespacho>(
           await api.GET('/api/despacho/cotizacion', {
-            params: { query: { direccionId: direccionId ?? 0 } },
+            params: {
+              query: {
+                direccionId: direccionId ?? 0,
+                ...(codigoCupon && { codigoCupon }),
+              },
+            },
           }),
         ),
       ),
@@ -104,3 +120,17 @@ export const useConfirmarPedido = () => {
   });
   return { ...mutacion, pedidoCreado };
 };
+
+/**
+ * SCRUM-150 · Lo que descuenta un cupón sobre el carrito (`POST /api/carrito/cupon`), con el total
+ * de productos ya descontado: lo calcula el backend, que vuelve a revisarlo al crear el pedido.
+ */
+export const useValidarCupon = () =>
+  useMutation({
+    mutationFn: (codigo: string) =>
+      conErrorDeApi(async () =>
+        exigir<CuponCarrito>(
+          await api.POST('/api/carrito/cupon', { body: { codigo } }),
+        ),
+      ),
+  });

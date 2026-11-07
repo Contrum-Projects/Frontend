@@ -68,7 +68,8 @@ const pedido = (
   tipoEntrega: 'retiro',
   tipoDocumento: 'boleta',
   porcentajeIva: 19,
-  montos: { neto: 21008, iva: 3992, total: 25000 },
+  montos: { neto: 21008, iva: 3992, total: 25000, descuento: 0 },
+  cupon: null,
   items: [],
   envio: null,
   documento: null,
@@ -363,7 +364,8 @@ const pagado = (extra: Partial<DetallePedidoCuenta> = {}) =>
     estado: 'pagado',
     pagarHasta: null,
     tipoEntrega: 'despacho',
-    montos: { neto: 24345, iva: 4625, total: 28970 },
+    montos: { neto: 24345, iva: 4625, total: 28970, descuento: 0 },
+    cupon: null,
     items: [
       {
         articuloId: 11,

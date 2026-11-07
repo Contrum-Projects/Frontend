@@ -21,9 +21,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/compartido/ui/table';
+import { type NombresCatalogo, textoSegmento } from './textoSegmento';
 
-export const rutaCampana = (codigo: string) =>
-  `/panel/campanas/${encodeURIComponent(codigo)}` as Route;
+/** Las campañas se identifican por id (decisión del 6 nov, SCRUM-150): solo las ve el panel. */
+export const rutaCampana = (id: number) => `/panel/campanas/${id}` as Route;
+
+export const estadoDe = (campana: { enviada: boolean }): EstadoCampana =>
+  campana.enviada ? 'enviada' : 'borrador';
 
 const CONTADORES: { clave: keyof ContactosCampanas; texto: string }[] = [
   { clave: 'aceptanPublicidad', texto: 'aceptan publicidad' },
@@ -71,12 +75,12 @@ export const EstadoCampanaBadge = ({ estado }: { estado: EstadoCampana }) => (
 );
 
 const detalleEscritorio = (campana: CampanaListada) =>
-  campana.estado === 'enviada' && campana.fechaEnvio
+  campana.enviada && campana.fechaEnvio
     ? `Enviada el ${formatearFecha(campana.fechaEnvio)}`
-    : `Borrador · editado el ${formatearFecha(campana.fechaEdicion)}`;
+    : `Borrador · creado el ${formatearFecha(campana.fechaCreacion)}`;
 
-const detalleCelular = (campana: CampanaListada) =>
-  campana.estado === 'enviada' && campana.fechaEnvio
+const detalleCelular = (campana: CampanaListada, nombres: NombresCatalogo) =>
+  campana.enviada && campana.fechaEnvio
     ? [
         formatearFecha(campana.fechaEnvio),
         `${formatearNumero(campana.destinatarios)} enviados`,
@@ -85,16 +89,16 @@ const detalleCelular = (campana: CampanaListada) =>
       ]
         .filter(Boolean)
         .join(' · ')
-    : `${campana.segmento} · ${formatearNumero(campana.destinatarios)}`;
+    : `${textoSegmento(campana.segmento, nombres)} · ${formatearNumero(campana.destinatarios)}`;
 
 /**
  * Asunto de la fila. Un borrador se abre para seguir editándolo: el enlace cubre la fila, así el
  * teclado pasa por un solo enlace. Una enviada no tiene detalle.
  */
 const AsuntoCampana = ({ campana }: { campana: CampanaListada }) =>
-  campana.estado === 'borrador' ? (
+  !campana.enviada ? (
     <Link
-      href={rutaCampana(campana.codigo)}
+      href={rutaCampana(campana.id)}
       className="texto-etiqueta wrap-break-word text-texto-principal after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:rounded-md focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-marca-profundo"
     >
       {campana.asunto}
@@ -110,7 +114,13 @@ const CABECERA = 'h-auto px-2 py-1 texto-leyenda text-texto-secundario';
 const CELDA = 'px-2 py-3 align-middle texto-pequeno text-texto-principal';
 
 /** Escritorio (P7 2045:1661): campaña, segmento, destinatarios, estado y apertura. */
-export const TablaCampanas = ({ campanas }: { campanas: CampanaListada[] }) => (
+export const TablaCampanas = ({
+  campanas,
+  nombres,
+}: {
+  campanas: CampanaListada[];
+  nombres: NombresCatalogo;
+}) => (
   <Table aria-label={ETIQUETA}>
     <TableHeader>
       <TableRow className="border-0 hover:bg-transparent">
@@ -129,12 +139,10 @@ export const TablaCampanas = ({ campanas }: { campanas: CampanaListada[] }) => (
     <TableBody>
       {campanas.map((campana) => (
         <TableRow
-          key={campana.codigo}
+          key={campana.id}
           className={cn(
             'relative',
-            campana.estado === 'borrador'
-              ? 'hover:bg-fondo-hueso'
-              : 'hover:bg-transparent',
+            !campana.enviada ? 'hover:bg-fondo-hueso' : 'hover:bg-transparent',
           )}
         >
           <TableCell className={`w-full max-w-0 ${CELDA}`}>
@@ -146,13 +154,13 @@ export const TablaCampanas = ({ campanas }: { campanas: CampanaListada[] }) => (
             </span>
           </TableCell>
           <TableCell className={`min-w-36 whitespace-normal ${CELDA}`}>
-            {campana.segmento}
+            {textoSegmento(campana.segmento, nombres)}
           </TableCell>
           <TableCell className={`text-right tabular-nums ${CELDA}`}>
             {formatearNumero(campana.destinatarios)}
           </TableCell>
           <TableCell className={CELDA}>
-            <EstadoCampanaBadge estado={campana.estado} />
+            <EstadoCampanaBadge estado={estadoDe(campana)} />
           </TableCell>
           <TableCell className={`text-right tabular-nums ${CELDA}`}>
             {campana.porcentajeApertura === null
@@ -160,7 +168,7 @@ export const TablaCampanas = ({ campanas }: { campanas: CampanaListada[] }) => (
               : formatearPorcentaje(campana.porcentajeApertura)}
           </TableCell>
           <TableCell className={CELDA}>
-            {campana.estado === 'borrador' && (
+            {!campana.enviada && (
               <ArrowRight
                 aria-hidden
                 strokeWidth={1.75}
@@ -177,22 +185,24 @@ export const TablaCampanas = ({ campanas }: { campanas: CampanaListada[] }) => (
 /** Celular (P7 2047:1225): asunto, detalle en una línea y estado. */
 export const ListaCampanasCelular = ({
   campanas,
+  nombres,
 }: {
   campanas: CampanaListada[];
+  nombres: NombresCatalogo;
 }) => (
   <ul aria-label={ETIQUETA} className="flex flex-col">
     {campanas.map((campana) => (
       <li
-        key={campana.codigo}
+        key={campana.id}
         className="relative flex items-center gap-3 border-t py-3 first:border-t-0"
       >
         <span className="flex min-w-0 flex-1 flex-col gap-1">
           <AsuntoCampana campana={campana} />
           <span className="texto-leyenda wrap-break-word text-texto-secundario">
-            {detalleCelular(campana)}
+            {detalleCelular(campana, nombres)}
           </span>
         </span>
-        <EstadoCampanaBadge estado={campana.estado} />
+        <EstadoCampanaBadge estado={estadoDe(campana)} />
       </li>
     ))}
   </ul>

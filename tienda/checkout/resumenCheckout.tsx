@@ -1,8 +1,8 @@
 'use client';
 
 import { ArrowRight, Clock } from 'lucide-react';
-import { useId } from 'react';
-import type { CarritoCuenta } from '@/compartido/api/respuestas';
+import { type ReactNode, useId } from 'react';
+import type { CarritoCuenta, CuponCarrito } from '@/compartido/api/respuestas';
 import { formatearPesos } from '@/compartido/formato/moneda';
 import { Button } from '@/compartido/ui/button';
 import { Separator } from '@/compartido/ui/separator';
@@ -22,6 +22,10 @@ interface ResumenCheckoutProps {
   enviando: boolean;
   /** Falta algo para pagar (con despacho, la cotización): el botón queda deshabilitado. */
   bloqueado?: boolean;
+  /** El cupón aplicado (SCRUM-150): su descuento y, con retiro, el total ya descontado. */
+  cupon?: CuponCarrito | null;
+  /** El campo para escribir o quitar el cupón. */
+  campoCupon?: ReactNode;
   onPagar: () => void;
 }
 
@@ -37,6 +41,8 @@ export function ResumenCheckout({
   despacho,
   enviando,
   bloqueado = false,
+  cupon = null,
+  campoCupon,
   onPagar,
 }: ResumenCheckoutProps) {
   const idTitulo = useId();
@@ -68,6 +74,14 @@ export function ResumenCheckout({
             {formatearPesos(carrito.total)}
           </dd>
         </div>
+        {cupon && (
+          <div className="flex justify-between gap-4">
+            <dt className="text-texto-secundario">Cupón {cupon.codigo}</dt>
+            <dd className="text-marca-profundo tabular-nums">
+              −{formatearPesos(cupon.descuento)}
+            </dd>
+          </div>
+        )}
         {conDespacho && (
           <div className="flex justify-between gap-4">
             <dt className="text-texto-secundario">Despacho</dt>
@@ -83,12 +97,14 @@ export function ResumenCheckout({
             {conDespacho ? (
               <MontoDespacho despacho={despacho} monto="total" />
             ) : (
-              formatearPesos(carrito.total)
+              // Con cupón, el total de productos que ya descontó el backend
+              formatearPesos(cupon?.totalProductos ?? carrito.total)
             )}
           </dd>
         </div>
       </dl>
       <p className="texto-leyenda text-texto-secundario">IVA incluido</p>
+      {campoCupon}
       <p className="flex items-start gap-2 rounded-md bg-marca-acento-suave p-3 texto-pequeno text-marca-profundo">
         <Clock className="size-5 shrink-0" strokeWidth={1.75} aria-hidden />
         Al continuar reservamos tus productos por 15 minutos para que completes

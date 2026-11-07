@@ -27,17 +27,6 @@ const CELDA =
   'px-2 py-3 align-top break-words whitespace-normal texto-pequeno text-texto-principal';
 const CIFRA = `${CELDA} text-right tabular-nums`;
 
-/** Un monto que el backend aún no entrega (pedido a SCRUM-37): se dice, no se calcula. */
-const Monto = ({ valor }: { valor?: number }) =>
-  valor === undefined ? (
-    <>
-      <span aria-hidden>—</span>
-      <span className="sr-only">Sin dato</span>
-    </>
-  ) : (
-    formatearPesosNetos(valor)
-  );
-
 /**
  * Confirmación del registro (E11-H2 criterio 2): la entrada como la respondió el backend, con el
  * subtotal de cada formato y los totales. Los nombres de los formatos son los del formulario
@@ -132,7 +121,7 @@ export function ConfirmacionEntrada({
                     {formatearPesosNetos(detalle.costoUnitarioNeto)}
                   </TableCell>
                   <TableCell className={CIFRA}>
-                    <Monto valor={detalle.subtotalNeto} />
+                    {formatearPesosNetos(detalle.subtotalNeto)}
                   </TableCell>
                 </TableRow>
               );
@@ -142,11 +131,11 @@ export function ConfirmacionEntrada({
             <TableRow className="hover:bg-transparent">
               <TableCell className={`${CELDA} texto-etiqueta`}>Total</TableCell>
               <TableCell className={`${CIFRA} texto-etiqueta`}>
-                {entrada.unidades ?? <Monto />}
+                {entrada.unidades}
               </TableCell>
               <TableCell className="max-lg:hidden" />
               <TableCell className={`${CIFRA} texto-etiqueta`}>
-                <Monto valor={entrada.costoNetoTotal} />
+                {formatearPesosNetos(entrada.costoNetoTotal)}
               </TableCell>
             </TableRow>
           </TableFooter>

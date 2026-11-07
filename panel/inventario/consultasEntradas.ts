@@ -28,15 +28,6 @@ export const FILTROS_VACIOS: FiltrosEntradas = {
 };
 
 /**
- * TODO(SCRUM-111): GET /inventario/entradas y GET /inventario/ubicaciones aún no están en el
- * Swagger (API simulada, pedidos a SCRUM-37). Quitar el cast cuando `pnpm api:tipos` los traiga.
- */
-const pedir = api.GET as unknown as (
-  ruta: '/api/inventario/entradas' | '/api/inventario/ubicaciones',
-  opciones?: { params: { query: Record<string, string> } },
-) => Promise<{ data?: unknown; error?: unknown; response: Response }>;
-
-/**
  * Entradas de inventario, de la más reciente a la más antigua (E11-H2 criterio 1). Pide
  * `inventario.registrar`. Al cambiar un filtro sigue a la vista el resultado anterior.
  */
@@ -49,7 +40,7 @@ export const useEntradas = (filtros: FiltrosEntradas) => {
     queryFn: () =>
       conErrorDeApi(async () =>
         exigir<ListadoEntradas>(
-          await pedir('/api/inventario/entradas', { params: { query } }),
+          await api.GET('/api/inventario/entradas', { params: { query } }),
         ),
       ),
     placeholderData: keepPreviousData,
@@ -66,7 +57,7 @@ export const useUbicaciones = (habilitada = true) =>
     queryFn: () =>
       conErrorDeApi(async () =>
         exigir<UbicacionInventario[]>(
-          await pedir('/api/inventario/ubicaciones'),
+          await api.GET('/api/inventario/ubicaciones'),
         ),
       ),
     enabled: habilitada,

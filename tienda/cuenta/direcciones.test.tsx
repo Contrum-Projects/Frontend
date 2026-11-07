@@ -337,7 +337,14 @@ describe('SCRUM-97 · Direcciones', () => {
   it('E1-H5 FE · direcciones: el error del backend sobre la comuna va junto a su campo', async () => {
     conDirecciones([], {
       'POST /api/cuentas/yo/direcciones': () =>
-        responder({ statusCode: 400, message: 'La comuna no existe.' }, 400),
+        responder(
+          {
+            statusCode: 400,
+            message: 'La comuna no existe.',
+            errores: [{ campo: 'comuna', mensaje: 'La comuna no existe.' }],
+          },
+          400,
+        ),
     });
     mostrarMisDatos();
     const tarjeta = await tarjetaDirecciones();

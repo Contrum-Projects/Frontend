@@ -1,7 +1,7 @@
 'use client';
 
 import { useSelectedLayoutSegment } from 'next/navigation';
-import { useState, type ReactNode } from 'react';
+import { useState, useSyncExternalStore, type ReactNode } from 'react';
 import { cn } from '@/compartido/lib/utils';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Button } from '@/compartido/ui/button';
@@ -16,6 +16,10 @@ import {
   TarjetasPedidos,
 } from './listaPedidos';
 
+const sinSuscripcion = () => () => {};
+const leerQDeUrl = () =>
+  new URLSearchParams(window.location.search).get('q')?.trim() ?? '';
+
 /**
  * P2 Pedidos (Figma 2028:725; celular 2023:336 y detalle 2024:333, E8-H2). Es el layout de
  * `/panel/pedidos`: la lista con su filtro y su búsqueda queda montada al abrir otro pedido.
@@ -27,6 +31,9 @@ export function DisenoPedidos({ children }: { children: ReactNode }) {
   const esEscritorio = useEsEscritorio();
   const [grupo, setGrupo] = useState('');
   const [q, setQ] = useState('');
+  // La búsqueda del Resumen llega como ?q= (en el servidor no hay URL: el buscador se vuelve a
+  // montar con ese texto al hidratar)
+  const qInicial = useSyncExternalStore(sinSuscripcion, leerQDeUrl, () => '');
   // En celular, con un pedido abierto la lista no se ve: no se pide
   const verLista = codigo === null || esEscritorio === true;
   const consulta = usePedidosPanel({ grupo, q }, verLista);
@@ -45,6 +52,8 @@ export function DisenoPedidos({ children }: { children: ReactNode }) {
         </h1>
         <div className={cn(codigo && 'max-lg:hidden')}>
           <Buscador
+            key={qInicial}
+            inicial={qInicial}
             id="buscar-pedidos"
             etiqueta="Buscar pedidos por pedido, producto o cliente"
             placeholder="Pedido, producto o cliente"

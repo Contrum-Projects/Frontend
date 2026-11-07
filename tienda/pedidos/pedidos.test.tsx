@@ -94,7 +94,8 @@ const detalle = (
   tipoEntrega: 'despacho',
   tipoDocumento: 'boleta',
   porcentajeIva: 19,
-  montos: { neto: 24345, iva: 4625, total: 28970 },
+  montos: { neto: 24345, iva: 4625, total: 28970, descuento: 0 },
+  cupon: null,
   items: [
     {
       articuloId: 7,
@@ -297,6 +298,23 @@ describe('Detalle del pedido (SCRUM-129)', () => {
     const montos = screen.getByRole('region', { name: 'Productos' });
     expect(montos).toHaveTextContent('Despacho$3.990');
     expect(montos).toHaveTextContent('Total$28.970');
+  });
+
+  it('SCRUM-150 · detalle: con cupón muestra su código y lo descontado, que entrega el backend', async () => {
+    simularBackend({
+      [PEDIDO]: () =>
+        responder(
+          detalle({
+            montos: { neto: 20983, iva: 3987, total: 24970, descuento: 4000 },
+            cupon: 'LOREAL20',
+          }),
+        ),
+    });
+    mostrarPantallaCuenta(<PantallaDetallePedido codigo={CODIGO} />);
+
+    expect(await screen.findByText('Cupón LOREAL20')).toBeInTheDocument();
+    expect(screen.getByText('−$4.000')).toBeInTheDocument();
+    expect(screen.getByText('$24.970')).toBeInTheDocument();
   });
 
   it('E8-H1 FE · detalle: un retiro en tienda sin pagar no muestra despacho ni fecha de pago', async () => {

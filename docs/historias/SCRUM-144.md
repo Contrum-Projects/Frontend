@@ -22,6 +22,16 @@ Como un Administrador, necesito ver carritos abandonados y resultados de campañ
 
 Nodos del archivo de Figma `cl9eSD5YBS9qF4tQXJki68` (ver `docs/pantallas.md`).
 
+## API · alineación del 6-11-2026 (SCRUM-150)
+
+«Resultados de campañas» usa la API real: `GET /api/reportes/campanas?desde&hasta` (backend
+SCRUM-150, tipos en el Swagger). Cambios contra la forma propuesta de abajo: cada fila trae `id` (las
+campañas se identifican por id) en vez de `codigo`, y `segmento` viene estructurado (`{ tipos,
+categorias, marcas }`, `null` en el saludo); el texto lo arma el panel con los nombres del catálogo
+(`panel/campanas/textoSegmento.ts`). La lista es por período, como en Figma (2041:1455 y 2042:1135).
+`/api/reportes/carritos` sigue simulada: el backend tiene `/api/reportes/carritos-abandonados` con
+otra forma.
+
 ## API
 
 Estado al 05-11-2026: **No**. SCRUM-76 no tiene endpoints en el backend (`src/modulos/reportes/`
@@ -112,3 +122,5 @@ GET /api/reportes/campanas?desde=AAAA-MM-DD&hasta=AAAA-MM-DD     (permiso report
   define el backend.
 
 **PR:** https://github.com/Contrum-Projects/Frontend/pull/67 (En revisión, 05-11-2026).
+
+**06-11-2026 (SCRUM-150):** los carritos vienen de `GET /api/reportes/carritos-abandonados` con meses AAAA-MM (los del primer y el último día del período) y el `porcentajeRecuperados` que calcula el backend; se borró `simulado/panelReportes.ts`. Falta probar con el backend real.

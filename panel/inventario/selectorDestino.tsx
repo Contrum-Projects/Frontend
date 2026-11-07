@@ -14,8 +14,7 @@ import { nombreUbicacion, useUbicaciones } from './consultasEntradas';
 /**
  * «Ubicación de destino» de la transferencia (E11-H4): las ubicaciones activas de bodegas
  * activas, de la misma bodega o de otra, sin la de origen; se elige después del origen. Si el
- * destino sirve lo decide el backend (transferencias.service.ts). TODO(SCRUM-111): GET
- * /inventario/ubicaciones es simulado.
+ * destino sirve lo decide el backend (transferencias.service.ts).
  */
 export const SelectorDestino = ({
   origenId,

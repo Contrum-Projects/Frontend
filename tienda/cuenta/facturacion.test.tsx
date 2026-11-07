@@ -329,7 +329,14 @@ describe('SCRUM-126 · Datos de facturación', { timeout: 15_000 }, () => {
   it('E9-H2 FE · datos incompletos: el error del backend queda junto a su campo sin perder lo escrito', async () => {
     conFacturacion([], {
       'POST /api/cuentas/yo/facturacion': () =>
-        responder({ statusCode: 400, message: ['El RUT no es válido.'] }, 400),
+        responder(
+          {
+            statusCode: 400,
+            message: ['El RUT no es válido.'],
+            errores: [{ campo: 'rut', mensaje: 'El RUT no es válido.' }],
+          },
+          400,
+        ),
     });
     mostrarPantallaCuenta(<PantallaFacturacion />);
     const usuario = userEvent.setup();

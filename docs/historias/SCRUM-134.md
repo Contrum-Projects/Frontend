@@ -68,3 +68,11 @@ de las tres rutas. Si el equipo quiere el historial de Figma, haría falta una r
 solicitudes anteriores.
 
 **PR:** https://github.com/Contrum-Projects/Frontend/pull/57 (04-11-2026, En revisión).
+
+**07-11-2026 (SCRUM-150) · la pantalla sigue el flujo nuevo en dos pasos** (decisión del usuario;
+reemplaza «un botón, dos llamadas»): sin solicitud, o con «Enviar nueva solicitud» después de un
+rechazo, solo se muestra el RUT y «Verificar mi cuenta», que consulta el SII
+(`POST /api/verificaciones`) sin pedir documentos. Si la aprueba, la cuenta queda profesional al
+instante; si queda `pendiente`, recién ahí aparece el formulario de documentos («Enviar
+documentos», `POST /verificaciones/yo/documentos`). Figma 2020:1666 sigue dibujando los
+documentos en el primer paso: revisar con diseño.

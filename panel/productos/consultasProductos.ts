@@ -8,7 +8,7 @@ import {
 } from '@tanstack/react-query';
 import { api } from '@/compartido/api/cliente';
 import { type ErrorDeApi, exigir } from '@/compartido/api/errores';
-import type { components } from '@/compartido/api/esquema';
+import type { components, paths } from '@/compartido/api/esquema';
 import type {
   FormatoPanel,
   ImagenPanel,
@@ -30,12 +30,16 @@ export interface ConsultaProductos {
   pagina: number;
 }
 
-/** Parámetros de cada filtro (la forma pedida al backend, ver respuestas.ts). */
-const PARAMETROS_FILTRO: Record<FiltroProductos, Record<string, string>> = {
-  todos: { incluirInactivos: 'true' },
-  exclusivos: { incluirInactivos: 'true', canalVenta: 'profesional' },
-  'stock-bajo': { incluirInactivos: 'true', stockBajo: 'true' },
-  inactivos: { soloInactivos: 'true' },
+type FiltrosListado = NonNullable<
+  paths['/api/catalogo/productos']['get']['parameters']['query']
+>;
+
+/** Parámetros de cada filtro (SCRUM-150). */
+const PARAMETROS_FILTRO: Record<FiltroProductos, FiltrosListado> = {
+  todos: { incluirInactivos: true },
+  exclusivos: { incluirInactivos: true, canalVenta: 'profesional' },
+  'stock-bajo': { incluirInactivos: true, stockBajo: true },
+  inactivos: { soloInactivos: true },
 };
 
 /**
@@ -50,12 +54,11 @@ export const useProductos = ({ filtro, buscar, pagina }: ConsultaProductos) =>
         exigir<ListadoProductosPanel>(
           await api.GET('/api/catalogo/productos', {
             params: {
-              // TODO(SCRUM-100): canalVenta, stockBajo y soloInactivos aún no están en el Swagger
               query: {
                 ...PARAMETROS_FILTRO[filtro],
                 ...(buscar && { buscar }),
                 pagina,
-              } as Record<string, string | number>,
+              },
             },
           }),
         ),

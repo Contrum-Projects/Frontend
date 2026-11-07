@@ -8,7 +8,7 @@ import { ErrorDeApi, errorDeApi } from '@/compartido/api/errores';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Button } from '@/compartido/ui/button';
 import { Spinner } from '@/compartido/ui/spinner';
-import { useEnviarVerificacion } from './consultasVerificacion';
+import { useAdjuntarDocumentos } from './consultasVerificacion';
 import {
   esquemaVerificacion,
   MAXIMO_DOCUMENTOS,
@@ -20,32 +20,25 @@ import { FilaDocumento } from './filaDocumento';
 import { TarjetaRut } from './tarjetaRut';
 import { ZonaDocumentos } from './zonaDocumentos';
 
-/** Texto del backend para el 409 sin RUT (`solicitud-verificacion.service.ts` › SIN_RUT). */
-export const MENSAJE_SIN_RUT =
-  'Registra tu RUT en tus datos antes de solicitar la verificación.';
-
 /**
- * Formulario de la verificación (Figma 2020:1666, E10-H1). El RUT es el de la cuenta: se edita
- * en Mis datos. Los documentos quedan en el formulario aunque el backend rechace el envío.
+ * Paso 2 de la verificación (Figma 2020:1666, E10-H2): la solicitud quedó `pendiente` porque el
+ * SII no la aprobó, y se suben los documentos para que el personal la revise. El RUT ya no se
+ * cambia (la solicitud está abierta). Los documentos quedan en el formulario aunque el backend
+ * rechace el envío.
  */
 export function FormularioVerificacion({
   rut,
-  soloDocumentos,
   enfocar = false,
 }: {
-  /** El RUT de la cuenta (12345678-K), o `null` si no lo registró. */
+  /** El RUT de la cuenta (12345678-K). */
   rut: string | null;
-  /** La solicitud ya está `pendiente`: el SII no la aprobó y solo faltan los documentos. */
-  soloDocumentos: boolean;
-  /** Al abrirlo con «Enviar nueva solicitud», el foco va a su inicio (no queda en `body`). */
+  /** Recién pasó del SII a pedir documentos: el foco va a su inicio (no queda en `body`). */
   enfocar?: boolean;
 }) {
-  const envio = useEnviarVerificacion();
-  const [faltaRut, setFaltaRut] = useState(false);
+  const envio = useAdjuntarDocumentos();
   const [avisoArchivos, setAvisoArchivos] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const zona = useRef<HTMLInputElement>(null);
-  const enlaceRut = useRef<HTMLAnchorElement>(null);
   const inicio = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
@@ -91,10 +84,6 @@ export function FormularioVerificacion({
   };
 
   const mostrarError = (fallo: ErrorDeApi) => {
-    if (fallo.message === MENSAJE_SIN_RUT) {
-      setFaltaRut(true);
-      return;
-    }
     // 400 y 413: un archivo que el backend no acepta, junto a los documentos
     if (fallo.estado === 400 || fallo.estado === 413) {
       setAvisoArchivos(fallo.mensajes.join(' '));
@@ -105,20 +94,12 @@ export function FormularioVerificacion({
 
   const enviar = (datos: SalidaVerificacion) => {
     setAviso(null);
-    if (!rut && !soloDocumentos) {
-      setFaltaRut(true);
-      enlaceRut.current?.focus();
-      return;
-    }
-    envio.mutate(
-      { documentos: datos.documentos, soloDocumentos },
-      {
-        onError: (error) =>
-          mostrarError(
-            error instanceof ErrorDeApi ? error : errorDeApi(undefined),
-          ),
-      },
-    );
+    envio.mutate(datos.documentos, {
+      onError: (error) =>
+        mostrarError(
+          error instanceof ErrorDeApi ? error : errorDeApi(undefined),
+        ),
+    });
   };
 
   const errorDocumentos =
@@ -155,21 +136,14 @@ export function FormularioVerificacion({
         Sube un certificado, título o curso que acredite que trabajas en
         peluquería. Con tu cuenta verificada compras a precio profesional.
       </p>
-      {soloDocumentos && (
-        <Alert variant="info">
-          <Info aria-hidden />
-          <AlertDescription className="texto-pequeno text-marca-profundo">
-            No pudimos verificarte con el SII. Sube tus documentos y el equipo
-            de la tienda revisará tu solicitud.
-          </AlertDescription>
-        </Alert>
-      )}
-      <TarjetaRut
-        rut={rut}
-        editable={!soloDocumentos}
-        error={faltaRut ? MENSAJE_SIN_RUT : undefined}
-        refEnlace={enlaceRut}
-      />
+      <Alert variant="info">
+        <Info aria-hidden />
+        <AlertDescription className="texto-pequeno text-marca-profundo">
+          No pudimos verificarte con el SII. Sube tus documentos y el equipo de
+          la tienda revisará tu solicitud.
+        </AlertDescription>
+      </Alert>
+      <TarjetaRut rut={rut} editable={false} />
       <ZonaDocumentos ref={zona} alElegir={agregar} error={errorDocumentos} />
       {fields.length > 0 && (
         <ul aria-label="Documentos elegidos" className="flex flex-col gap-2">
@@ -209,7 +183,7 @@ export function FormularioVerificacion({
         className="w-full sm:w-auto sm:self-start"
       >
         {envio.isPending && <Spinner aria-hidden />}
-        {envio.isPending ? 'Enviando…' : 'Enviar solicitud'}
+        {envio.isPending ? 'Enviando…' : 'Enviar documentos'}
       </Button>
     </form>
   );

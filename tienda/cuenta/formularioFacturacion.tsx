@@ -5,7 +5,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { api } from '@/compartido/api/cliente';
-import { ErrorDeApi, errorDeApi, exigir } from '@/compartido/api/errores';
+import {
+  ErrorDeApi,
+  errorDeApi,
+  exigir,
+  repartirErrores,
+} from '@/compartido/api/errores';
 import type { DatosFacturacionCuenta } from '@/compartido/api/respuestas';
 import { cn } from '@/compartido/lib/utils';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
@@ -14,7 +19,7 @@ import { Spinner } from '@/compartido/ui/spinner';
 import { CamposFacturacion } from './camposFacturacion';
 import { CLAVES_CUENTA } from './consultasCuenta';
 import {
-  campoDelErrorFacturacion,
+  CAMPOS_FACTURACION,
   cuerpoEdicionFacturacion,
   cuerpoNuevaFacturacion,
   FACTURACION_VACIA,
@@ -70,11 +75,9 @@ export function FormularioFacturacion({
       setAviso(fallo.message);
       return;
     }
-    const generales: string[] = [];
-    for (const mensaje of fallo.mensajes) {
-      const campo = campoDelErrorFacturacion(mensaje);
-      if (campo) setError(campo, { type: 'server', message: mensaje });
-      else generales.push(mensaje);
+    const { porCampo, generales } = repartirErrores(fallo, CAMPOS_FACTURACION);
+    for (const [campo, mensaje] of porCampo) {
+      setError(campo, { type: 'server', message: mensaje });
     }
     if (generales.length > 0) setAviso(generales.join(' '));
   };

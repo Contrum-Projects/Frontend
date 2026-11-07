@@ -35,9 +35,13 @@ Estado al 28-10-2026 (`pnpm api:tipos` contra el backend local): **Parcial**.
 - Precios del pack: `GET` y `PUT /api/catalogo/articulos/{id}/precios` (E3-H5). Los valores con
   IVA siguen pedidos a SCRUM-30 (ver SCRUM-104).
 
+**Existe desde SCRUM-150 (06-11-2026):** `GET /api/catalogo/formatos?buscar=&pagina=&limite=`,
+con la forma de abajo, tipada en el Swagger (`FormatoBuscadoDto`) y abierta a `catalogo.gestionar`
+o `inventario.registrar`. Se borró su ruta simulada.
+
 **Simulado** (`compartido/api/simulado/panelCatalogo.ts`, forma pedida a SCRUM-31):
 
-1. `GET /api/catalogo/formatos?buscar=&pagina=&limite=`: búsqueda de formatos para armar el pack
+1. ~~`GET /api/catalogo/formatos?buscar=&pagina=&limite=`~~ (ya real, ver arriba): búsqueda de formatos para armar el pack
    (criterio 2). Solo formatos activos de productos activos, nunca packs. Busca en el nombre del
    producto, el nombre del formato y el SKU.
 
@@ -61,7 +65,8 @@ Estado al 28-10-2026 (`pnpm api:tipos` contra el backend local): **Parcial**.
    }
    ```
 
-   Errores: 401, 403 (sin `catalogo.gestionar`), 400 (paginación inválida).
+   Errores: 401, 403 (sin `catalogo.gestionar` ni `inventario.registrar`), 400 (paginación
+   inválida). El stock cuenta las ubicaciones activas de bodegas activas.
 
 2. En `PackPanel` (respuesta de `GET`, `POST` y `PATCH /catalogo/packs`), campos nuevos:
    - en cada componente: `stockTotal`, `precioMinoristaNeto`, `precioMinoristaConIva` (criterio 1);
@@ -72,11 +77,8 @@ Estado al 28-10-2026 (`pnpm api:tipos` contra el backend local): **Parcial**.
    - `precioMinoristaPorSeparadoConIva`: lo que cuestan los componentes por separado, con IVA
      (Figma: «por separado $24.980»).
 
-Mientras no existan: la búsqueda simulada arma la lista con los productos reales cuyo **nombre**
-coincide (no busca por formato ni SKU) y sus formatos activos, **sin** stock ni precios; los
-packs van directo al backend real. Lo que falta se ve como «—» o «sin dato»: no se calcula ni se
-inventa en el frontend. Cada búsqueda simulada hace hasta 21 llamadas al backend (el listado y los
-formatos de cada producto): en desarrollo puede tocar el límite de peticiones por IP.
+Mientras no existan los campos del punto 2, los packs van directo al backend real. Lo que falta se ve como «—» o «sin dato»: no se calcula ni se
+inventa en el frontend.
 
 ## Notas de trabajo
 
@@ -98,7 +100,8 @@ formatos de cada producto): en desarrollo puede tocar el límite de peticiones p
   sería mejor el SKU o el nombre, porque el personal no ve ids.
 - **Swagger:** las respuestas de packs no están declaradas (`content?: never`), y las fechas de
   `CrearPackDto` salen tipadas como objeto (`Record<string, never>`): hay un cast con
-  `TODO(SCRUM-105)` en `esquemaPack.ts` y otro en `consultasPacks.ts` (búsqueda simulada).
+  `TODO(SCRUM-105)` en `esquemaPack.ts` (el de la búsqueda en `consultasPacks.ts` se quitó en
+  SCRUM-150).
 - **Hecha** cuando el backend tenga lo pedido, se borren las rutas simuladas y se pruebe con el
   backend real.
 - **Revisiones:** criterios, diseño y seguridad. Se corrigió el diseño entre 1024 y 1279 px, el
@@ -118,3 +121,5 @@ formatos de cada producto): en desarrollo puede tocar el límite de peticiones p
 **Hecha el 30-10-2026** (PR #23 integrado), por decisión del equipo antes de que el backend tenga
 lo pedido: la búsqueda de formatos (`GET /catalogo/formatos`) y los campos pedidos a SCRUM-31 siguen simulados. Cuando el backend los tenga, borrar las rutas simuladas y
 probar la pantalla con el backend real.
+
+**06-11-2026 (SCRUM-150, punto 2):** el pack trae `disponibilidad`, `componenteLimitante`, `precioMinoristaPorSeparadoConIva` y, por componente, `stockTotal` (unidades vendibles, como la tienda) y precios; se quitaron los «—» de «sin dato». Ya no queda nada simulado del catálogo. Falta probar con el backend real.

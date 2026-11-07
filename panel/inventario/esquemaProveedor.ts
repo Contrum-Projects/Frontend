@@ -70,19 +70,13 @@ export const cuerpoProveedor = ({
   }) as CuerpoProveedor;
 
 /**
- * El backend responde los errores como una lista de mensajes, sin decir a qué campo
- * pertenecen (400 de validación y 409 de RUT repetido). Se reconocen por cómo empiezan,
- * según CrearProveedorDto y proveedores.service.ts.
+ * A qué campo del formulario va cada campo que el backend indica en `errores` (SCRUM-150). Un
+ * mensaje sin campo, o de un campo que no está aquí, se muestra como aviso general.
  */
-const INICIOS: [inicio: string, campo: CampoProveedor][] = [
-  ['La razón social', 'razonSocial'],
-  ['El RUT', 'rut'],
-  ['Ya existe un proveedor con ese RUT', 'rut'],
-  ['El nombre de contacto', 'nombreContacto'],
-  ['El correo', 'email'],
-  ['El teléfono', 'telefono'],
-];
-
-/** El campo de un mensaje del backend, o `null` si no es de un campo. */
-export const campoDelError = (mensaje: string): CampoProveedor | null =>
-  INICIOS.find(([inicio]) => mensaje.startsWith(inicio))?.[1] ?? null;
+export const CAMPOS_PROVEEDOR: Partial<Record<string, CampoProveedor>> = {
+  rut: 'rut',
+  razonSocial: 'razonSocial',
+  nombreContacto: 'nombreContacto',
+  email: 'email',
+  telefono: 'telefono',
+};

@@ -86,8 +86,24 @@ const simularBackend = (
   return { estado, fetch };
 };
 
-const error = (status: number, message: string) =>
-  Response.json({ statusCode: status, message }, { status });
+const error = (
+  status: number,
+  message: string,
+  /** Campos a los que pertenece el error (`errores` del backend, SCRUM-150). */
+  campos: string[] = [],
+) =>
+  Response.json(
+    {
+      statusCode: status,
+      message,
+      ...(campos.length > 0 && {
+        errores: campos.flatMap((campo) =>
+          [message].flat().map((mensaje) => ({ campo, mensaje })),
+        ),
+      }),
+    },
+    { status },
+  );
 
 const mostrarPantalla = () =>
   render(
@@ -269,7 +285,8 @@ describe('Pantalla Personal (SCRUM-98)', () => {
 
   it('E13-H1 FE · nueva cuenta: correo ya registrado, muestra el error junto al campo sin perder lo escrito', async () => {
     simularBackend([ADMIN], {
-      'POST /api/personal': () => error(409, 'El correo ya está registrado.'),
+      'POST /api/personal': () =>
+        error(409, 'El correo ya está registrado.', ['email']),
     });
     mostrarPantalla();
     await screen.findByRole('table');

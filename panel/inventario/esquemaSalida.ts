@@ -127,15 +127,13 @@ const conObservacion = (observacion: string) =>
   observacion ? { observacion } : {};
 
 /** Cuerpo del POST de salidas. */
-export const cuerpoSalida = (datos: DatosSalida): CuerpoSalida =>
-  ({
-    formatoId: datos.formato!.formatoId,
-    ubicacionId: Number(datos.ubicacionId),
-    tipo: datos.tipo as TipoSalida,
-    cantidad: Number(datos.cantidad),
-    ...conObservacion(datos.observacion),
-    // TODO(SCRUM-112): el Swagger tipa la observación como objeto (falta el `type`)
-  }) as CuerpoSalida;
+export const cuerpoSalida = (datos: DatosSalida): CuerpoSalida => ({
+  formatoId: datos.formato!.formatoId,
+  ubicacionId: Number(datos.ubicacionId),
+  tipo: datos.tipo as TipoSalida,
+  cantidad: Number(datos.cantidad),
+  ...conObservacion(datos.observacion),
+});
 
 /** Cuerpo del POST de ajustes: la cantidad lleva el signo del sentido elegido. */
 export const cuerpoAjuste = (datos: DatosSalida): CuerpoAjuste => ({
@@ -149,47 +147,27 @@ export const cuerpoAjuste = (datos: DatosSalida): CuerpoAjuste => ({
 });
 
 /** Cuerpo del POST de transferencias. */
-export const cuerpoTransferencia = (datos: DatosSalida): CuerpoTransferencia =>
-  ({
-    formatoId: datos.formato!.formatoId,
-    ubicacionOrigenId: Number(datos.ubicacionId),
-    ubicacionDestinoId: Number(datos.destinoId),
-    cantidad: Number(datos.cantidad),
-    ...conObservacion(datos.observacion),
-    // TODO(SCRUM-113): el Swagger tipa la observación como objeto (falta el `type`)
-  }) as CuerpoTransferencia;
+export const cuerpoTransferencia = (
+  datos: DatosSalida,
+): CuerpoTransferencia => ({
+  formatoId: datos.formato!.formatoId,
+  ubicacionOrigenId: Number(datos.ubicacionId),
+  ubicacionDestinoId: Number(datos.destinoId),
+  cantidad: Number(datos.cantidad),
+  ...conObservacion(datos.observacion),
+});
 
 /**
- * El backend responde los errores como mensajes sin campo. Se reconocen por cómo empiezan,
- * según los DTO, comprobaciones.ts, existencias.ts y los servicios de ajustes y transferencias.
- * Los más específicos van primero.
+ * A qué campo del formulario va cada campo que el backend indica en `errores` (SCRUM-150). Sirve
+ * para la salida, el ajuste y la transferencia: en esta, el origen es `ubicacionOrigenId` y el
+ * destino `ubicacionDestinoId` (el que debe estar activo).
  */
-const INICIOS: [inicio: string, campo: CampoSalida][] = [
-  ['El tipo de salida', 'tipo'],
-  ['El formato', 'formato'],
-  // «La ubicación de destino debe ser distinta de la de origen.» y sus validaciones
-  ['La ubicación de destino', 'destinoId'],
-  ['La ubicación', 'ubicacionId'],
-  ['La cantidad', 'cantidad'],
-  // «No hay stock suficiente en esa ubicación: hay 1 y la salida es de 2.»
-  ['No hay stock suficiente', 'cantidad'],
-  // «El stock de ese formato en esa ubicación superaría el máximo permitido.»
-  ['El stock de ese formato', 'cantidad'],
-  ['La observación', 'observacion'],
-  ['El motivo del ajuste', 'observacion'],
-];
-
-/** El campo al que apunta un mensaje del backend, o `null` si es general. */
-export const campoDelError = (
-  mensaje: string,
-  tipo?: string,
-): CampoSalida | null => {
-  // Solo el destino de una transferencia debe estar activo (transferencias.service.ts)
-  if (
-    tipo === 'transferencia' &&
-    mensaje.startsWith('La ubicación o su bodega está desactivada')
-  ) {
-    return 'destinoId';
-  }
-  return INICIOS.find(([inicio]) => mensaje.startsWith(inicio))?.[1] ?? null;
+export const CAMPOS_SALIDA: Partial<Record<string, CampoSalida>> = {
+  tipo: 'tipo',
+  formatoId: 'formato',
+  ubicacionId: 'ubicacionId',
+  ubicacionOrigenId: 'ubicacionId',
+  ubicacionDestinoId: 'destinoId',
+  cantidad: 'cantidad',
+  observacion: 'observacion',
 };

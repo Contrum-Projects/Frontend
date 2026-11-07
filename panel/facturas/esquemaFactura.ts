@@ -6,7 +6,7 @@ import type { DatosFactura } from './consultasFacturas';
  * `registrar-factura.service.ts`), con sus mismos mensajes, solo para avisar antes de enviar.
  * Quien decide es el backend: sus 400 y 409 llegan junto a cada campo.
  */
-export const TAMANO_MAXIMO_FACTURA = 5 * 1024 * 1024;
+export const TAMANO_MAXIMO_FACTURA = 4 * 1024 * 1024;
 const MAXIMO_INT4 = 2_147_483_647;
 
 const MENSAJE_FOLIO = 'El folio debe ser un número entero positivo.';
@@ -47,7 +47,7 @@ export const esquemaFactura = z.object({
       if (archivo.size > TAMANO_MAXIMO_FACTURA) {
         contexto.addIssue({
           code: 'custom',
-          message: 'La factura no puede superar los 5 MB.',
+          message: 'La factura no puede superar los 4 MB.',
         });
       }
     }),
@@ -69,15 +69,12 @@ export const datosFactura = (formulario: FormularioFactura): DatosFactura => ({
   archivo: formulario.archivo as File,
 });
 
-/** Inicio de cada mensaje del backend que corresponde a un campo (resto: arriba del formulario). */
-const INICIOS: readonly (readonly [string, CampoFactura])[] = [
-  ['Ya existe una factura con el folio', 'folio'],
-  ['El folio', 'folio'],
-  ['La fecha de emisión', 'fechaEmision'],
-  ['Adjunta el PDF', 'archivo'],
-  ['La factura debe ser', 'archivo'],
-  ['La factura no puede superar', 'archivo'],
-];
-
-export const campoDelError = (mensaje: string): CampoFactura | null =>
-  INICIOS.find(([inicio]) => mensaje.startsWith(inicio))?.[1] ?? null;
+/**
+ * A qué campo del formulario va cada campo que el backend indica en `errores` (SCRUM-150). Un
+ * mensaje sin campo, o de un campo que no está aquí, se muestra como aviso general.
+ */
+export const CAMPOS_FACTURA: Partial<Record<string, CampoFactura>> = {
+  folio: 'folio',
+  fechaEmision: 'fechaEmision',
+  archivo: 'archivo',
+};

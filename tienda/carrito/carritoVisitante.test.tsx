@@ -47,6 +47,13 @@ const toast = vi.hoisted(() => ({
   dismiss: vi.fn(),
 }));
 vi.mock('sonner', () => ({ toast }));
+const { abrirPanelCarrito } = vi.hoisted(() => ({
+  abrirPanelCarrito: vi.fn(),
+}));
+vi.mock('./estadoPanelCarrito', async (original) => ({
+  ...(await original<typeof import('./estadoPanelCarrito')>()),
+  abrirPanelCarrito,
+}));
 
 const CLAVE = 'cp:carrito';
 
@@ -145,10 +152,8 @@ describe('SCRUM-117 · Carrito del visitante en el navegador', () => {
       screen.getByRole('button', { name: /Agregar al carrito/ }),
     );
 
-    expect(toast.success).toHaveBeenCalledWith(
-      'Agregado al carrito',
-      expect.anything(),
-    );
+    // Agregar abre el panel lateral (decisión del 7 nov 2026), no lleva a otra página
+    expect(abrirPanelCarrito).toHaveBeenCalled();
     expect(push).not.toHaveBeenCalled();
     expect(escrituras).toEqual([]);
 

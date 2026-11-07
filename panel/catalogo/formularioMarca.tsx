@@ -6,14 +6,19 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { api } from '@/compartido/api/cliente';
-import { ErrorDeApi, errorDeApi, exigir } from '@/compartido/api/errores';
+import {
+  ErrorDeApi,
+  errorDeApi,
+  exigir,
+  repartirErrores,
+} from '@/compartido/api/errores';
 import type { MarcaPanel } from '@/compartido/api/respuestas';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Input } from '@/compartido/ui/input';
 import { CampoFormulario } from '@/tienda/cuenta/campoFormulario';
 import { CLAVES_CATALOGO } from './consultasCatalogo';
 import {
-  esErrorDelNombreDeMarca,
+  CAMPOS_MARCA,
   esquemaMarca,
   type FormularioMarca,
   type SalidaMarca,
@@ -59,7 +64,9 @@ function FormularioNuevaMarca({ alTerminar }: { alTerminar: () => void }) {
   });
 
   const mostrarError = (fallo: ErrorDeApi) => {
-    const delNombre = fallo.mensajes.filter(esErrorDelNombreDeMarca);
+    const delNombre = repartirErrores(fallo, CAMPOS_MARCA).porCampo.map(
+      ([, mensaje]) => mensaje,
+    );
     if (
       (fallo.estado === 400 || fallo.estado === 409) &&
       delNombre.length > 0

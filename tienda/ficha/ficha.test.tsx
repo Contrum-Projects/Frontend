@@ -53,10 +53,14 @@ const formato = (
   ...extra,
 });
 
-const producto = (formatos: FormatoDetalle[]): ProductoDetalle => ({
+const producto = (
+  formatos: FormatoDetalle[],
+  ingredientes: string | null = null,
+): ProductoDetalle => ({
   id: 10,
   nombre: 'Shampoo reparador',
   descripcion: 'Limpia con suavidad el cabello dañado.',
+  ingredientes,
   marca: { id: 1, nombre: 'Marca A' },
   categoria: { id: 3, nombre: 'Shampoo' },
   formatos,
@@ -147,6 +151,44 @@ describe('SCRUM-108 · Ficha de producto', () => {
     expect(
       screen.getByRole('button', { name: /Agregar al carrito/ }),
     ).toBeEnabled();
+  });
+
+  it('SCRUM-150 · ingredientes: con lista, se ven en su pestaña junto a la descripción', async () => {
+    simular({
+      '/api/tienda/productos/10': json(
+        producto(
+          [formato(1, '300 ml', { esPredeterminado: true })],
+          'Agua, Glicerina, Pantenol',
+        ),
+      ),
+    });
+    const persona = userEvent.setup();
+    render(await FichaProducto({ id: '10' }));
+
+    expect(screen.getByRole('tab', { name: 'Descripción' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    expect(
+      screen.getByText('Limpia con suavidad el cabello dañado.'),
+    ).toBeVisible();
+
+    await persona.click(screen.getByRole('tab', { name: 'Ingredientes' }));
+    expect(screen.getByRole('tabpanel')).toHaveTextContent(
+      'Agua, Glicerina, Pantenol',
+    );
+  });
+
+  it('SCRUM-150 · ingredientes: sin lista no aparece su pestaña', async () => {
+    simular({
+      '/api/tienda/productos/10': json(
+        producto([formato(1, '300 ml', { esPredeterminado: true })]),
+      ),
+    });
+    render(await FichaProducto({ id: '10' }));
+
+    expect(screen.getByRole('tab', { name: 'Descripción' })).toBeVisible();
+    expect(screen.queryByRole('tab', { name: 'Ingredientes' })).toBeNull();
   });
 
   it('E2-H3 FE · formato agotado: se marca «Agotado», el botón queda deshabilitado y avisa que otro formato sí está', async () => {

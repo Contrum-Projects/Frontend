@@ -9,7 +9,11 @@ import {
   type UseFormRegisterReturn,
 } from 'react-hook-form';
 import { toast } from 'sonner';
-import { ErrorDeApi, errorDeApi } from '@/compartido/api/errores';
+import {
+  ErrorDeApi,
+  errorDeApi,
+  repartirErrores,
+} from '@/compartido/api/errores';
 import type { PreciosArticulo } from '@/compartido/api/respuestas';
 import { formatearPesos } from '@/compartido/formato/moneda';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
@@ -31,7 +35,7 @@ import {
   type ClavePrecios,
 } from './consultasPrecios';
 import {
-  campoDelErrorPrecios,
+  CAMPOS_PRECIOS,
   cuerpoPrecios,
   esquemaPrecios,
   preciosAFormulario,
@@ -148,22 +152,18 @@ function FormularioPrecios({
       setAviso(fallo.message);
       return;
     }
-    const generales: string[] = [];
-    for (const mensaje of fallo.mensajes) {
-      const campo = campoDelErrorPrecios(mensaje);
-      if (campo) {
-        setError(
-          campo,
-          { type: 'server', message: mensaje },
-          { shouldFocus: true },
-        );
-      } else {
-        generales.push(mensaje);
-      }
+    const { porCampo, generales } = repartirErrores(fallo, CAMPOS_PRECIOS);
+    for (const [campo, mensaje] of porCampo) {
+      setError(
+        campo,
+        { type: 'server', message: mensaje },
+        { shouldFocus: true },
+      );
     }
     if (generales.length > 0) setAviso(generales.join(' '));
-    // El producto o el pack pasó a exclusivo mientras tanto: se pide de nuevo para quitar el minorista
-    if (fallo.mensajes.some((mensaje) => mensaje.includes('exclusivo'))) {
+    // El formulario ya validó el precio minorista: si el backend lo rechaza, es porque el producto o
+    // el pack pasó a exclusivo mientras tanto. Se pide de nuevo para quitar el minorista (SCRUM-150)
+    if (fallo.errores.some(({ campo }) => campo === 'precioMinoristaNeto')) {
       void recargar();
     }
   };

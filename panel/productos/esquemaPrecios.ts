@@ -110,19 +110,18 @@ export const vistaPreviaConIva = (
   porcentajeIva: number | undefined,
 ): number | null => {
   if (porcentajeIva === undefined || !esPrecio(neto)) return null;
-  return Math.round(aNumero(neto) * (1 + porcentajeIva / 100));
+  // La misma regla que `precioConIva` del backend: el neto se redondea al peso y después se suma
+  // el IVA redondeado; así la referencia no difiere en $1 del precio que se guarda (SCRUM-150)
+  const pesos = Math.round(aNumero(neto));
+  return pesos + Math.round((pesos * porcentajeIva) / 100);
 };
 
 /**
- * Campos de un mensaje del backend, reconocidos por cómo empiezan (FijarPreciosDto y
- * precios.service.ts).
+ * A qué campo del formulario va cada campo que el backend indica en `errores` (SCRUM-150). Un
+ * mensaje sin campo, o de un campo que no está aquí, se muestra como aviso general.
  */
-const INICIOS_PRECIOS: [inicio: string, campo: CampoPrecios][] = [
-  ['El precio minorista neto', 'precioMinoristaNeto'],
-  ['El precio mayorista neto', 'precioMayoristaNeto'],
-  ['El motivo', 'motivo'],
-];
-
-/** El campo de un mensaje del backend; `null` si no es de un campo. */
-export const campoDelErrorPrecios = (mensaje: string): CampoPrecios | null =>
-  INICIOS_PRECIOS.find(([inicio]) => mensaje.startsWith(inicio))?.[1] ?? null;
+export const CAMPOS_PRECIOS: Partial<Record<string, CampoPrecios>> = {
+  precioMinoristaNeto: 'precioMinoristaNeto',
+  precioMayoristaNeto: 'precioMayoristaNeto',
+  motivo: 'motivo',
+};

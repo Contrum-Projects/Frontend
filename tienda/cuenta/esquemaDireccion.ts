@@ -72,13 +72,13 @@ export const cuerpoEdicionDireccion = (datos: SalidaDireccion) =>
     referencia: datos.referencia || null,
   }) as components['schemas']['ActualizarDireccionDto'];
 
-/** Errores 400 del backend (sin campo) por cómo empiezan, como en erroresRegistro.ts. */
-const INICIOS: [inicio: string, campo: CampoDireccion][] = [
-  ['La calle', 'calle'],
-  ['El número', 'numero'],
-  ['La referencia', 'referencia'],
-  ['La comuna', 'comuna'],
-];
-
-export const campoDelError = (mensaje: string): CampoDireccion | undefined =>
-  INICIOS.find(([inicio]) => mensaje.startsWith(inicio))?.[1];
+/**
+ * A qué campo del formulario va cada campo que el backend indica en `errores` (SCRUM-150). Un
+ * mensaje sin campo, o de un campo que no está aquí, se muestra como aviso general.
+ */
+export const CAMPOS_DIRECCION: Partial<Record<string, CampoDireccion>> = {
+  calle: 'calle',
+  numero: 'numero',
+  referencia: 'referencia',
+  comuna: 'comuna',
+};

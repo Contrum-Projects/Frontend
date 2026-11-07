@@ -52,6 +52,24 @@ Todas piden `campanas.gestionar` (solo administrador): sin sesión 401, otro rol
 
 ## Notas de trabajo
 
+**6-11-2026 (SCRUM-150, alineación con el backend).** Las pantallas usan la API real de SCRUM-70
+en `/api/marketing/campanas`, sin la API simulada, con estas decisiones del usuario:
+
+- Las campañas se identifican por **id** (no tienen `codigoPublico`): la ruta es
+  `/panel/campanas/[id]`.
+- El segmento tiene la forma del backend, `{ tipos[], categorias[], marcas[] }`: uno o más tipos
+  (clientes, profesionales, suscriptores sin cuenta) y, opcionalmente, categorías y marcas
+  compradas, varias en cada una, cargadas del catálogo. No hay `/segmentos` ni criterio
+  «especialidad». El texto del segmento lo arma el panel (`textoSegmento.ts`).
+- Vista previa en vivo con `POST /vista-previa` `{ asunto, cuerpo }`: solo arma el correo, no
+  guarda, no cuenta destinatarios ni entrega la confirmación. Se muestra su `texto` en párrafos, con
+  el remitente «Cabello Perfecto». El número de destinatarios aparece al revisar el envío:
+  «Revisar y enviar» guarda el borrador, pide `POST /:id/vista-previa` (destinatarios y
+  `confirmacion`) y envía con `POST /:id/envio` `{ confirmacion }`. Editar es `PATCH`.
+- El listado trae del backend los cuatro contadores y, por fila, destinatarios y apertura.
+- Los errores van junto al campo que indica el backend en `errores` (`asunto`, `cuerpo`,
+  `segmento.tipos`, `segmento.categorias`, `segmento.marcas`).
+
 **4-11-2026 (rama `SCRUM-140-panel-campanas`).** PR: https://github.com/Contrum-Projects/Frontend/pull/63
 
 - Pantallas: `/panel/campanas` (P7), `/panel/campanas/nueva` (P7a) y `/panel/campanas/[codigo]`
@@ -92,3 +110,13 @@ Todas piden `campanas.gestionar` (solo administrador): sin sesión 401, otro rol
 - Si se quiere el formato enriquecido de Figma, definir un formato estructurado (no HTML) y su
   validación en el backend; sería otra historia o un cambio a esta.
 - Hecha solo cuando se pruebe con el backend real y se borren las rutas simuladas.
+
+## Cambios posteriores (SCRUM-150, 07-11-2026)
+
+- **Marcadores:** `{nombre}`, `{apellido}`, `{nombre_completo}` y `{enlace_tienda}`, con botones para
+  insertarlos donde está el cursor (`panel/campanas/menuMarcadores.tsx`). Los completa el backend.
+- **Más filtros** (`panel/campanas/filtrosCuenta.tsx`): compras (compró en los últimos N días, no
+  compra hace más de N días, pedidos y gasto desde/hasta), ubicación (regiones y comunas por código
+  CUT), perfil (mes de cumpleaños, edad, género de la lista del registro) y cuenta (antigüedad, con
+  productos en el carrito). Solo cuentas: con suscriptores el backend responde 400 junto a los
+  tipos. Reglas en `reglas-de-negocio.md` del backend (E12-H3, 7 nov).

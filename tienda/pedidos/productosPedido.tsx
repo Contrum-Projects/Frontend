@@ -49,6 +49,16 @@ export const ProductosPedido = ({
             </dd>
           </div>
         )}
+        {pedido.montos.descuento > 0 && (
+          <div className="flex justify-between gap-4 texto-pequeno">
+            <dt className="text-texto-secundario">
+              Cupón{pedido.cupon ? ` ${pedido.cupon}` : ''}
+            </dt>
+            <dd className="text-marca-profundo tabular-nums">
+              −{formatearPesos(pedido.montos.descuento)}
+            </dd>
+          </div>
+        )}
         <div className="flex justify-between gap-4 texto-cuerpo-fuerte text-texto-principal">
           <dt>Total</dt>
           <dd className="tabular-nums">

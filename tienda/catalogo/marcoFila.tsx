@@ -47,7 +47,7 @@ const claseLista = (celular: FilaProductosProps['celular']) =>
   cn(
     'md:grid md:grid-cols-5 md:gap-6',
     celular === 'carrusel'
-      ? '-mx-4 flex snap-x scroll-px-4 [scrollbar-width:none] gap-3 overflow-x-auto px-4 pb-1 md:mx-0 md:overflow-visible md:px-0'
+      ? '-mx-4 -my-2 flex snap-x scroll-px-4 [scrollbar-width:none] gap-3 overflow-x-auto px-4 py-2 md:mx-0 md:my-0 md:overflow-visible md:px-0 md:py-0'
       : 'grid grid-cols-2 gap-4',
   );
 

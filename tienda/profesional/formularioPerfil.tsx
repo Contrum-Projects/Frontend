@@ -71,7 +71,7 @@ export function FormularioPerfil({
       setAviso(fallo.message);
       return;
     }
-    const { campos, generales } = repartirErroresPerfil(fallo.mensajes);
+    const { campos, generales } = repartirErroresPerfil(fallo);
     CAMPOS.filter((campo) => campos[campo]).forEach((campo, i) =>
       setError(
         campo,

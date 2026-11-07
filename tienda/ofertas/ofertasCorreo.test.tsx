@@ -5,6 +5,7 @@ import type { paths } from '@/compartido/api/esquema';
 import type { PreferenciaOfertas } from '@/compartido/api/respuestas';
 import { reiniciarParaPruebas } from '@/compartido/sesion/almacen';
 import {
+  DATOS,
   mostrarPantallaCuenta,
   responder,
   simularBackend,
@@ -29,17 +30,20 @@ vi.mock('next/navigation', () => ({
 }));
 
 const ACTIVA: PreferenciaOfertas = {
-  activa: true,
+  acepta: true,
   fechaConsentimiento: '2026-09-12T15:00:00.000Z',
-  email: 'camila@correo.cl',
-  correoVerificado: true,
 };
 
 const INACTIVA: PreferenciaOfertas = {
-  ...ACTIVA,
-  activa: false,
+  acepta: false,
   fechaConsentimiento: null,
 };
+
+/** `GET /api/cuentas/yo` con esa preferencia (de ahí se lee, SCRUM-150). */
+const misDatos = (consentimientoMarketing: PreferenciaOfertas) =>
+  responder({ ...DATOS, consentimientoMarketing });
+
+const RUTA_PUT = 'PUT /api/cuentas/yo/consentimiento-marketing';
 
 const abrir = () => mostrarPantallaCuenta(<PantallaOfertasCorreo />);
 
@@ -57,7 +61,7 @@ afterEach(() => {
 
 describe('E12-H2 FE · Ofertas por correo', () => {
   it('E12-H2 FE · interruptor: muestra el estado con la fecha del consentimiento y qué incluye', async () => {
-    simularBackend({ 'GET /api/cuentas/yo/ofertas': () => responder(ACTIVA) });
+    simularBackend({ 'GET /api/cuentas/yo': () => misDatos(ACTIVA) });
     abrir();
 
     expect(
@@ -78,16 +82,16 @@ describe('E12-H2 FE · Ofertas por correo', () => {
     expect(
       screen.getByText('Recordatorios si dejas productos en el carrito.'),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText('Correo verificado: camila@correo.cl'),
-    ).toBeInTheDocument();
   });
 
   it('E12-H2 FE · interruptor: al activarlo guarda y muestra la fecha que entrega el backend', async () => {
     const escrituras = simularBackend({
-      'GET /api/cuentas/yo/ofertas': () => responder(INACTIVA),
-      'PUT /api/cuentas/yo/ofertas': () =>
-        responder({ ...ACTIVA, fechaConsentimiento: '2026-11-04T15:00:00Z' }),
+      'GET /api/cuentas/yo': () => misDatos(INACTIVA),
+      [RUTA_PUT]: () =>
+        responder({
+          acepta: true,
+          fechaConsentimiento: '2026-11-04T15:00:00Z',
+        }),
     });
     abrir();
 
@@ -104,14 +108,14 @@ describe('E12-H2 FE · Ofertas por correo', () => {
     ).toBeInTheDocument();
     expect(opcion).toBeChecked();
     expect(escrituras).toEqual([
-      { peticion: 'PUT /api/cuentas/yo/ofertas', cuerpo: { activa: true } },
+      { peticion: RUTA_PUT, cuerpo: { acepta: true } },
     ]);
   });
 
   it('E12-H2 FE · interruptor: al desactivarlo guarda y lo dice', async () => {
     const escrituras = simularBackend({
-      'GET /api/cuentas/yo/ofertas': () => responder(ACTIVA),
-      'PUT /api/cuentas/yo/ofertas': () => responder(INACTIVA),
+      'GET /api/cuentas/yo': () => misDatos(ACTIVA),
+      [RUTA_PUT]: () => responder(INACTIVA),
     });
     abrir();
 
@@ -122,20 +126,17 @@ describe('E12-H2 FE · Ofertas por correo', () => {
     ).toBeInTheDocument();
     expect(await interruptor()).not.toBeChecked();
     expect(escrituras).toEqual([
-      { peticion: 'PUT /api/cuentas/yo/ofertas', cuerpo: { activa: false } },
+      { peticion: RUTA_PUT, cuerpo: { acepta: false } },
     ]);
   });
 
   it('E12-H2 FE · interruptor: si el backend rechaza el cambio, muestra su mensaje y vuelve al estado guardado', async () => {
     simularBackend({
-      'GET /api/cuentas/yo/ofertas': () => responder(INACTIVA),
-      'PUT /api/cuentas/yo/ofertas': () =>
+      'GET /api/cuentas/yo': () => misDatos(INACTIVA),
+      [RUTA_PUT]: () =>
         responder(
-          {
-            statusCode: 409,
-            message: 'Verifica tu correo para recibir ofertas.',
-          },
-          409,
+          { statusCode: 403, message: 'No tienes permiso para hacer esto.' },
+          403,
         ),
     });
     abrir();
@@ -144,60 +145,26 @@ describe('E12-H2 FE · Ofertas por correo', () => {
     await userEvent.click(opcion);
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Verifica tu correo para recibir ofertas.',
+      'No tienes permiso para hacer esto.',
     );
     expect(opcion).not.toBeChecked();
   });
 
-  it('E12-H2 FE · correo sin verificar: explica que debe verificarlo y no deja activar', async () => {
-    const escrituras = simularBackend({
-      'GET /api/cuentas/yo/ofertas': () =>
-        responder({ ...INACTIVA, correoVerificado: false }),
-    });
+  it('E12-H2 FE · correo verificado: la cuenta compradora siempre lo tiene, así que no muestra aviso ni bloquea el interruptor', async () => {
+    simularBackend({ 'GET /api/cuentas/yo': () => misDatos(INACTIVA) });
     abrir();
 
-    const opcion = await interruptor();
-    expect(opcion).toBeDisabled();
-    expect(
-      screen.getByText(
-        'Verifica tu correo para recibir ofertas. Te enviamos un enlace cuando creaste tu cuenta.',
-      ),
-    ).toBeInTheDocument();
-    expect(screen.queryByText(/Correo verificado/)).not.toBeInTheDocument();
-
-    await userEvent.click(opcion);
-    expect(escrituras).toEqual([]);
-  });
-
-  it('E12-H2 FE · correo sin verificar: si ya estaba activa, deja desactivarla', async () => {
-    const escrituras = simularBackend({
-      'GET /api/cuentas/yo/ofertas': () =>
-        responder({ ...ACTIVA, correoVerificado: false }),
-      'PUT /api/cuentas/yo/ofertas': () =>
-        responder({ ...INACTIVA, correoVerificado: false }),
-    });
-    abrir();
-
-    const opcion = await interruptor();
-    expect(opcion).toBeEnabled();
-    await userEvent.click(opcion);
-
-    expect(
-      await screen.findByText('No recibes ofertas por correo.'),
-    ).toBeInTheDocument();
-    expect(await interruptor()).toBeDisabled();
-    expect(escrituras).toEqual([
-      { peticion: 'PUT /api/cuentas/yo/ofertas', cuerpo: { activa: false } },
-    ]);
+    expect(await interruptor()).toBeEnabled();
+    expect(screen.queryByText(/Verifica tu correo/)).not.toBeInTheDocument();
   });
 
   it('E12-H2 FE · sin conexión: muestra el error y deja reintentar', async () => {
     let intentos = 0;
     simularBackend({
-      'GET /api/cuentas/yo/ofertas': () =>
+      'GET /api/cuentas/yo': () =>
         ++intentos === 1
           ? responder({ statusCode: 500, message: 'Error interno' }, 500)
-          : responder(ACTIVA),
+          : misDatos(ACTIVA),
     });
     abrir();
 

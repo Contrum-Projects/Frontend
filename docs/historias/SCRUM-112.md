@@ -30,7 +30,7 @@ Estado al 01-11-2026 (`compartido/api/esquema.d.ts` de `main` y repo del backend
 | --------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | Registrar salida (CA1, CA2)       | `POST /api/inventario/salidas` (`CrearSalidaDto`) | Real. El Swagger no declara la respuesta (`SalidaRegistrada` de `salidas.service.ts`, en `respuestas.ts`) |
 | Ubicaciones con stock del formato | `GET /api/inventario/stock/formatos/{id}`         | Real (E11-H5). El Swagger no declara la respuesta (`StockFormato` de `stock.service.ts`)                  |
-| Buscar formatos                   | `GET /api/catalogo/formatos?buscar=`              | Simulado desde SCRUM-105                                                                                  |
+| Buscar formatos                   | `GET /api/catalogo/formatos?buscar=`              | Real desde SCRUM-150 (`catalogo.gestionar` o `inventario.registrar`)                                      |
 
 ## Notas de trabajo
 
@@ -66,7 +66,8 @@ Estado al 01-11-2026 (`compartido/api/esquema.d.ts` de `main` y repo del backend
   del catálogo. Si el backend lo protege con `catalogo.gestionar`, el bodeguero (que tiene
   `inventario.registrar` pero no ese permiso) no podrá buscar formatos ni aquí ni en Entradas
   (SCRUM-111). **Pedido al backend:** que acepte también `inventario.registrar`, o un buscador
-  de formatos de inventario.
+  de formatos de inventario. **Resuelto en SCRUM-150 (06-11-2026):** el endpoint existe y acepta
+  cualquiera de los dos permisos.
 - Pendiente para «Hecha»: probar con el backend real y revisar a 1440 y 360 px (no hubo
   navegador en esta sesión).
 
@@ -76,3 +77,5 @@ simulado: `GET /catalogo/formatos`, desde SCRUM-105).
 **01-11-2026:** pasa a «Hecha» por decisión del equipo. Sigue pendiente del backend
 `GET /catalogo/formatos` con permiso para `inventario.registrar` (ver arriba): al tenerlo, quitar
 la ruta simulada y probar la pantalla con el backend real.
+
+**06-11-2026 (SCRUM-150):** la búsqueda de formatos, las ubicaciones y la observación tipada como texto en el Swagger ya vienen del backend (sin rutas simuladas ni casts). Falta probar la pantalla con el backend real.

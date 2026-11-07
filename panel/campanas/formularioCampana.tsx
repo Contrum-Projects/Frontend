@@ -4,10 +4,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useId, useState } from 'react';
+import { useId, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
-import { ErrorDeApi, errorDeApi } from '@/compartido/api/errores';
+import {
+  ErrorDeApi,
+  errorDeApi,
+  repartirErrores,
+} from '@/compartido/api/errores';
 import type { CampanaGestion } from '@/compartido/api/respuestas';
 import { formatearNumero } from '@/compartido/formato/numero';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
@@ -18,19 +22,19 @@ import { ConfirmarEnvio, type EnvioPorConfirmar } from './confirmarEnvio';
 import {
   useEnviarCampana,
   useGuardarCampana,
-  useObtenerVistaPrevia,
-  useSegmentosCampana,
+  usePedirConfirmacion,
   useVistaPrevia,
 } from './consultasCampanas';
 import {
   CAMPANA_VACIA,
-  campoDelError,
+  CAMPOS_CAMPANA,
   esquemaCampana,
   type FormularioCampana as Formulario,
 } from './esquemaCampana';
 import { rutaCampana } from './listaCampanas';
 import { RUTA_CAMPANAS } from './pantallaCampanas';
 import { TarjetaMensaje, TarjetaSegmento } from './tarjetasCampana';
+import { textoSegmento, useNombresCatalogo } from './textoSegmento';
 import { VistaPreviaCorreo } from './vistaPreviaCorreo';
 
 type Pestana = 'editar' | 'vista';
@@ -50,22 +54,21 @@ export function FormularioCampana({
 }) {
   const id = useId();
   const router = useRouter();
-  const [codigo, setCodigo] = useState(campana?.codigo ?? null);
+  const [idCampana, setIdCampana] = useState(campana?.id ?? null);
   const [pestana, setPestana] = useState<Pestana>('editar');
   const [aviso, setAviso] = useState<string | null>(null);
   const [envio, setEnvio] = useState<EnvioPorConfirmar | null>(null);
   const [avisoEnvio, setAvisoEnvio] = useState<string | null>(null);
   const guardar = useGuardarCampana();
   const enviar = useEnviarCampana();
-  const obtenerVistaPrevia = useObtenerVistaPrevia();
-  const segmentos = useSegmentosCampana();
+  const pedirConfirmacion = usePedirConfirmacion();
+  const nombres = useNombresCatalogo();
   const {
     register,
     control,
     handleSubmit,
-    setError,
     setValue,
-    getValues,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<Formulario>({
     resolver: zodResolver(esquemaCampana),
@@ -77,17 +80,11 @@ export function FormularioCampana({
         }
       : CAMPANA_VACIA,
   });
-  const datos = useWatch({ control }) as Formulario;
-  const vista = useVistaPrevia(datos, datos.segmento.tipo !== '');
+  const asunto = useWatch({ control, name: 'asunto' });
+  const cuerpo = useWatch({ control, name: 'cuerpo' });
+  const vista = useVistaPrevia({ asunto, cuerpo }, idCampana);
   const errorVista = vista.isError ? vista.error.message : undefined;
-
-  // Una campaña nueva parte con el primer segmento que ofrece el backend
-  const primerTipo = segmentos.data?.tipos[0]?.valor;
-  useEffect(() => {
-    if (primerTipo && getValues('segmento.tipo') === '') {
-      setValue('segmento', { tipo: primerTipo, criterios: [] });
-    }
-  }, [primerTipo, getValues, setValue]);
+  const incompleta = asunto.trim() === '' || cuerpo.trim() === '';
 
   const mostrarError = (fallo: ErrorDeApi) => {
     setPestana('editar');
@@ -95,26 +92,26 @@ export function FormularioCampana({
       setAviso(fallo.message);
       return;
     }
-    const generales: string[] = [];
-    for (const mensaje of fallo.mensajes) {
-      const campo = campoDelError(mensaje);
-      if (campo)
-        setError(
-          campo,
-          { type: 'server', message: mensaje },
-          { shouldFocus: true },
-        );
-      else generales.push(mensaje);
+    const { porCampo, generales } = repartirErrores(fallo, CAMPOS_CAMPANA);
+    for (const [campo, mensaje] of porCampo) {
+      setError(
+        campo,
+        { type: 'server', message: mensaje },
+        { shouldFocus: true },
+      );
     }
     if (generales.length > 0) setAviso(generales.join(' '));
   };
 
   /** Crea o reemplaza el borrador; la URL pasa a ser la del borrador sin recargar la página. */
   const guardarBorrador = async (valores: Formulario) => {
-    const guardada = await guardar.mutateAsync({ codigo, datos: valores });
-    if (!codigo)
-      window.history.replaceState(null, '', rutaCampana(guardada.codigo));
-    setCodigo(guardada.codigo);
+    const guardada = await guardar.mutateAsync({
+      id: idCampana,
+      datos: valores,
+    });
+    if (!idCampana)
+      window.history.replaceState(null, '', rutaCampana(guardada.id));
+    setIdCampana(guardada.id);
     return guardada;
   };
 
@@ -139,22 +136,27 @@ export function FormularioCampana({
     toast.success('Borrador guardado.');
   });
 
+  // Guarda el borrador y pide su vista previa: cuántos lo recibirían y la confirmación del envío
   const alRevisar = conErrores(async (valores) => {
-    await guardarBorrador(valores);
-    const previa = await obtenerVistaPrevia(valores);
+    const guardada = await guardarBorrador(valores);
+    const previa = await pedirConfirmacion(guardada.id);
     setAvisoEnvio(null);
     setEnvio({
       asunto: previa.asunto,
-      segmento: previa.segmento,
+      segmento: textoSegmento(guardada.segmento, nombres),
       destinatarios: previa.destinatarios,
+      confirmacion: previa.confirmacion,
     });
   });
 
   const confirmar = async () => {
-    if (!codigo) return;
+    if (!idCampana || !envio) return;
     setAvisoEnvio(null);
     try {
-      const enviada = await enviar.mutateAsync(codigo);
+      const enviada = await enviar.mutateAsync({
+        id: idCampana,
+        confirmacion: envio.confirmacion,
+      });
       toast.success(
         `Campaña enviada a ${formatearNumero(enviada.destinatarios)} destinatarios.`,
       );
@@ -245,13 +247,13 @@ export function FormularioCampana({
               aria-label="Campaña"
               className="flex flex-col gap-4 lg:gap-6"
             >
-              <TarjetaMensaje id={id} register={register} errors={errors} />
-              <TarjetaSegmento
+              <TarjetaMensaje
                 id={id}
-                control={control}
-                vista={vista.data}
-                errorVista={errorVista}
+                register={register}
+                setValue={setValue}
+                errors={errors}
               />
+              <TarjetaSegmento id={id} control={control} />
             </form>
           </TabsContent>
           <TabsContent
@@ -259,7 +261,11 @@ export function FormularioCampana({
             forceMount
             className={`${PANEL} lg:col-span-2`}
           >
-            <VistaPreviaCorreo vista={vista.data} error={errorVista} />
+            <VistaPreviaCorreo
+              vista={vista.data}
+              error={errorVista}
+              incompleta={incompleta}
+            />
           </TabsContent>
         </div>
       </Tabs>

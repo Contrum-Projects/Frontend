@@ -185,7 +185,13 @@ describe('SCRUM-93 · Registro', () => {
   it('E1-H1 FE · correo ya registrado: muestra el error junto al campo sin perder lo escrito', async () => {
     simularRegistro(() =>
       responder(
-        { statusCode: 409, message: 'El correo ya está registrado.' },
+        {
+          statusCode: 409,
+          message: 'El correo ya está registrado.',
+          errores: [
+            { campo: 'email', mensaje: 'El correo ya está registrado.' },
+          ],
+        },
         409,
       ),
     );
@@ -208,6 +214,10 @@ describe('SCRUM-93 · Registro', () => {
         {
           statusCode: 409,
           message: 'El correo y el RUT ya están registrados.',
+          errores: ['email', 'rut'].map((campo) => ({
+            campo,
+            mensaje: 'El correo y el RUT ya están registrados.',
+          })),
         },
         409,
       ),
@@ -249,7 +259,16 @@ describe('SCRUM-93 · Registro', () => {
   it('E1-H1 FE · contraseñas distintas según el servidor: el error va junto a la repetición', async () => {
     simularRegistro(() =>
       responder(
-        { statusCode: 400, message: 'Las contraseñas no coinciden.' },
+        {
+          statusCode: 400,
+          message: 'Las contraseñas no coinciden.',
+          errores: [
+            {
+              campo: 'confirmacionContrasena',
+              mensaje: 'Las contraseñas no coinciden.',
+            },
+          ],
+        },
         400,
       ),
     );

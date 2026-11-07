@@ -74,8 +74,24 @@ const simularBackend = (rutas: Record<string, Manejador> = {}) => {
   return { estado, fetch, enviados };
 };
 
-const error = (status: number, message: string) =>
-  Response.json({ statusCode: status, message }, { status });
+const error = (
+  status: number,
+  message: string,
+  /** Campos a los que pertenece el error (`errores` del backend, SCRUM-150). */
+  campos: string[] = [],
+) =>
+  Response.json(
+    {
+      statusCode: status,
+      message,
+      ...(campos.length > 0 && {
+        errores: campos.flatMap((campo) =>
+          [message].flat().map((mensaje) => ({ campo, mensaje })),
+        ),
+      }),
+    },
+    { status },
+  );
 
 const mostrarPantalla = () =>
   render(
@@ -238,7 +254,7 @@ describe('Marcas y categorías (SCRUM-103)', () => {
     const usuario = userEvent.setup();
     simularBackend({
       'POST /api/catalogo/marcas': () =>
-        error(409, 'Ya existe una marca con ese nombre.'),
+        error(409, 'Ya existe una marca con ese nombre.', ['nombre']),
     });
     mostrarPantalla();
 
@@ -348,7 +364,7 @@ describe('Marcas y categorías (SCRUM-103)', () => {
     const motivo =
       'No se puede mover una categoría dentro de sí misma ni de una de sus subcategorías: formaría un ciclo.';
     simularBackend({
-      'PATCH /api/catalogo/categorias/1': () => error(409, motivo),
+      'PATCH /api/catalogo/categorias/1': () => error(409, motivo, ['padreId']),
     });
     mostrarPantalla();
 

@@ -4,72 +4,47 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/compartido/api/cliente';
 import { type ErrorDeApi, exigir } from '@/compartido/api/errores';
 import type {
+  DatosPersonales,
   MensajeApi,
   PreferenciaOfertas,
 } from '@/compartido/api/respuestas';
-import { useSesion } from '@/compartido/sesion/sesion';
-import { conErrorDeApi } from '@/tienda/cuenta/consultasCuenta';
-
-type RespuestaSinTipo = Promise<{
-  data?: unknown;
-  error?: unknown;
-  response: Response;
-}>;
+import {
+  CLAVES_CUENTA,
+  conErrorDeApi,
+  consultaMisDatos,
+} from '@/tienda/cuenta/consultasCuenta';
 
 /**
- * TODO(SCRUM-69): GET y PUT /api/cuentas/yo/ofertas y POST /api/marketing/bajas aún no están en el
- * Swagger (API simulada, forma propuesta en docs/historias/SCRUM-139.md). Quitar los casts cuando
- * `pnpm api:tipos` los traiga.
+ * E12-H2 · Si la cuenta recibe ofertas por correo y desde cuándo. Se lee de los datos de la cuenta
+ * (`consentimientoMarketing` de `GET /api/cuentas/yo`, decisión del 6 nov, SCRUM-150): la misma
+ * consulta de «Mis datos», sin una ruta aparte.
  */
-const pedir = api.GET as unknown as (
-  ruta: '/api/cuentas/yo/ofertas',
-) => RespuestaSinTipo;
-const reemplazar = api.PUT as unknown as (
-  ruta: '/api/cuentas/yo/ofertas',
-  opciones: { body: { activa: boolean } },
-) => RespuestaSinTipo;
-const enviar = api.POST as unknown as (
-  ruta: '/api/marketing/bajas',
-  opciones: { body: { token: string } },
-) => RespuestaSinTipo;
-
-/** Son datos de la cuenta (RNF-30): la clave lleva la cuenta. */
-export const CLAVE_OFERTAS = (cuenta: string) =>
-  ['cuenta', 'ofertas', cuenta] as const;
-
-/** E12-H2 · Si la cuenta recibe ofertas por correo, desde cuándo y si su correo está verificado. */
-export const usePreferenciaOfertas = () => {
-  const { usuario } = useSesion();
-  const cuenta = usuario?.codigoPublico ?? '';
-  return useQuery({
-    queryKey: CLAVE_OFERTAS(cuenta),
-    enabled: cuenta !== '',
-    queryFn: () =>
-      conErrorDeApi(async () =>
-        exigir<PreferenciaOfertas>(await pedir('/api/cuentas/yo/ofertas')),
-      ),
+export const usePreferenciaOfertas = () =>
+  useQuery({
+    ...consultaMisDatos,
+    select: (datos: DatosPersonales) => datos.consentimientoMarketing,
   });
-};
 
 /**
- * Activa o desactiva las ofertas. La respuesta (con la fecha que decide el backend) queda en la
- * caché: la pantalla no calcula la fecha del consentimiento.
+ * Activa o desactiva las ofertas. La respuesta (con la fecha que decide el backend) queda en los
+ * datos de la cuenta: la pantalla no calcula la fecha del consentimiento.
  */
 export const useCambiarOfertas = () => {
-  const { usuario } = useSesion();
   const clienteConsultas = useQueryClient();
   return useMutation({
-    mutationFn: (activa: boolean) =>
+    mutationFn: (acepta: boolean) =>
       conErrorDeApi(async () =>
         exigir<PreferenciaOfertas>(
-          await reemplazar('/api/cuentas/yo/ofertas', { body: { activa } }),
+          await api.PUT('/api/cuentas/yo/consentimiento-marketing', {
+            body: { acepta },
+          }),
         ),
       ),
     onSuccess: (preferencia) => {
-      if (!usuario) return;
-      clienteConsultas.setQueryData(
-        CLAVE_OFERTAS(usuario.codigoPublico),
-        preferencia,
+      clienteConsultas.setQueryData<DatosPersonales>(
+        CLAVES_CUENTA.datos,
+        (datos) =>
+          datos ? { ...datos, consentimientoMarketing: preferencia } : datos,
       );
     },
   });
@@ -81,7 +56,7 @@ export const useBajaOfertas = () =>
     mutationFn: (token: string) =>
       conErrorDeApi(async () =>
         exigir<MensajeApi>(
-          await enviar('/api/marketing/bajas', { body: { token } }),
+          await api.POST('/api/marketing/bajas', { body: { token } }),
         ),
       ),
   });

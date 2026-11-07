@@ -1,10 +1,9 @@
 'use client';
 
-import { Check, CircleAlert, CircleCheck } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useId } from 'react';
 import type { PreferenciaOfertas } from '@/compartido/api/respuestas';
 import { formatearFechaLarga } from '@/compartido/formato/fecha';
-import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Separator } from '@/compartido/ui/separator';
 import { Switch } from '@/compartido/ui/switch';
 import { useCambiarOfertas } from './consultasOfertas';
@@ -16,8 +15,8 @@ const INCLUYE = [
   'Recordatorios si dejas productos en el carrito.',
 ] as const;
 
-const estadoActual = (activa: boolean, fecha: string | null) => {
-  if (!activa) return 'No recibes ofertas por correo.';
+const estadoActual = (acepta: boolean, fecha: string | null) => {
+  if (!acepta) return 'No recibes ofertas por correo.';
   return fecha
     ? `Activado el ${formatearFechaLarga(fecha)}.`
     : 'Recibes ofertas por correo.';
@@ -25,7 +24,8 @@ const estadoActual = (activa: boolean, fecha: string | null) => {
 
 /**
  * Tarjeta «Preferencia» (Figma 2066:3712). El interruptor guarda al tocarlo: Figma no tiene
- * botón «Guardar». Sin el correo verificado no se puede activar (E12-H2, criterio 2).
+ * botón «Guardar». No muestra el aviso de correo sin verificar (E12-H2, criterio 2): una cuenta
+ * compradora no puede iniciar sesión sin verificarlo, así que aquí siempre lo está (SCRUM-150).
  */
 export const TarjetaOfertas = ({
   preferencia,
@@ -35,15 +35,9 @@ export const TarjetaOfertas = ({
   const id = useId();
   const cambio = useCambiarOfertas();
   // Mientras guarda muestra lo pedido; si el backend lo rechaza, vuelve a lo guardado
-  const activa = cambio.isPending ? cambio.variables : preferencia.activa;
-  // Sin verificar solo se puede desactivar (si ya estaba activa)
-  const bloqueada = !preferencia.correoVerificado && !preferencia.activa;
-  // El interruptor deshabilitado no se enfoca: el aviso y el error se leen con su descripción
-  const descripcion = [
-    `${id}-estado`,
-    !preferencia.correoVerificado && `${id}-aviso`,
-    cambio.isError && `${id}-error`,
-  ]
+  const acepta = cambio.isPending ? cambio.variables : preferencia.acepta;
+  // El interruptor deshabilitado no se enfoca: el error se lee con su descripción
+  const descripcion = [`${id}-estado`, cambio.isError && `${id}-error`]
     .filter(Boolean)
     .join(' ');
 
@@ -55,8 +49,8 @@ export const TarjetaOfertas = ({
       <div className="flex items-start gap-4">
         <Switch
           id={`${id}-interruptor`}
-          checked={activa}
-          disabled={cambio.isPending || bloqueada}
+          checked={acepta}
+          disabled={cambio.isPending}
           onCheckedChange={(valor) => cambio.mutate(valor)}
           aria-describedby={descripcion}
           className="order-last md:order-first"
@@ -79,7 +73,7 @@ export const TarjetaOfertas = ({
             {cambio.isPending
               ? 'Guardando…'
               : estadoActual(
-                  preferencia.activa,
+                  preferencia.acepta,
                   preferencia.fechaConsentimiento,
                 )}
           </p>
@@ -94,17 +88,6 @@ export const TarjetaOfertas = ({
         >
           {cambio.error.message}
         </p>
-      )}
-
-      {!preferencia.correoVerificado && (
-        // Aparece con la página, no por una acción: «note», no «alert»
-        <Alert variant="aviso" role="note">
-          <CircleAlert aria-hidden className="stroke-[1.75]" />
-          <AlertDescription id={`${id}-aviso`} className="texto-pequeno">
-            Verifica tu correo para recibir ofertas. Te enviamos un enlace
-            cuando creaste tu cuenta.
-          </AlertDescription>
-        </Alert>
       )}
 
       <Separator />
@@ -128,18 +111,6 @@ export const TarjetaOfertas = ({
         desactives esta opción. También puedes darte de baja desde el enlace de
         cualquier correo de ofertas.
       </p>
-
-      {preferencia.correoVerificado && (
-        <p className="flex min-w-0 items-center gap-2 texto-leyenda text-texto-secundario">
-          <CircleCheck
-            aria-hidden
-            className="size-4 shrink-0 stroke-[1.75] text-marca-acento"
-          />
-          <span className="min-w-0 break-words">
-            Correo verificado: {preferencia.email}
-          </span>
-        </p>
-      )}
     </section>
   );
 };

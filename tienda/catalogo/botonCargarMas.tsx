@@ -14,19 +14,22 @@ import { Spinner } from '@/compartido/ui/spinner';
  */
 export function BotonCargarMas({
   href,
+  texto = 'Cargar más productos',
 }: {
   href: ComponentProps<typeof Link>['href'];
+  /** «Cargar más productos» en el catálogo; «Cargar más packs» en /packs. */
+  texto?: string;
 }) {
   return (
     <Button variant="contorno" size="grande" asChild>
       <Link href={href} scroll={false} prefetch={false}>
-        <EtiquetaCargarMas />
+        <EtiquetaCargarMas texto={texto} />
       </Link>
     </Button>
   );
 }
 
-const EtiquetaCargarMas = () => {
+const EtiquetaCargarMas = ({ texto }: { texto: string }) => {
   const { pending } = useLinkStatus();
   return (
     <>
@@ -37,10 +40,10 @@ const EtiquetaCargarMas = () => {
         aria-label={undefined}
         className={cn('size-5 transition-opacity', !pending && 'opacity-0')}
       />
-      Cargar más productos
+      {texto}
       <span className="size-5" aria-hidden />
       <span className="sr-only" aria-live="polite">
-        {pending ? 'Cargando más productos' : ''}
+        {pending ? texto.replace('Cargar', 'Cargando') : ''}
       </span>
     </>
   );

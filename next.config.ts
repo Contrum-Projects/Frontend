@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
   experimental: {
     agentFeedback: true,
   },
+  // `next dev` abierto desde un túnel https (`cloudflared tunnel --url`) para probar el regreso
+  // automático y el webhook de Mercado Pago: sin esto rechaza sus recursos de desarrollo (HMR)
+  allowedDevOrigins: ['*.trycloudflare.com'],
   cacheComponents: true,
   partialPrefetching: true,
   // Los enlaces a rutas que no existen fallan en `pnpm typecheck`

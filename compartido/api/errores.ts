@@ -1,4 +1,4 @@
-import type { CuerpoError } from './respuestas';
+import type { CuerpoError, ErrorDeCampo } from './respuestas';
 
 const MENSAJE_GENERICO =
   'No pudimos completar la acción. Intenta de nuevo en unos minutos.';
@@ -21,6 +21,11 @@ export class ErrorDeApi extends Error {
     readonly mensajes: string[],
     /** Segundos que pide esperar el backend (cabecera Retry-After en los 429). */
     readonly esperarSegundos?: number,
+    /**
+     * Los mensajes que pertenecen a un campo, con la ruta del campo en el cuerpo enviado (SCRUM-150).
+     * Lo que no está aquí es un aviso general.
+     */
+    readonly errores: readonly ErrorDeCampo[] = [],
   ) {
     super(mensajes[0] ?? MENSAJE_GENERICO);
     this.name = 'ErrorDeApi';
@@ -41,6 +46,18 @@ const esCuerpoError = (cuerpo: unknown): cuerpo is CuerpoError =>
 const esMensajeDeNest = (mensaje: string) =>
   mensaje.startsWith('ThrottlerException');
 
+const esErrorDeCampo = (valor: unknown): valor is ErrorDeCampo =>
+  typeof valor === 'object' &&
+  valor !== null &&
+  'campo' in valor &&
+  'mensaje' in valor &&
+  typeof valor.campo === 'string' &&
+  typeof valor.mensaje === 'string';
+
+/** `errores` del cuerpo, si viene bien formado; si no, ninguno. */
+const erroresDeCampo = (cuerpo: CuerpoError): ErrorDeCampo[] =>
+  Array.isArray(cuerpo.errores) ? cuerpo.errores.filter(esErrorDeCampo) : [];
+
 /** Convierte cualquier respuesta fallida (o un fallo de red) en `ErrorDeApi`. */
 export function errorDeApi(cuerpo: unknown, respuesta?: Response): ErrorDeApi {
   const estado = respuesta?.status ?? 0;
@@ -57,7 +74,35 @@ export function errorDeApi(cuerpo: unknown, respuesta?: Response): ErrorDeApi {
       ? mensajes
       : [MENSAJES_POR_ESTADO[estado] ?? MENSAJE_GENERICO],
     Number.isFinite(espera) && espera > 0 ? espera : undefined,
+    esCuerpoError(cuerpo) && estado < 500 ? erroresDeCampo(cuerpo) : [],
   );
+}
+
+/**
+ * Reparte los mensajes del error entre los campos del formulario (SCRUM-150). `mapa` dice a qué
+ * campo del formulario va cada campo del backend, por el primer tramo de su ruta (`detalles.0.cantidad`
+ * → `detalles`); un campo que no está en el mapa, o un mensaje sin campo, queda en `generales`.
+ *
+ *   const { porCampo, generales } = repartirErrores(error, { email: 'email', rut: 'rut' });
+ */
+export function repartirErrores<C extends string>(
+  error: ErrorDeApi,
+  mapa: Partial<Record<string, C>>,
+): { porCampo: [campo: C, mensaje: string][]; generales: string[] } {
+  const porCampo: [C, string][] = [];
+  const ubicados = new Set<string>();
+  for (const { campo, mensaje } of error.errores) {
+    const destino = mapa[campo] ?? mapa[campo.split('.')[0]];
+    if (!destino) continue;
+    if (!porCampo.some(([c, m]) => c === destino && m === mensaje)) {
+      porCampo.push([destino, mensaje]);
+    }
+    ubicados.add(mensaje);
+  }
+  return {
+    porCampo,
+    generales: error.mensajes.filter((mensaje) => !ubicados.has(mensaje)),
+  };
 }
 
 interface Resultado {

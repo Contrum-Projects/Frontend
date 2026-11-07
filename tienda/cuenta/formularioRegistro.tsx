@@ -17,7 +17,7 @@ import { Spinner } from '@/compartido/ui/spinner';
 import { RUTAS } from '@/tienda/diseno/enlaces';
 import { CampoFormulario } from './campoFormulario';
 import { CamposOpcionales } from './camposOpcionales';
-import { repartirErrores } from './erroresRegistro';
+import { repartirErroresRegistro } from './erroresRegistro';
 import {
   cuerpoRegistro,
   esquemaRegistro,
@@ -66,8 +66,8 @@ export function FormularioRegistro({
     defaultValues: REGISTRO_VACIO,
   });
 
-  const mostrarErroresDeCampo = (mensajes: string[]) => {
-    const { campos, generales } = repartirErrores(mensajes);
+  const mostrarErroresDeCampo = (fallo: ErrorDeApi) => {
+    const { campos, generales } = repartirErroresRegistro(fallo);
     const conError = Object.entries(campos) as [CampoRegistro, string][];
     conError.forEach(([campo, mensaje], i) =>
       setError(
@@ -93,7 +93,7 @@ export function FormularioRegistro({
       // Sin conexión, fetch lanza TypeError: se muestra el mensaje genérico
       const fallo = error instanceof ErrorDeApi ? error : errorDeApi(undefined);
       if (fallo.estado === 400 || fallo.estado === 409) {
-        mostrarErroresDeCampo(fallo.mensajes);
+        mostrarErroresDeCampo(fallo);
         return;
       }
       setAviso({

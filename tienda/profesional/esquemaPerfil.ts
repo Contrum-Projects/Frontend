@@ -7,6 +7,7 @@ import {
   type Especialidad,
   type Modalidad,
 } from './opcionesPerfil';
+import { type ErrorDeApi, repartirErrores } from '@/compartido/api/errores';
 
 /** Límites de `guardar-perfil-profesional.dto.ts` del backend (SCRUM-66). */
 const MAXIMO_ANOS = 40;
@@ -94,26 +95,20 @@ export const cuerpoPerfil = (datos: SalidaPerfil): CuerpoPerfil =>
   }) as CuerpoPerfil;
 
 /**
- * El backend responde el 400 como una lista de mensajes, sin decir el campo. Se reconocen por
- * cómo empiezan, según `guardar-perfil-profesional.dto.ts`.
+ * A qué campo del formulario va cada campo que el backend indica en `errores` (SCRUM-150): los de
+ * `GuardarPerfilProfesionalDto`, con los mismos nombres (`especialidades.2` va a `especialidades`).
  */
-const INICIOS: [inicio: string, campo: CampoPerfil][] = [
-  ['La cantidad de años de experiencia', 'anosExperiencia'],
-  ['La modalidad de trabajo', 'modalidad'],
-  ['Indica al menos una especialidad', 'especialidades'],
-  ['Alguna especialidad', 'especialidades'],
-  ['Cada especialidad', 'especialidades'],
-  ['El lugar de trabajo', 'nombreLugarTrabajo'],
-  ['La red social', 'redSocial'],
-];
+const CAMPOS_PERFIL: Partial<Record<string, CampoPerfil>> = {
+  anosExperiencia: 'anosExperiencia',
+  modalidad: 'modalidad',
+  especialidades: 'especialidades',
+  nombreLugarTrabajo: 'nombreLugarTrabajo',
+  redSocial: 'redSocial',
+};
 
-export const repartirErroresPerfil = (mensajes: string[]) => {
+export const repartirErroresPerfil = (error: ErrorDeApi) => {
+  const { porCampo, generales } = repartirErrores(error, CAMPOS_PERFIL);
   const campos: Partial<Record<CampoPerfil, string>> = {};
-  const generales: string[] = [];
-  for (const mensaje of mensajes) {
-    const campo = INICIOS.find(([inicio]) => mensaje.startsWith(inicio))?.[1];
-    if (campo) campos[campo] ??= mensaje;
-    else generales.push(mensaje);
-  }
+  for (const [campo, mensaje] of porCampo) campos[campo] ??= mensaje;
   return { campos, generales };
 };

@@ -22,15 +22,15 @@ const TEXTOS: Record<CodigoObjetivo, TextosObjetivo> = {
   OE1: {
     titulo: 'Peluqueros que compran',
     detalle: (cumplen, total) =>
-      `${cumplen} de ${total} cuentas con solicitud están verificadas y compraron a precio mayorista`,
-    sinRegistros: 'No hay cuentas con solicitud en el período.',
+      `${cumplen} de ${total} cuentas verificadas en el período compraron a precio mayorista`,
+    sinRegistros: 'No hay cuentas verificadas en el período.',
   },
   OE2: {
     titulo: 'Verificaciones en 48 horas',
     tituloCorto: 'Verificaciones en 48 h',
     detalle: (cumplen, total) =>
       `${cumplen} de ${total} solicitudes resueltas dentro de 48 horas`,
-    sinRegistros: 'No hay solicitudes resueltas en el período.',
+    sinRegistros: 'No hay solicitudes presentadas en el período.',
   },
   OE3: {
     titulo: 'Descripciones con IA',
@@ -69,7 +69,7 @@ export const TarjetaObjetivo = ({
 }: {
   objetivo: IndicadorObjetivo;
 }) => {
-  const { codigo, meta, porcentaje, cumplen, total, estado } = objetivo;
+  const { codigo, meta, porcentaje, cumplidos, total, estado } = objetivo;
   const textos = TEXTOS[codigo];
   const titulo = `${codigo} · ${textos.titulo}`;
   const sinDatos = estado === 'sin-datos' || porcentaje === null;
@@ -138,7 +138,7 @@ export const TarjetaObjetivo = ({
       <p className="texto-leyenda text-texto-secundario max-lg:hidden">
         {sinDatos
           ? textos.sinRegistros
-          : textos.detalle(formatearNumero(cumplen), formatearNumero(total))}
+          : textos.detalle(formatearNumero(cumplidos), formatearNumero(total))}
       </p>
     </li>
   );

@@ -4,7 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useId, useMemo, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
-import { ErrorDeApi, errorDeApi } from '@/compartido/api/errores';
+import {
+  ErrorDeApi,
+  errorDeApi,
+  repartirErrores,
+} from '@/compartido/api/errores';
 import type { CambioPermitido } from '@/compartido/api/respuestas';
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Button } from '@/compartido/ui/button';
@@ -21,7 +25,7 @@ import { CampoFormulario } from '@/tienda/cuenta/campoFormulario';
 import { etiquetaEstado } from '@/tienda/pedidos/estadoPedido';
 import { useCambiarEstado } from './consultasPedidos';
 import {
-  campoDelError,
+  CAMPOS_CAMBIO_ESTADO,
   cambioInicial,
   crearEsquemaCambioEstado,
   cuerpoCambioEstado,
@@ -65,7 +69,7 @@ export function FormularioEstado({
   });
   const estado = useWatch({ control, name: 'estado' });
   const cambio = cambios.find((opcion) => opcion.estado === estado);
-  const comentarioObligatorio = cambio?.sentido === 'retroceso';
+  const comentarioObligatorio = cambio?.pideComentario ?? false;
 
   const mostrarError = (fallo: ErrorDeApi) => {
     // 400 y 409 traen mensajes para la persona; el resto, el genérico de su estado
@@ -73,18 +77,16 @@ export function FormularioEstado({
       setAviso(fallo.message);
       return;
     }
-    const generales: string[] = [];
-    for (const mensaje of fallo.mensajes) {
-      const campo = campoDelError(mensaje);
-      if (campo) {
-        setError(
-          campo,
-          { type: 'server', message: mensaje },
-          { shouldFocus: true },
-        );
-      } else {
-        generales.push(mensaje);
-      }
+    const { porCampo, generales } = repartirErrores(
+      fallo,
+      CAMPOS_CAMBIO_ESTADO,
+    );
+    for (const [campo, mensaje] of porCampo) {
+      setError(
+        campo,
+        { type: 'server', message: mensaje },
+        { shouldFocus: true },
+      );
     }
     if (generales.length > 0) setAviso(generales.join(' '));
   };

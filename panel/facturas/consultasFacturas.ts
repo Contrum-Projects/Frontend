@@ -22,15 +22,6 @@ export const CLAVE_FACTURAS_PANEL = [
   'facturas',
 ] as const;
 
-/**
- * TODO(SCRUM-127): GET /gestion/facturas y GET /gestion/facturas/{codigoPedido} aún no están en el
- * Swagger (API simulada, pedidos a SCRUM-55). Quitar el cast cuando `pnpm api:tipos` los traiga.
- */
-const pedir = api.GET as unknown as (
-  ruta: '/api/gestion/facturas' | '/api/gestion/facturas/{codigoPedido}',
-  opciones: { params: { path?: { codigoPedido: string } } },
-) => Promise<{ data?: unknown; error?: unknown; response: Response }>;
-
 /** Solo vale la pena reintentar una falla de red o del servidor, no un 4xx. */
 const reintentarSiFallaServidor = (intentos: number, error: Error) =>
   !(error instanceof ErrorDeApi && error.estado < 500) && intentos < 2;
@@ -44,9 +35,7 @@ export const useFacturasPanel = (habilitada = true) =>
     queryKey: [...CLAVE_FACTURAS_PANEL, 'lista'],
     queryFn: () =>
       conErrorDeApi(async () =>
-        exigir<ListadoFacturasGestion>(
-          await pedir('/api/gestion/facturas', { params: {} }),
-        ),
+        exigir<ListadoFacturasGestion>(await api.GET('/api/gestion/facturas')),
       ),
     retry: reintentarSiFallaServidor,
     enabled: habilitada,
@@ -66,7 +55,7 @@ export const useDetalleFactura = (codigoPedido: string) =>
     queryFn: () =>
       conErrorDeApi(async () =>
         exigir<DetalleFacturaGestion>(
-          await pedir('/api/gestion/facturas/{codigoPedido}', {
+          await api.GET('/api/gestion/facturas/{codigoPedido}', {
             params: { path: { codigoPedido } },
           }),
         ),

@@ -83,23 +83,25 @@ export function FormularioEntrada({
     defaultValues: ENTRADA_VACIA,
   });
 
-  const marcarFilas = (formatoIds: number[], mensaje: string) => {
-    const detalles = getValues('detalles');
-    let marcadas = 0;
-    detalles.forEach(({ formato }, indice) => {
-      if (!formatoIds.includes(formato.formatoId)) return;
+  /** Marca esas líneas (por su posición); `false` si ya no existe ninguna. */
+  const marcarLineas = (indices: number[], mensaje: string) => {
+    const cantidad = getValues('detalles').length;
+    const validas = indices.filter((indice) => indice < cantidad);
+    for (const indice of validas) {
       setError(`detalles.${indice}.formato`, {
         type: 'server',
         message: mensaje,
       });
-      marcadas++;
-    });
-    return marcadas > 0;
+    }
+    return validas.length > 0;
   };
 
-  const repetidos = () => {
+  /** Las líneas cuyo formato ya apareció antes en la lista. */
+  const repetidas = () => {
     const ids = getValues('detalles').map(({ formato }) => formato.formatoId);
-    return ids.filter((id, indice) => ids.indexOf(id) !== indice);
+    return ids.flatMap((id, indice) =>
+      ids.indexOf(id) !== indice ? [indice] : [],
+    );
   };
 
   const mostrarError = (fallo: ErrorDeApi) => {
@@ -107,28 +109,30 @@ export function FormularioEntrada({
       setAviso(fallo.message);
       return;
     }
-    const generales: string[] = [];
-    for (const mensaje of fallo.mensajes) {
-      const destino = destinoDelError(mensaje);
-      if (destino?.tipo === 'campo') {
+    const ubicados = new Set<string>();
+    for (const { campo, mensaje } of fallo.errores) {
+      const destino = destinoDelError(campo);
+      if (!destino) continue;
+      ubicados.add(mensaje);
+      if (destino.tipo === 'campo') {
         // El foco lleva al campo: en celular puede estar fuera de la vista
         setError(
           destino.campo,
           { type: 'server', message: mensaje },
           { shouldFocus: true },
         );
-      } else if (
-        (destino?.tipo === 'filas' &&
-          marcarFilas(destino.formatoIds, mensaje)) ||
-        (destino?.tipo === 'repetidos' && marcarFilas(repetidos(), mensaje))
-      ) {
-        continue;
-      } else if (destino) {
+      } else if (destino.tipo === 'linea') {
+        if (!marcarLineas([destino.indice], mensaje)) {
+          setError('detalles', { type: 'server', message: mensaje });
+        }
+      } else if (!marcarLineas(repetidas(), mensaje)) {
+        // Un error de la lista entera: sobre las líneas repetidas si las hay; si no, sobre la lista
         setError('detalles', { type: 'server', message: mensaje });
-      } else {
-        generales.push(mensaje);
       }
     }
+    const generales = fallo.mensajes.filter(
+      (mensaje) => !ubicados.has(mensaje),
+    );
     if (generales.length > 0) setAviso(generales.join(' '));
   };
 

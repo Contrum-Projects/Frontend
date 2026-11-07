@@ -4,6 +4,7 @@ import {
   contrasenaNueva,
   contrasenasIguales,
 } from './esquemaContrasena';
+import type { ErrorDeApi } from '@/compartido/api/errores';
 
 /** «Recuperar contraseña» (E1-H4): el correo, como en el DTO SolicitarRecuperacionDto. */
 export const esquemaSolicitud = z.object({
@@ -29,20 +30,14 @@ export type DatosRestablecer = z.input<typeof esquemaRestablecer>;
 export type CampoRestablecer = keyof DatosRestablecer;
 
 /**
- * El backend responde 400 tanto por la contraseña como por el enlace, sin decir cuál. Los del
- * enlace se reconocen por cómo empiezan, según src/modulos/cuentas/recuperacion-contrasena.service.ts
- * («El enlace de recuperación no es válido…») y el DTO RestablecerContrasenaDto («El token del
- * enlace…»). Si el backend agrega un código de error, esto se reemplaza.
+ * El mensaje del enlace que no sirve (vencido, usado o mal formado), o `null`: el backend lo
+ * informa en el campo `token` (SCRUM-150), que la persona no escribe.
  */
-export const esErrorDelEnlace = (mensaje: string) =>
-  mensaje.startsWith('El enlace') || mensaje.startsWith('El token');
+export const errorDelEnlace = (error: ErrorDeApi): string | null =>
+  error.errores.find(({ campo }) => campo === 'token')?.mensaje ?? null;
 
-const INICIOS: [inicio: string, campo: CampoRestablecer][] = [
-  ['Las contraseñas no coinciden', 'confirmacionContrasena'],
-  ['La confirmación de la contraseña', 'confirmacionContrasena'],
-  ['La contraseña', 'contrasena'],
-];
-
-/** El campo de un mensaje del backend, o `null` si no es de un campo. */
-export const campoDelError = (mensaje: string): CampoRestablecer | null =>
-  INICIOS.find(([inicio]) => mensaje.startsWith(inicio))?.[1] ?? null;
+/** A qué campo del formulario va cada campo que el backend indica en `errores` (SCRUM-150). */
+export const CAMPOS_RESTABLECER: Partial<Record<string, CampoRestablecer>> = {
+  contrasena: 'contrasena',
+  confirmacionContrasena: 'confirmacionContrasena',
+};

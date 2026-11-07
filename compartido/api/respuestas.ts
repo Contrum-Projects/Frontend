@@ -30,11 +30,26 @@ export interface MensajeApi {
   mensaje: string;
 }
 
-/** Cuerpo de error de NestJS. `message` es una lista cuando falla la validación de un DTO. */
+/**
+ * Un error que pertenece a un campo de la entrada. `campo` es la ruta de la propiedad en el cuerpo
+ * que se envió (`email`, `oferta.texto`, `detalles.0.cantidad`).
+ * backend: src/common/errores/error-de-campo.ts › ErrorDeCampo (SCRUM-150)
+ */
+export interface ErrorDeCampo {
+  campo: string;
+  mensaje: string;
+}
+
+/**
+ * Cuerpo de error de NestJS. `message` es una lista cuando falla la validación de un DTO. Cuando el
+ * error es de uno o más campos, trae `errores` con el campo de cada mensaje.
+ * backend: src/common/errores/error-de-campo.ts › CuerpoError (SCRUM-150)
+ */
 export interface CuerpoError {
   statusCode: number;
   message: string | string[];
   error?: string;
+  errores?: ErrorDeCampo[];
 }
 
 /** backend: src/modulos/catalogo/tienda.service.ts › ProductoTienda (lo que ve quien no es profesional) */
@@ -94,20 +109,13 @@ export interface MarcaTienda {
 }
 
 /**
- * Pedido a SCRUM-33 (forma acordada en docs/historias/SCRUM-107.md): `GET /api/tienda/facetas`,
- * con los mismos filtros que `/tienda/productos`. Cuántos productos hay en cada categoría (con sus
- * subcategorías) y en cada marca; solo las que tienen alguno.
- * TODO(SCRUM-107): quitar cuando el Swagger lo declare (hoy lo responde la API simulada).
+ * backend: src/modulos/catalogo/dto/facetas-tienda.dto.ts. `GET /api/tienda/facetas`, con los
+ * mismos filtros que `/tienda/productos` (SCRUM-150): cuántos productos hay en cada categoría (con
+ * sus subcategorías) y en cada marca; solo las que tienen alguno.
  */
-export interface FacetasTienda {
-  categorias: FacetaTienda[];
-  marcas: FacetaTienda[];
-}
+export type FacetasTienda = components['schemas']['FacetasTiendaDto'];
 
-export interface FacetaTienda {
-  id: number;
-  total: number;
-}
+export type FacetaTienda = FacetasTienda['categorias'][number];
 
 /**
  * backend: src/modulos/catalogo/marcas.service.ts › crear y listar (modelo Marca de
@@ -190,6 +198,8 @@ export interface ProductoDetalle {
   id: number;
   nombre: string;
   descripcion: string;
+  /** Lista de ingredientes del reverso (SCRUM-150); `null` si el producto no la tiene. */
+  ingredientes: string | null;
   marca: { id: number; nombre: string } | null;
   categoria: { id: number; nombre: string };
   formatos: FormatoDetalle[];
@@ -238,6 +248,8 @@ export interface DatosPersonales {
   /** AAAA-MM-DD. */
   fechaNacimiento: string | null;
   genero: string | null;
+  /** Si recibe ofertas por correo y desde cuándo (E12-H2). */
+  consentimientoMarketing: PreferenciaOfertas;
 }
 
 /** Región o comuna de la lista oficial, por su código CUT (GET /api/territorio/…). */
@@ -270,8 +282,7 @@ export interface CuentaPersonal {
 
 /**
  * backend: src/modulos/inventario/proveedores.service.ts › listar y crear (fila de `proveedor`,
- * E11-H1). TODO(SCRUM-110): la cantidad de entradas no llega todavía; pedida a SCRUM-36 como
- * `cantidadEntradas` (ver docs/historias/SCRUM-110.md).
+ * E11-H1), con `cantidadEntradas` desde SCRUM-150. El Swagger no declara la respuesta.
  */
 export interface Proveedor {
   id: number;
@@ -282,7 +293,7 @@ export interface Proveedor {
   telefono: string | null;
   email: string | null;
   activo: boolean;
-  cantidadEntradas?: number;
+  cantidadEntradas: number;
 }
 
 /** backend: src/common/dominio/valores.ts › TIPOS_DOCUMENTO_PROVEEDOR */
@@ -297,59 +308,20 @@ export interface UbicacionResumen {
 }
 
 /**
- * GET /api/inventario/ubicaciones: ubicaciones activas de bodegas activas, donde se puede
- * guardar stock. TODO(SCRUM-111): no existe en el backend; simulado y pedido a SCRUM-37 (ver
- * docs/historias/SCRUM-111.md).
+ * backend: src/modulos/inventario/dto/ubicacion-inventario.dto.ts. GET /api/inventario/ubicaciones:
+ * ubicaciones activas de bodegas activas, donde se puede guardar stock (SCRUM-150).
  */
-export interface UbicacionInventario {
-  id: number;
-  codigo: string;
-  bodega: { id: number; nombre: string };
-}
+export type UbicacionInventario =
+  components['schemas']['UbicacionInventarioDto'];
 
 /**
- * backend: src/modulos/inventario/entradas.service.ts › EntradaRegistrada (respuesta del POST
- * /api/inventario/entradas, E11-H2; el Swagger no la declara). TODO(SCRUM-111): los subtotales
- * y totales no llegan todavía; pedidos a SCRUM-37 como `subtotalNeto`, `unidades` y
- * `costoNetoTotal` (el frontend no los calcula).
+ * backend: src/modulos/inventario/dto/entrada-respuesta.dto.ts. Respuesta del POST
+ * /api/inventario/entradas (E11-H2), con los subtotales y totales que suma el backend (SCRUM-150).
  */
-export interface EntradaRegistrada {
-  id: number;
-  proveedor: { id: number; rut: string; razonSocial: string };
-  /** AAAA-MM-DD */
-  fechaRecepcion: string;
-  tipoDocumento: TipoDocumentoProveedor;
-  numeroDocumento: string;
-  observacion: string | null;
-  ubicacion: UbicacionResumen;
-  detalles: {
-    formatoId: number;
-    cantidad: number;
-    costoUnitarioNeto: number;
-    movimientoId: number;
-    subtotalNeto?: number;
-  }[];
-  unidades?: number;
-  costoNetoTotal?: number;
-}
+export type EntradaRegistrada = components['schemas']['EntradaRegistradaDto'];
 
-/**
- * Una fila de GET /api/inventario/entradas (E11-H2 criterio 1). TODO(SCRUM-111): no existe en el
- * backend; simulado con la forma pedida a SCRUM-37 (ver docs/historias/SCRUM-111.md).
- */
-export interface EntradaListado {
-  id: number;
-  /** AAAA-MM-DD */
-  fechaRecepcion: string;
-  tipoDocumento: TipoDocumentoProveedor;
-  numeroDocumento: string;
-  proveedor: { id: number; razonSocial: string };
-  ubicacion: UbicacionResumen;
-  cantidadFormatos: number;
-  unidades: number;
-  costoNetoTotal: number;
-  registradoPor: { nombre: string };
-}
+/** Una fila de GET /api/inventario/entradas (E11-H2 criterio 1, SCRUM-150). */
+export type EntradaListado = components['schemas']['EntradaListadoDto'];
 
 /** backend: src/common/dominio/valores.ts › TIPOS_SALIDA */
 export type TipoSalida =
@@ -430,12 +402,7 @@ export interface StockFormato {
 }
 
 /** GET /api/inventario/entradas?bodegaId&buscar&desde&hasta&pagina. Simulado (SCRUM-111). */
-export interface ListadoEntradas {
-  items: EntradaListado[];
-  total: number;
-  pagina: number;
-  limite: number;
-}
+export type ListadoEntradas = components['schemas']['ListadoEntradasDto'];
 
 /** backend: src/common/dominio/valores.ts › TIPOS_MOVIMIENTO */
 export type TipoMovimiento =
@@ -450,75 +417,31 @@ export type TipoMovimiento =
   | 'reingreso';
 
 /**
- * Una fila de GET /api/inventario/stock (E11-H5 criterio 1). TODO(SCRUM-114): no existe en el
- * backend; simulado con la forma pedida a SCRUM-40 (ver docs/historias/SCRUM-114.md).
- * `ubicaciones` y `stock` son de la bodega elegida (o de todas); `bajoMinimo` lo decide el
- * backend.
+ * backend: src/modulos/inventario/dto/stock-listado.dto.ts. Una fila de GET /api/inventario/stock
+ * (E11-H5 criterio 1, SCRUM-150): `ubicaciones` y `stock` son de la bodega elegida (o de todas);
+ * `bajoMinimo` lo decide el backend y `stockMinimo: 0` es «sin mínimo».
  */
-export interface StockListado {
-  formatoId: number;
-  sku: string;
-  producto: string;
-  nombreFormato: string;
-  /** Foto principal del formato. */
-  imagen: string | null;
-  ubicaciones: { id: number; codigo: string }[];
-  stock: number;
-  stockMinimo: number | null;
-  bajoMinimo: boolean;
-  /** Nula si el formato nunca se recibió. */
-  ultimaEntrada: {
-    costoUnitarioNeto: number;
-    proveedor: { id: number; razonSocial: string };
-  } | null;
-}
+export type StockListado = components['schemas']['StockListadoDto'];
 
-/** GET /api/inventario/stock?bodegaId&buscar&bajoMinimo&pagina&limite. Simulado (SCRUM-114). */
-export interface ListadoStock {
-  items: StockListado[];
-  total: number;
-  pagina: number;
-  limite: number;
-  /** Formatos bajo el mínimo con la bodega y la búsqueda elegidas, para el chip. */
-  totalBajoMinimo: number;
-}
+/** GET /api/inventario/stock?bodegaId&buscar&bajoMinimo&pagina&limite (SCRUM-150). */
+export type ListadoStock = components['schemas']['ListadoStockDto'];
 
 /**
- * Una fila de GET /api/inventario/movimientos (E11-H5 criterio 2). TODO(SCRUM-114): no existe
- * en el backend; simulado con la forma pedida a SCRUM-40 (ver docs/historias/SCRUM-114.md).
+ * backend: src/modulos/inventario/dto/movimiento-listado.dto.ts. Una fila de GET
+ * /api/inventario/movimientos (E11-H5 criterio 2, SCRUM-150): `cantidad` con signo (la
+ * transferencia, positiva) y `registradoPor` nulo en ventas y reingresos.
  */
-export interface MovimientoListado {
-  id: number;
-  /** ISO 8601 */
-  fechaHora: string;
-  tipo: TipoMovimiento;
-  formato: { id: number; producto: string; nombreFormato: string };
-  /** Con signo; la transferencia, positiva. */
-  cantidad: number;
-  /** El origen, en la transferencia. */
-  ubicacion: UbicacionResumen;
-  /** Solo en la transferencia. */
-  destino: UbicacionResumen | null;
-  /** N.º de documento, código del pedido u observación. */
-  referencia: string | null;
-  /** Nulo: lo registró el sistema (ventas y reingresos). */
-  registradoPor: { nombre: string } | null;
-}
+export type MovimientoListado = components['schemas']['MovimientoListadoDto'];
 
-/** Grupos de los chips de «Movimientos»; el backend decide qué tipos entran en cada uno. */
+/** backend: src/common/dominio/valores.ts › GRUPOS_MOVIMIENTO (qué tipos entran lo decide el backend). */
 export type GrupoMovimientos =
   'entradas' | 'ventas' | 'salidas' | 'transferencias';
 
 /**
  * GET /api/inventario/movimientos?bodegaId&grupo&desde&hasta&buscar&pagina&limite, del más
- * reciente al más antiguo. Simulado (SCRUM-114).
+ * reciente al más antiguo (SCRUM-150).
  */
-export interface ListadoMovimientos {
-  items: MovimientoListado[];
-  total: number;
-  pagina: number;
-  limite: number;
-}
+export type ListadoMovimientos = components['schemas']['ListadoMovimientosDto'];
 
 /** backend: src/common/dominio/valores.ts › ORIGENES_DESCRIPCION */
 export type OrigenDescripcion = 'manual' | 'ia' | 'ia_editada';
@@ -545,42 +468,18 @@ export interface ProductoPanel {
 }
 
 /**
- * Fila del listado del panel (E3-H1, Figma P3a). **Simulada** (SCRUM-100): el backend hoy
- * entrega solo los datos de `ProductoPanel`; los demás campos se pidieron a SCRUM-26 (ver
- * docs/historias/SCRUM-100.md). Los decide el backend, el panel solo los muestra.
+ * backend: src/modulos/catalogo/dto/producto-listado.dto.ts. Fila del listado del panel (E3-H1,
+ * Figma P3a, SCRUM-150): foto, formatos, precio desde, stock y stock bajo los decide el backend.
  */
-export interface ProductoListadoPanel extends ProductoPanel {
-  /** URL pública de la imagen principal del formato predeterminado, o `null` sin imágenes. */
-  imagen: string | null;
-  /** Cantidad de formatos activos. */
-  formatos: number;
-  /**
-   * Menor precio con IVA entre sus formatos, del canal del producto (minorista si es general,
-   * mayorista si es exclusivo), en pesos enteros. `null` si ningún formato tiene precio.
-   */
-  precioDesde: number | null;
-  /** Unidades en bodegas activas, sumando sus formatos. */
-  stockTotal: number;
-  /** Algún formato está bajo su stock mínimo. */
-  stockBajo: boolean;
-}
+export type ProductoListadoPanel =
+  components['schemas']['ProductoListadoPanelDto'];
 
-/** Cuántos productos hay en cada filtro del listado, con la búsqueda aplicada. Simulado (SCRUM-100). */
-export interface ConteosProductosPanel {
-  todos: number;
-  exclusivos: number;
-  stockBajo: number;
-  inactivos: number;
-}
+/** Cuántos productos hay en cada filtro del listado, con la búsqueda aplicada. */
+export type ConteosProductosPanel = ListadoProductosPanel['conteos'];
 
-/** GET /api/catalogo/productos (panel). Simulado (SCRUM-100), ver `ProductoListadoPanel`. */
-export interface ListadoProductosPanel {
-  items: ProductoListadoPanel[];
-  total: number;
-  pagina: number;
-  limite: number;
-  conteos: ConteosProductosPanel;
-}
+/** GET /api/catalogo/productos (panel, SCRUM-150). */
+export type ListadoProductosPanel =
+  components['schemas']['ListadoProductosPanelDto'];
 
 /** backend: src/modulos/catalogo/imagenes.service.ts › ImagenPanel */
 export interface ImagenPanel {
@@ -638,9 +537,7 @@ export interface CambioPrecio {
 /**
  * backend: src/modulos/catalogo/precios.service.ts › PreciosArticulo. Lo que devuelven GET y PUT
  * /api/catalogo/articulos/{id}/precios (E3-H5), con el historial del más reciente al más antiguo.
- *
- * `porcentajeIva`, `precioMinoristaConIva` y `precioMayoristaConIva` se pidieron a SCRUM-30 (ver
- * docs/historias/SCRUM-104.md): mientras no lleguen, la pantalla muestra solo los netos.
+ * Con los valores con IVA desde SCRUM-150.
  */
 export interface PreciosArticulo {
   articuloId: number;
@@ -649,44 +546,28 @@ export interface PreciosArticulo {
   precioMinoristaNeto: number | null;
   precioMayoristaNeto: number | null;
   historial: CambioPrecio[];
-  /** Tasa de IVA vigente (`IVA_PORCENTAJE`), p. ej. 19. Pedido a SCRUM-30. */
-  porcentajeIva?: number;
-  /** Precio minorista con IVA en pesos enteros, como en la tienda. Pedido a SCRUM-30. */
-  precioMinoristaConIva?: number | null;
-  /** Precio mayorista con IVA en pesos enteros. Pedido a SCRUM-30. */
-  precioMayoristaConIva?: number | null;
+  /** Tasa de IVA vigente (`IVA_PORCENTAJE`), p. ej. 19. */
+  porcentajeIva: number;
+  /** Precio minorista con IVA en pesos enteros, como en la tienda. */
+  precioMinoristaConIva: number | null;
+  /** Precio mayorista con IVA en pesos enteros. */
+  precioMayoristaConIva: number | null;
 }
 
 /**
- * Formato que se puede agregar a un pack (E3-H6 criterio 2). **Simulado** (SCRUM-105): el backend
- * no tiene una búsqueda de formatos; forma pedida a SCRUM-31 (ver docs/historias/SCRUM-105.md).
- * Solo formatos activos de productos activos, nunca packs.
+ * backend: src/modulos/catalogo/dto/formato-buscado.dto.ts › FormatoBuscadoDto. Formato que se
+ * puede agregar a un pack (E3-H6 criterio 2) o registrar en inventario: solo formatos activos de
+ * productos activos, nunca packs (SCRUM-150).
  */
-export interface FormatoParaPack {
-  formatoId: number;
-  sku: string;
-  nombreFormato: string;
-  producto: { id: number; nombre: string };
-  /** Canal del producto: un pack general no admite formatos exclusivos. */
-  canalVenta: CanalVenta;
-  /** Unidades en bodegas activas. Opcional mientras se simula: la simulación no lo inventa. */
-  stockTotal?: number;
-  precioMinoristaNeto?: number | null;
-  /** En pesos enteros, como en la tienda. */
-  precioMinoristaConIva?: number | null;
-}
+export type FormatoParaPack = components['schemas']['FormatoBuscadoDto'];
 
-/** GET /api/catalogo/formatos?buscar= (panel). Simulado (SCRUM-105), ver `FormatoParaPack`. */
-export interface ListadoFormatosParaPack {
-  items: FormatoParaPack[];
-  total: number;
-  pagina: number;
-  limite: number;
-}
+/** GET /api/catalogo/formatos?buscar= (panel, catálogo e inventario). */
+export type ListadoFormatosParaPack =
+  components['schemas']['ListadoFormatosBuscadosDto'];
 
 /**
- * backend: src/modulos/catalogo/packs.service.ts › ComponentePackPanel. `stockTotal` y los
- * precios se pidieron a SCRUM-31 (ver docs/historias/SCRUM-105.md).
+ * backend: src/modulos/catalogo/packs.service.ts › ComponentePackPanel (con stock y precios
+ * desde SCRUM-150).
  */
 export interface ComponentePackPanel {
   formatoId: number;
@@ -694,18 +575,17 @@ export interface ComponentePackPanel {
   nombreFormato: string;
   producto: { id: number; nombre: string };
   cantidad: number;
-  /** Unidades del formato en bodegas activas. Pedido a SCRUM-31. */
-  stockTotal?: number;
-  /** Pedido a SCRUM-31. */
-  precioMinoristaNeto?: number | null;
-  /** En pesos enteros. Pedido a SCRUM-31. */
-  precioMinoristaConIva?: number | null;
+  /** Unidades vendibles del formato, las mismas que usa la tienda. */
+  stockTotal: number;
+  precioMinoristaNeto: number | null;
+  /** En pesos enteros. */
+  precioMinoristaConIva: number | null;
 }
 
 /**
  * backend: src/modulos/catalogo/packs.service.ts › PackPanel. Lo que devuelven GET, POST y PATCH
- * de /api/catalogo/packs (E3-H6). Los precios van aparte (E3-H5). `disponibilidad`,
- * `componenteLimitante` y `precioMinoristaPorSeparadoConIva` se pidieron a SCRUM-31.
+ * de /api/catalogo/packs (E3-H6). Los precios van aparte (E3-H5); disponibilidad, componente
+ * limitante y precio por separado desde SCRUM-150.
  */
 export interface PackPanel {
   id: number;
@@ -726,13 +606,13 @@ export interface PackPanel {
   imagenes: ImagenPanel[];
   /**
    * Packs que se pueden vender con el stock de hoy: los del componente más escaso, contando las
-   * unidades que lleva el pack (como `disponibilidad` de /tienda/packs/{id}). Pedido a SCRUM-31.
+   * unidades que lleva el pack (como `disponibilidad` de /tienda/packs/{id}).
    */
-  disponibilidad?: number;
-  /** El componente que limita la disponibilidad; `null` sin componentes. Pedido a SCRUM-31. */
-  componenteLimitante?: { formatoId: number; stockTotal: number } | null;
-  /** Lo que cuestan los componentes por separado, con IVA. Pedido a SCRUM-31. */
-  precioMinoristaPorSeparadoConIva?: number | null;
+  disponibilidad: number;
+  /** El componente que limita la disponibilidad; `null` sin componentes. */
+  componenteLimitante: { formatoId: number; stockTotal: number } | null;
+  /** Lo que cuestan los componentes por separado, con IVA; `null` si alguno no tiene precio. */
+  precioMinoristaPorSeparadoConIva: number | null;
 }
 
 /** backend: src/modulos/catalogo/packs.service.ts › ListadoPacks (GET /api/catalogo/packs). */
@@ -909,7 +789,10 @@ export interface DetallePedidoCuenta {
   tipoEntrega: 'despacho' | 'retiro';
   tipoDocumento: 'boleta' | 'factura';
   porcentajeIva: number;
-  montos: { neto: number; iva: number; total: number };
+  /** `descuento`: lo que descontó el cupón, con IVA, ya restado de los demás (SCRUM-150). */
+  montos: { neto: number; iva: number; total: number; descuento: number };
+  /** Código del cupón aplicado; `null` sin cupón (SCRUM-150). */
+  cupon: string | null;
   items: LineaPedido[];
   /** `null` si es retiro en tienda. */
   envio: EnvioPedido | null;
@@ -958,83 +841,28 @@ export interface CotizacionDespacho {
   costo: number;
   /** Total del carrito con IVA, sin el despacho. */
   totalCarrito: number;
-  /** Lo que pagaría: carrito más despacho. */
+  /** Lo que descuenta el cupón indicado, con IVA (SCRUM-150); 0 sin cupón. */
+  descuento: number;
+  /** Lo que pagaría: carrito menos el descuento, más despacho. */
   total: number;
 }
 
 /**
- * Un pedido de la lista del panel (E8-H2). TODO(SCRUM-130): `GET /api/gestion/pedidos` aún no
- * existe; forma pedida a SCRUM-58 (ver docs/historias/SCRUM-130.md).
+ * backend: src/modulos/pedidos/dto/gestion-pedidos-respuesta.dto.ts. Lista y detalle de pedidos
+ * del panel (E8-H2, SCRUM-150): los grupos, los cambios permitidos y si se puede cancelar los
+ * decide el backend.
  */
-export interface PedidoGestion {
-  codigoPublico: string;
-  /** ISO 8601. */
-  fechaPedido: string;
-  /** Nombre o razón social de quien compró. */
-  cliente: string;
-  tipoEntrega: 'despacho' | 'retiro';
-  estado: string;
-  /** Total con IVA, en pesos. */
-  total: number;
-  /** Suma de las cantidades del pedido. */
-  unidades: number;
-}
+export type ListadoPedidosGestion =
+  components['schemas']['ListadoPedidosGestionDto'];
 
-/** Un grupo del filtro de la lista: qué estados entran en cada uno lo decide el backend. */
-export interface GrupoPedidos {
-  clave: string;
-  nombre: string;
-  /** `null`: el grupo no muestra cuántos pedidos tiene. */
-  cantidad: number | null;
-}
+export type PedidoGestion = ListadoPedidosGestion['items'][number];
 
-/** GET /api/gestion/pedidos (E8-H2). Pedida a SCRUM-58. */
-export interface ListadoPedidosGestion {
-  /** Del más reciente al más antiguo. */
-  items: PedidoGestion[];
-  total: number;
-  pagina: number;
-  limite: number;
-  grupos: GrupoPedidos[];
-  /** El grupo que se aplicó: sin `grupo` en la consulta, el que el backend elige por defecto. */
-  grupo: string;
-}
+export type GrupoPedidos = ListadoPedidosGestion['grupos'][number];
 
-/**
- * Un cambio de estado que el personal puede hacer desde el estado actual del pedido (E8-H2). Sale
- * de `transiciones-estado-pedido.ts` del backend: el frontend no conoce la secuencia.
- */
-export interface CambioPermitido {
-  estado: string;
-  sentido: 'avance' | 'retroceso';
-  /** Al despachar se pide el número de la OT de Chilexpress (E7-H3). */
-  pideCodigoSeguimiento: boolean;
-  /** Si el backend avisa al cliente por correo (`ESTADOS_CON_AVISO`). */
-  avisaAlCliente: boolean;
-}
+export type DetallePedidoGestion =
+  components['schemas']['DetallePedidoGestionDto'];
 
-/** GET /api/gestion/pedidos/{codigoPedido} (E8-H2). Pedida a SCRUM-58. */
-export interface DetallePedidoGestion extends Omit<
-  DetallePedidoCuenta,
-  'historial'
-> {
-  cliente: { nombre: string; correo: string; telefono: string | null };
-  historial: {
-    estado: string;
-    /** ISO 8601. */
-    fecha: string;
-    comentario: string | null;
-    /** «Sistema», «Cliente» o el nombre de quien lo cambió. */
-    realizadoPor: string;
-  }[];
-  /** Vacío si el pedido ya no cambia desde el panel (entregado, retirado, cancelado). */
-  cambiosPermitidos: CambioPermitido[];
-  /**
-   * Si el personal puede cancelarlo (E8-H3): hoy, solo un pedido pendiente de pago. Lo decide el
-   * backend. TODO(SCRUM-131): pedido a SCRUM-58 junto con el detalle.
-   */
-  sePuedeCancelar: boolean;
-}
+export type CambioPermitido = DetallePedidoGestion['cambiosPermitidos'][number];
 
 /**
  * POST /api/pedidos/{codigoPedido}/cancelar (E8-H3). Backend `cancelar-pedido.service.ts` ›
@@ -1056,59 +884,22 @@ export interface PedidoConNuevoEstado {
 
 /**
  * Cómo va la factura de un pedido que la pidió (E9-H3): `por_emitir` hasta que el personal la
- * registra con su folio. TODO(SCRUM-127): forma propuesta a SCRUM-55 (ver
- * docs/historias/SCRUM-127.md).
+ * registra con su folio. backend: src/common/dominio/valores.ts › ESTADOS_FACTURA_GESTION
+ * (decisión del 6 nov, SCRUM-150).
  */
 export type EstadoFacturaGestion = 'por_emitir' | 'emitida';
 
-/** Un pedido de la pestaña «Facturas por emitir» (E9-H3). */
-export interface FacturaGestion {
-  codigoPedido: string;
-  razonSocial: string;
-  /** Como lo guarda el backend: 76123456-0. */
-  rut: string;
-  /** Total con IVA, en pesos. */
-  total: number;
-  estado: EstadoFacturaGestion;
-  /** `null` mientras está por emitir. */
-  folio: number | null;
-}
-
 /**
- * GET /api/gestion/facturas (E9-H3). Los pedidos que pidieron factura y ya se pagaron; cuáles
- * entran y en qué orden lo decide el backend. TODO(SCRUM-127): pedida a SCRUM-55.
+ * backend: src/modulos/facturacion/dto/gestion-facturas-respuesta.dto.ts. Lista y detalle de las
+ * facturas del panel (E9-H3, SCRUM-150): primero las por emitir.
  */
-export interface ListadoFacturasGestion {
-  items: FacturaGestion[];
-  /** Cuántos quedan por emitir, para la pestaña. */
-  porEmitir: number;
-  total: number;
-  pagina: number;
-  limite: number;
-}
+export type ListadoFacturasGestion =
+  components['schemas']['ListadoFacturasGestionDto'];
 
-/**
- * GET /api/gestion/facturas/{codigoPedido} (E9-H3). Los datos para emitirla en el SII: el
- * receptor (de los datos de facturación del pedido) y los montos del pedido. Ya emitida, los que
- * copió el documento. TODO(SCRUM-127): pedida a SCRUM-55.
- */
-export interface DetalleFacturaGestion {
-  codigoPedido: string;
-  estado: EstadoFacturaGestion;
-  receptor: {
-    razonSocial: string;
-    rut: string;
-    giro: string;
-    direccion: string;
-    /** Nombre de la comuna. */
-    comuna: string;
-  };
-  montos: { neto: number; iva: number; total: number };
-  porcentajeIva: number;
-  folio: number | null;
-  /** AAAA-MM-DD; `null` mientras está por emitir. */
-  fechaEmision: string | null;
-}
+export type FacturaGestion = ListadoFacturasGestion['items'][number];
+
+export type DetalleFacturaGestion =
+  components['schemas']['DetalleFacturaGestionDto'];
 
 /**
  * POST /api/pedidos/{codigoPedido}/factura (E9-H3). Backend `registrar-factura.service.ts` ›
@@ -1285,151 +1076,64 @@ export interface SolicitudResuelta {
 }
 
 /**
- * GET y PUT /api/cuentas/yo/ofertas (E12-H2). TODO(SCRUM-69): el backend aún no lo tiene; forma
- * propuesta en docs/historias/SCRUM-139.md (API simulada). Sale de `Usuario.aceptaMarketingEmail`,
- * `fechaConsentimientoMarketing` y `fechaVerificacionCorreo`.
+ * Si la cuenta recibe ofertas por correo (E12-H2). Viene en `GET /api/cuentas/yo`
+ * (`consentimientoMarketing`) y es la respuesta de `PUT /api/cuentas/yo/consentimiento-marketing`.
+ * backend: src/modulos/marketing/consentimiento.service.ts › ConsentimientoMarketing y
+ * src/modulos/cuentas/mi-cuenta.service.ts › DatosPersonales (SCRUM-150)
  */
 export interface PreferenciaOfertas {
   /** Si la cuenta acepta publicidad por correo. */
-  activa: boolean;
-  /** ISO 8601. Cuándo la activó; `null` si nunca la activó o la desactivó. */
+  acepta: boolean;
+  /** ISO 8601. La última vez que la aceptó; `null` si nunca la aceptó. */
   fechaConsentimiento: string | null;
-  email: string;
-  correoVerificado: boolean;
 }
 
 /*
- * Campañas del panel (E12-H3). TODO(SCRUM-70): el backend aún no las tiene; forma propuesta en
- * docs/historias/SCRUM-140.md (API simulada). Permiso `campanas.gestionar`. Quién cuenta como
- * destinatario (consentimiento, rebotes) y los textos del segmento los decide el backend.
+ * Campañas del panel (E12-H3), en `/api/marketing/campanas` (SCRUM-70; alineadas en SCRUM-150).
+ * Permiso `campanas.gestionar`. Se identifican por `id`. Quién cuenta como destinatario
+ * (consentimiento, rebotes) lo decide el backend.
  */
 
+/** Borrador o enviada: el backend dice `enviada`. Figma solo dibuja esos dos. */
 export type EstadoCampana = 'borrador' | 'enviada';
 
 /** Contactos con consentimiento: los contadores de «Campañas». */
-export interface ContactosCampanas {
-  aceptanPublicidad: number;
-  cuentasVerificadas: number;
-  suscriptoresSinCuenta: number;
-  conRebote: number;
-}
+export type ContactosCampanas = components['schemas']['ContactosCampanasDto'];
 
-/** Una fila de GET /api/gestion/campanas. */
-export interface CampanaListada {
-  codigo: string;
-  asunto: string;
-  /** Texto del segmento armado por el backend, p. ej. «Profesionales · Colorimetría». */
-  segmento: string;
-  /** Borrador: los que recibirían hoy; enviada: a cuántos salió. */
-  destinatarios: number;
-  estado: EstadoCampana;
-  /** ISO 8601. */
-  fechaEdicion: string;
-  /** ISO 8601; `null` en un borrador. */
-  fechaEnvio: string | null;
-  /** 0 a 100; `null` en un borrador. */
-  porcentajeApertura: number | null;
-}
+/** Una fila de GET /api/marketing/campanas, con destinatarios y apertura. */
+export type CampanaListada = components['schemas']['CampanaListadaDto'];
 
-/** GET /api/gestion/campanas. */
-export interface ListadoCampanas {
-  contactos: ContactosCampanas;
-  /** En el orden del backend (las más recientes primero). */
-  campanas: CampanaListada[];
-}
+/** GET /api/marketing/campanas: los contadores y una página de campañas (las más nuevas primero). */
+export type ListadoCampanas = components['schemas']['ListadoCampanasDto'];
 
-export interface OpcionSegmento {
-  valor: string;
-  texto: string;
-}
+/** El segmento guardado: tipos de destinatario y, si hay, categorías y marcas compradas. */
+export type SegmentoCampana = components['schemas']['SegmentoGuardadoDto'];
 
-/** Criterio extra de un tipo de segmento, p. ej. especialidad para «Profesionales». */
-export interface CriterioSegmento {
-  clave: string;
-  texto: string;
-  opciones: OpcionSegmento[];
-}
+/** Cuerpo de POST /api/marketing/campanas y PATCH …/{id}. */
+export type DatosCampana = components['schemas']['CrearCampanaDto'];
 
-export interface TipoSegmento extends OpcionSegmento {
-  criterios: CriterioSegmento[];
-}
+/** GET /api/marketing/campanas/{id}, y respuesta de POST y PATCH. */
+export type CampanaGestion = components['schemas']['DetalleCampanaDto'];
 
-/** GET /api/gestion/campanas/segmentos: lo que se puede elegir en «¿A quién le llega?». */
-export interface OpcionesSegmentoCampana {
-  tipos: TipoSegmento[];
-}
+/** POST /api/marketing/campanas/vista-previa: el correo en vivo, sin guardar ni contar. */
+export type CorreoCampana = components['schemas']['CorreoCampanaDto'];
 
-/** El segmento elegido, como se envía y se guarda. */
-export interface SegmentoCampana {
-  tipo: string;
-  /** Un valor por criterio como máximo. */
-  criterios: { clave: string; valor: string }[];
-}
+/** POST /api/marketing/campanas/{id}/vista-previa: con destinatarios y la `confirmacion` del envío. */
+export type VistaPreviaCampana = components['schemas']['VistaPreviaCampanaDto'];
 
-/** Cuerpo de POST /api/gestion/campanas, PUT …/{codigo} y POST …/vista-previa. */
-export interface DatosCampana {
-  asunto: string;
-  /** Texto simple: párrafos separados por una línea en blanco; `{nombre}` se reemplaza. */
-  cuerpo: string;
-  segmento: SegmentoCampana;
-}
-
-/** GET /api/gestion/campanas/{codigo}, y respuesta de POST y PUT. */
-export interface CampanaGestion extends DatosCampana {
-  codigo: string;
-  estado: EstadoCampana;
-  /** ISO 8601. */
-  fechaEdicion: string;
-  /** ISO 8601; `null` en un borrador. */
-  fechaEnvio: string | null;
-}
-
-/** POST /api/gestion/campanas/vista-previa: el correo como lo verá quien lo recibe. */
-export interface VistaPreviaCampana {
-  /** Nombre del remitente (RNF-26). */
-  remitente: string;
-  asunto: string;
-  /** El cuerpo en párrafos, con `{nombre}` ya reemplazado por un nombre de ejemplo. */
-  parrafos: string[];
-  /** Por qué le llega, p. ej. «Recibes este correo porque aceptaste ofertas…». */
-  pie: string;
-  /** Texto del enlace de baja que lleva cada correo (RNF-26). */
-  textoBaja: string;
-  /** Destinatarios con consentimiento del segmento, contados por el backend. */
-  destinatarios: number;
-  /** Texto del segmento, como en el listado. */
-  segmento: string;
-}
-
-/** POST /api/gestion/campanas/{codigo}/envio (202). Sale una sola vez; otra vez, 409. */
-export interface CampanaEnviada {
-  codigo: string;
-  estado: 'enviada';
-  destinatarios: number;
-  /** ISO 8601. */
-  fechaEnvio: string;
-}
+/** POST /api/marketing/campanas/{id}/envio (202). Sale una sola vez; otra vez, 409. */
+export type CampanaEnviada = components['schemas']['CampanaEnviadaDto'];
 
 /**
- * GET y PATCH /api/gestion/campanas/cumpleanos (E12-H5). TODO(SCRUM-72): el backend aún no lo
- * tiene; forma propuesta en docs/historias/SCRUM-141.md (API simulada). Permiso
- * `campanas.gestionar`. Qué es la oferta del saludo sigue por definir.
+ * GET y PUT /api/marketing/cumpleanos (E12-H5): si el saludo está activo, su asunto, saludo y
+ * oferta, y las cifras que cuenta el backend (programados de este mes, apertura del anterior).
  */
-export interface SaludoCumpleanos {
-  activo: boolean;
-  incluyeOferta: boolean;
-  /** Asunto del correo, con `{nombre}` sin reemplazar. */
-  asunto: string;
-  /** Saludos que saldrán en el mes en curso, contados por el backend. */
-  programadosEsteMes: number;
-  /** 0 a 100; `null` si el mes anterior no salió ninguno. */
-  porcentajeAperturaUltimoMes: number | null;
-}
+export type SaludoCumpleanos =
+  components['schemas']['ConfiguracionCumpleanosDto'];
 
-/** Cuerpo de PATCH /api/gestion/campanas/cumpleanos: solo lo que cambia. */
-export type CambioSaludoCumpleanos = Partial<
-  Pick<SaludoCumpleanos, 'activo' | 'incluyeOferta'>
->;
+/** Cuerpo de PUT /api/marketing/cumpleanos: el saludo completo (reemplaza el anterior). */
+export type GuardarSaludoCumpleanos =
+  components['schemas']['ConfigurarCumpleanosDto'];
 
 /**
  * Pedidos y montos de un tipo de cliente en el reporte de ventas (E14-H2). Montos en pesos,
@@ -1464,89 +1168,39 @@ export interface ReporteVentas {
 /** Objetivos específicos del proyecto (E14-H1). */
 export type CodigoObjetivo = 'OE1' | 'OE2' | 'OE3';
 
-/** Lo decide el backend al comparar el porcentaje con la meta (RNF-03). */
-export type EstadoObjetivo = 'sobre-la-meta' | 'bajo-la-meta' | 'sin-datos';
+/**
+ * backend: src/modulos/reportes/dto/indicadores-carritos-respuesta.dto.ts. Un objetivo de
+ * GET /api/reportes/indicadores (E14-H1): el backend calcula porcentaje y estado frente a la meta
+ * (`ESTADOS_OBJETIVO`, SCRUM-150).
+ */
+export type IndicadorObjetivo = components['schemas']['IndicadorDto'];
 
-export interface IndicadorObjetivo {
-  codigo: CodigoObjetivo;
-  /** Meta en porcentaje: 30, 70 u 80. */
-  meta: number;
-  /** De 0 a 100; `null` cuando no hay registros en el período. */
-  porcentaje: number | null;
-  /** Registros que cumplen (OE1: cuentas verificadas que compraron a precio mayorista). */
-  cumplen: number;
-  /** Registros considerados (OE1: cuentas con solicitud). */
-  total: number;
-  estado: EstadoObjetivo;
-}
+export type EstadoObjetivo = IndicadorObjetivo['estado'];
+
+/** GET /api/reportes/indicadores?desde&hasta (E14-H1), días AAAA-MM-DD. */
+export type ReporteObjetivos =
+  components['schemas']['ReporteIndicadoresRespuestaDto'];
+
+/** Carritos abandonados de un mes (E14-H3), con el porcentaje recuperado que calcula el backend. */
+export type CarritosDelMes = components['schemas']['CarritosDelMesDto'];
+
+/** GET /api/reportes/carritos-abandonados?desde&hasta (E14-H3), meses AAAA-MM. */
+export type ReporteCarritos =
+  components['schemas']['ReporteCarritosRespuestaDto'];
 
 /**
- * GET /api/reportes/objetivos?desde&hasta (E14-H1). API SIMULADA: el endpoint aún no existe;
- * forma propuesta a SCRUM-74 (ver docs/historias/SCRUM-142.md). El backend calcula porcentaje,
- * meta y estado; el frontend solo los muestra.
+ * Resultado de una campaña, o del saludo de cumpleaños de un mes, en el período (E14-H3). Los
+ * porcentajes los calcula el backend; el segmento viene estructurado (SCRUM-150).
  */
-export interface ReporteObjetivos {
-  /** AAAA-MM-DD */
-  desde: string;
-  /** AAAA-MM-DD */
-  hasta: string;
-  objetivos: IndicadorObjetivo[];
-}
+export type ResultadoCampana = components['schemas']['FilaReporteCampanaDto'];
 
-/** Carritos abandonados de un mes (E14-H3). */
-export interface CarritosDelMes {
-  /** AAAA-MM */
-  mes: string;
-  /** Carritos que recibieron al menos un recordatorio en el mes (E12-H4). */
-  abandonados: number;
-  /** De los abandonados, los que terminaron en compra. */
-  recuperados: number;
-  /** 0 a 100, calculado por el backend; `null` si no hubo abandonados. */
-  porcentajeRecuperados: number | null;
-}
+/** GET /api/reportes/campanas?desde&hasta (E14-H3, SCRUM-150). Las más recientes primero. */
+export type ReporteCampanas =
+  components['schemas']['ReportePeriodoCampanasDto'];
 
-/**
- * GET /api/reportes/carritos?desde&hasta (E14-H3). API SIMULADA: el endpoint aún no existe;
- * forma propuesta a SCRUM-76 (ver docs/historias/SCRUM-144.md). Un elemento por mes del
- * período, del más antiguo al más reciente, aunque esté en cero.
- */
-export interface ReporteCarritos {
-  /** AAAA-MM-DD */
-  desde: string;
-  /** AAAA-MM-DD */
-  hasta: string;
-  meses: CarritosDelMes[];
-}
+/** Cupones del panel (SCRUM-150): GET, POST y PATCH /api/marketing/cupones. */
+export type CuponPanel = components['schemas']['CuponPanelDto'];
+export type DatosCupon = components['schemas']['CrearCuponDto'];
 
-/** Resultado de una campaña o de un correo automático en el período (E14-H3). */
-export interface ResultadoCampana {
-  codigo: string;
-  /** Asunto de la campaña, o el nombre del correo automático (p. ej. «Saludo de cumpleaños»). */
-  nombre: string;
-  /** Correos automáticos (saludo de cumpleaños): sus envíos del mes, en una fila. */
-  automatica: boolean;
-  /** Campaña: fecha de envío (ISO 8601). Automática: el mes (AAAA-MM). */
-  fecha: string;
-  /** Texto del segmento armado por el backend; `null` en un correo automático. */
-  segmento: string | null;
-  enviados: number;
-  /** 0 a 100, calculados por el backend; `null` si no hubo envíos. */
-  porcentajeAbiertos: number | null;
-  porcentajeClic: number | null;
-  rebotados: number;
-  /** No salieron porque la persona ya no aceptaba publicidad al enviar (E12-H2). */
-  cancelados: number;
-  fallidos: number;
-}
-
-/**
- * GET /api/reportes/campanas?desde&hasta (E14-H3). API SIMULADA: el endpoint aún no existe;
- * forma propuesta a SCRUM-76 (ver docs/historias/SCRUM-144.md). Las más recientes primero.
- */
-export interface ReporteCampanas {
-  /** AAAA-MM-DD */
-  desde: string;
-  /** AAAA-MM-DD */
-  hasta: string;
-  campanas: ResultadoCampana[];
-}
+/** POST /api/carrito/cupon: lo que descuenta un cupón sobre el carrito de la cuenta. */
+export type CuponCarrito = components['schemas']['CuponCarritoDto'];

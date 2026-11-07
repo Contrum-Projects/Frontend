@@ -49,6 +49,7 @@ const SIN_CONTACTO: Proveedor = {
   telefono: null,
   email: null,
   activo: true,
+  cantidadEntradas: 0,
 };
 
 type Manejador = (peticion: Request) => Response | Promise<Response>;
@@ -72,8 +73,24 @@ const simularBackend = (
   return { estado, fetch };
 };
 
-const error = (status: number, message: string | string[]) =>
-  Response.json({ statusCode: status, message }, { status });
+const error = (
+  status: number,
+  message: string | string[],
+  /** Campos a los que pertenece el error (`errores` del backend, SCRUM-150). */
+  campos: string[] = [],
+) =>
+  Response.json(
+    {
+      statusCode: status,
+      message,
+      ...(campos.length > 0 && {
+        errores: campos.flatMap((campo) =>
+          [message].flat().map((mensaje) => ({ campo, mensaje })),
+        ),
+      }),
+    },
+    { status },
+  );
 
 const ingresarComo = (rol: Rol) =>
   act(() =>
@@ -150,14 +167,14 @@ describe('Pantalla Proveedores (SCRUM-110)', () => {
     ]);
   });
 
-  it('E11-H1 FE · listado: sin la cantidad de entradas del backend, muestra «—»', async () => {
+  it('E11-H1 FE · listado: un proveedor sin entradas muestra 0', async () => {
     simularBackend([SIN_CONTACTO]);
     mostrarPantalla();
 
     await screen.findByRole('table');
     expect(
       within(filaDe('Insumos del Sur Ltda.')).getAllByRole('cell')[5],
-    ).toHaveTextContent('—');
+    ).toHaveTextContent('0');
   });
 
   it('E11-H1 FE · listado: en celular, cada fila muestra RUT, contacto y entradas', async () => {
@@ -235,6 +252,7 @@ describe('Pantalla Proveedores (SCRUM-110)', () => {
       telefono: null,
       email: null,
       activo: true,
+      cantidadEntradas: 0,
     };
     const { estado, fetch } = simularBackend([DISTRIBUIDORA], {
       'POST /api/inventario/proveedores': () => {
@@ -307,7 +325,7 @@ describe('Pantalla Proveedores (SCRUM-110)', () => {
   it('E11-H1 FE · RUT repetido: muestra el error del servidor junto al RUT sin perder lo escrito', async () => {
     simularBackend([DISTRIBUIDORA], {
       'POST /api/inventario/proveedores': () =>
-        error(409, 'Ya existe un proveedor con ese RUT.'),
+        error(409, 'Ya existe un proveedor con ese RUT.', ['rut']),
     });
     mostrarPantalla();
     await screen.findByRole('table');

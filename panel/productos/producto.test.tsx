@@ -173,7 +173,7 @@ describe('Editar producto (SCRUM-100)', () => {
     simularBackend({
       'GET /api/catalogo/productos/7': () => Response.json(producto()),
       'PATCH /api/catalogo/productos/7': () =>
-        error(400, 'La marca está desactivada.'),
+        error(400, 'La marca está desactivada.', ['marcaId']),
     });
     mostrar(<PantallaEditarProducto id="7" />);
 

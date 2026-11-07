@@ -254,17 +254,23 @@ describe('Tabla de formatos (SCRUM-101)', () => {
   });
 
   it.each([
-    ['El SKU ya pertenece a otro artículo.', ['SKU']],
-    ['El código de barras ya pertenece a otro artículo.', ['Código de barras']],
+    ['El SKU ya pertenece a otro artículo.', ['SKU'], ['sku']],
+    [
+      'El código de barras ya pertenece a otro artículo.',
+      ['Código de barras'],
+      ['codigoBarras'],
+    ],
     [
       'El SKU y el código de barras ya pertenecen a otro artículo.',
       ['SKU', 'Código de barras'],
+      ['sku', 'codigoBarras'],
     ],
   ])(
     'E3-H2 FE · criterio 2, dato repetido: «%s» queda junto a su campo sin perder lo escrito',
-    async (mensaje, campos) => {
+    async (mensaje, campos, camposBackend) => {
       conFormatos([[formato()]], {
-        'POST /api/catalogo/productos/7/formatos': () => error(409, mensaje),
+        'POST /api/catalogo/productos/7/formatos': () =>
+          error(409, mensaje, camposBackend),
       });
       mostrar(<PantallaEditarProducto id="7" />);
 
@@ -292,7 +298,7 @@ describe('Tabla de formatos (SCRUM-101)', () => {
   it('E3-H2 FE · criterio 2, dato repetido al editar: el error queda junto al SKU', async () => {
     const mensaje = 'El SKU ya pertenece a otro artículo.';
     conFormatos([[formato(), LITRO]], {
-      'PATCH /api/catalogo/formatos/22': () => error(409, mensaje),
+      'PATCH /api/catalogo/formatos/22': () => error(409, mensaje, ['sku']),
     });
     mostrar(<PantallaEditarProducto id="7" />);
 

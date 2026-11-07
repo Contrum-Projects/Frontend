@@ -14,19 +14,20 @@ export function PantallaCampanaNueva() {
   return <FormularioCampana campana={null} />;
 }
 
-/** Un borrador abierto desde el listado para seguir editándolo. Una enviada ya no se edita. */
-export function PantallaEditarCampana({ codigo }: { codigo: string }) {
-  const consulta = useCampana(codigo);
+/** El id de la URL, o `null` si no es un id (responde como una campaña que no existe). */
+const idDeRuta = (valor: string): number | null =>
+  /^[1-9]\d{0,9}$/.test(valor) ? Number(valor) : null;
 
+/** Un borrador abierto desde el listado para seguir editándolo. Una enviada ya no se edita. */
+export function PantallaEditarCampana({ id }: { id: string }) {
+  const idCampana = idDeRuta(id);
+  const consulta = useCampana(idCampana);
+
+  if (idCampana === null) return <CampanaNoEncontrada />;
   if (consulta.isPending) return <EsqueletoCampana />;
   if (consulta.isError) {
     if (consulta.error instanceof ErrorDeApi && consulta.error.estado === 404) {
-      return (
-        <AvisoCampana
-          titulo="Campaña no encontrada"
-          texto="No encontramos esta campaña."
-        />
-      );
+      return <CampanaNoEncontrada />;
     }
     return (
       <div className="flex flex-col gap-4">
@@ -37,7 +38,7 @@ export function PantallaEditarCampana({ codigo }: { codigo: string }) {
       </div>
     );
   }
-  if (consulta.data.estado === 'enviada') {
+  if (consulta.data.enviada) {
     return (
       <AvisoCampana
         titulo={consulta.data.asunto}
@@ -45,8 +46,15 @@ export function PantallaEditarCampana({ codigo }: { codigo: string }) {
       />
     );
   }
-  return <FormularioCampana key={codigo} campana={consulta.data} />;
+  return <FormularioCampana key={idCampana} campana={consulta.data} />;
 }
+
+const CampanaNoEncontrada = () => (
+  <AvisoCampana
+    titulo="Campaña no encontrada"
+    texto="No encontramos esta campaña."
+  />
+);
 
 const AvisoCampana = ({ titulo, texto }: { titulo: string; texto: string }) => (
   <div className="flex flex-col items-start gap-3">

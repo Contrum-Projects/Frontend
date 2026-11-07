@@ -142,6 +142,7 @@ const SHAMPOO: ProductoDetalle = {
   id: 10,
   nombre: 'Shampoo reparador',
   descripcion: 'Limpia con suavidad.',
+  ingredientes: null,
   marca: { id: 1, nombre: 'Marca A' },
   categoria: { id: 3, nombre: 'Shampoo' },
   formatos: [formato(1, '300 ml', 12990), formato(2, '1 L', 29990)],

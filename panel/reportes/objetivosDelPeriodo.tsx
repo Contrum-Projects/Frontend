@@ -30,7 +30,7 @@ export const ObjetivosDelPeriodo = ({ rango }: { rango: RangoDelPeriodo }) => {
         <EsqueletoObjetivos />
       ) : (
         <ul className={LISTA}>
-          {consulta.data.objetivos.map((objetivo) => (
+          {consulta.data.indicadores.map((objetivo) => (
             <TarjetaObjetivo key={objetivo.codigo} objetivo={objetivo} />
           ))}
         </ul>

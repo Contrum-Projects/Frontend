@@ -20,7 +20,8 @@ import {
 import type { Rol } from '@/compartido/sesion/roles';
 import { Toaster } from '@/compartido/ui/sonner';
 import { AccionesInventario } from './accionesInventario';
-import { campoDelError } from './esquemaSalida';
+import { errorDeApi, repartirErrores } from '@/compartido/api/errores';
+import { CAMPOS_SALIDA } from './esquemaSalida';
 import { PantallaSalidaNueva } from './pantallaSalidaNueva';
 
 // Cliente igual al de la app, con URL absoluta y el fetch simulado de cada prueba
@@ -48,6 +49,9 @@ const MASCARILLA: FormatoParaPack = {
   nombreFormato: '500 g',
   producto: { id: 4, nombre: 'Mascarilla nutritiva' },
   canalVenta: 'general',
+  stockTotal: 0,
+  precioMinoristaNeto: null,
+  precioMinoristaConIva: null,
 };
 
 const STOCK: StockFormato = {
@@ -149,8 +153,38 @@ const simularBackend = (rutas: Record<string, Manejador> = {}) => {
   return { pedidas };
 };
 
-const error = (status: number, message: string | string[]) =>
-  Response.json({ statusCode: status, message }, { status });
+const error = (
+  status: number,
+  message: string | string[],
+  /** Campos a los que pertenece el error (`errores` del backend, SCRUM-150). */
+  campos: string[] = [],
+) =>
+  Response.json(
+    {
+      statusCode: status,
+      message,
+      ...(campos.length > 0 && {
+        errores: campos.flatMap((campo) =>
+          [message].flat().map((mensaje) => ({ campo, mensaje })),
+        ),
+      }),
+    },
+    { status },
+  );
+
+/** A qué campo del formulario llega un error del backend con ese campo (o sin campo). */
+const campoDe = (campo: string | null, mensaje: string) =>
+  repartirErrores(
+    errorDeApi(
+      {
+        statusCode: 400,
+        message: mensaje,
+        errores: campo ? [{ campo, mensaje }] : [],
+      },
+      new Response(null, { status: 400 }),
+    ),
+    CAMPOS_SALIDA,
+  ).porCampo[0]?.[0] ?? null;
 
 const mostrar = (pantalla: ReactNode) =>
   render(
@@ -348,6 +382,7 @@ describe('Registrar salida (SCRUM-112)', () => {
         error(
           400,
           'No hay stock suficiente en esa ubicación: hay 3 y la salida es de 5.',
+          ['cantidad'],
         ),
     });
     const usuario = userEvent.setup();
@@ -388,18 +423,16 @@ describe('Registrar salida (SCRUM-112)', () => {
     expect(panel.queryByText(/Prisma/)).not.toBeInTheDocument();
   });
 
-  it('E11-H3 FE · CA2 errores: reconoce a qué campo apunta cada mensaje del backend', () => {
+  it('E11-H3 FE · CA2 errores: cada campo que indica el backend va a su campo del formulario', () => {
     expect(
-      campoDelError('La cantidad debe ser un número entero positivo.'),
+      campoDe('cantidad', 'La cantidad debe ser un número entero positivo.'),
     ).toBe('cantidad');
-    expect(campoDelError('La ubicación no existe.')).toBe('ubicacionId');
-    expect(campoDelError('El formato no existe.')).toBe('formato');
-    expect(
-      campoDelError(
-        'El tipo de salida es obligatorio y debe ser uno de estos: merma_vencimiento.',
-      ),
-    ).toBe('tipo');
-    expect(campoDelError('Debes iniciar sesión.')).toBeNull();
+    expect(campoDe('ubicacionId', 'La ubicación no existe.')).toBe(
+      'ubicacionId',
+    );
+    expect(campoDe('formatoId', 'El formato no existe.')).toBe('formato');
+    expect(campoDe('tipo', 'El tipo de salida es obligatorio.')).toBe('tipo');
+    expect(campoDe(null, 'Debes iniciar sesión.')).toBeNull();
   });
 
   it('E11-H3 FE · CA1 celular: la pantalla propia registra la salida y vuelve a Inventario', async () => {
@@ -641,6 +674,7 @@ describe('Ajustes y transferencias (SCRUM-113)', () => {
         error(
           400,
           'No hay stock suficiente en esa ubicación: hay 3 y la transferencia es de 5.',
+          ['cantidad'],
         ),
     });
     const usuario = userEvent.setup();
@@ -667,6 +701,7 @@ describe('Ajustes y transferencias (SCRUM-113)', () => {
         error(
           400,
           'No hay stock suficiente en esa ubicación: hay 3 y el ajuste es de 5.',
+          ['cantidad'],
         ),
     });
     const usuario = userEvent.setup();
@@ -687,29 +722,19 @@ describe('Ajustes y transferencias (SCRUM-113)', () => {
     );
   });
 
-  it('E11-H4 FE · CA3 errores: reconoce a qué campo apunta cada mensaje del ajuste y la transferencia', () => {
+  it('E11-H4 FE · CA3 errores: en la transferencia, el origen va a la ubicación y el destino a su campo', () => {
     expect(
-      campoDelError(
+      campoDe(
+        'ubicacionDestinoId',
         'La ubicación de destino debe ser distinta de la de origen.',
       ),
     ).toBe('destinoId');
-    expect(campoDelError('La ubicación de origen es obligatoria.')).toBe(
-      'ubicacionId',
-    );
     expect(
-      campoDelError(
-        'La ubicación o su bodega está desactivada: elige otra ubicación.',
-        'transferencia',
-      ),
-    ).toBe('destinoId');
-    expect(campoDelError('El motivo del ajuste es obligatorio.')).toBe(
+      campoDe('ubicacionOrigenId', 'La ubicación de origen es obligatoria.'),
+    ).toBe('ubicacionId');
+    expect(campoDe('observacion', 'El motivo del ajuste es obligatorio.')).toBe(
       'observacion',
     );
-    expect(
-      campoDelError(
-        'El stock de ese formato en la ubicación de destino superaría el máximo permitido.',
-      ),
-    ).toBe('cantidad');
   });
 
   it('E11-H4 FE · CA2 celular: la pantalla propia registra la transferencia y vuelve a Inventario', async () => {

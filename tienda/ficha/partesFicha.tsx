@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { formatearPesos } from '@/compartido/formato/moneda';
 import { Skeleton } from '@/compartido/ui/skeleton';
+import { DetallesFicha } from './detallesFicha';
 
 /**
  * Página de la ficha (Figma › 03 Ficha 2007:686): galería a la izquierda e información a la
@@ -11,11 +12,13 @@ export const DisenoFicha = ({
   galeria,
   children,
   descripcion,
+  ingredientes,
 }: {
   migas: ReactNode;
   galeria: ReactNode;
   children: ReactNode;
   descripcion: string;
+  ingredientes?: string | null;
 }) => (
   <main className="mx-auto max-w-[1440px] px-4 pt-4 pb-12 md:px-16 md:pt-6 md:pb-16">
     <div className="hidden md:block">{migas}</div>
@@ -23,24 +26,7 @@ export const DisenoFicha = ({
       {galeria}
       <div className="flex min-w-0 flex-col gap-4 md:gap-6">{children}</div>
     </div>
-    {descripcion.trim() && (
-      <section
-        aria-labelledby="titulo-descripcion"
-        className="mt-8 border-t pt-4 md:mt-16 md:border-t-0 md:pt-0"
-      >
-        <h2
-          id="titulo-descripcion"
-          className="texto-cuerpo-fuerte text-texto-principal md:border-b"
-        >
-          <span className="md:inline-block md:border-b-2 md:border-marca-profundo md:pb-3">
-            Descripción
-          </span>
-        </h2>
-        <p className="mt-3 max-w-[720px] texto-pequeno whitespace-pre-line text-texto-secundario md:mt-6 md:texto-cuerpo md:text-texto-principal">
-          {descripcion}
-        </p>
-      </section>
-    )}
+    <DetallesFicha descripcion={descripcion} ingredientes={ingredientes} />
   </main>
 );
 

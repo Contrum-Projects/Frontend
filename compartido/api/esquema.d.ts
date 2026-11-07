@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 75.
+ * Versión de la API: 0.1.0. Rutas: 103.
  */
 
 export interface paths {
@@ -365,6 +365,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/cuentas/{codigoPublico}/rol": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Bajar el rol de una cuenta (E13-H3)
+         * @description Un administrador pasa a vendedor o bodeguero; un profesional, a cliente (con motivo, que se le envía por correo). Rige de inmediato: cierra todas las sesiones de la cuenta. Los pedidos ya creados conservan sus montos.
+         */
+        patch: operations["CambioRolController_cambiar"];
+        trace?: never;
+    };
     "/api/inventario/proveedores": {
         parameters: {
             query?: never;
@@ -396,7 +416,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Listar las entradas de inventario (E11-H2)
+         * @description De la recepción más reciente a la más antigua (el mismo día, la registrada después), con proveedor, documento, ubicación de destino, formatos, unidades, costo neto total y quién la registró. Filtra por bodega de destino, por razón social o número de documento y por fecha de recepción.
+         */
+        get: operations["EntradasController_listar"];
         put?: never;
         /**
          * Registrar una entrada de inventario (E11-H2)
@@ -469,6 +493,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/inventario/stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar el stock por formato (E11-H5)
+         * @description Un formato por fila (también los desactivados y los que nunca se recibieron, con stock 0), por producto y formato. Con `bodegaId`, solo los formatos con unidades en esa bodega, y sus ubicaciones y stock son los de ella. `bajoMinimo` sigue la regla del aviso (E11-H6): el stock total en todas las ubicaciones bajo un mínimo mayor que 0; `stockMinimo: 0` es «sin mínimo». Lleva el costo unitario neto y el proveedor de la entrada más reciente, o `null` si nunca se recibió.
+         */
+        get: operations["StockController_listar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/inventario/stock/bajo-minimo": {
         parameters: {
             query?: never;
@@ -501,6 +545,46 @@ export interface paths {
          * @description Devuelve las unidades del formato en cada ubicación que tiene stock (también las desactivadas, marcadas como inactivas), el total y el proveedor y costo unitario neto de su entrada de recepción más reciente. Si el formato nunca se ha recibido, el total es 0 y la última entrada es nula.
          */
         get: operations["StockController_consultar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inventario/ubicaciones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar las ubicaciones activas (E11)
+         * @description Ubicaciones activas de bodegas activas, ordenadas por bodega y código: el destino de una entrada, un ajuste o una transferencia, y el filtro por bodega del inventario.
+         */
+        get: operations["UbicacionesController_listar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inventario/movimientos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar los movimientos de inventario (E11-H5)
+         * @description Del más reciente al más antiguo: entradas, ventas, mermas, consumo, ajustes, transferencias y reingresos, con su referencia y quién los registró (`null` en ventas y reingresos, que registra el sistema). Filtra por bodega (origen o destino), grupo, período en hora de Chile y búsqueda.
+         */
+        get: operations["MovimientosController_listar"];
         put?: never;
         post?: never;
         delete?: never;
@@ -586,7 +670,7 @@ export interface paths {
         };
         /**
          * Listar productos
-         * @description Por defecto solo los activos, ordenados por nombre y paginados. Se puede filtrar por texto, categoría y marca.
+         * @description Por defecto solo los activos, ordenados por nombre y paginados. Busca en el nombre, la marca o el SKU y filtra por categoría, marca, canal, stock bajo e inactivos. Cada fila trae su foto, formatos activos, precio desde (con IVA, del canal del producto), stock total y si está bajo el mínimo; `conteos` son los números de los chips.
          */
         get: operations["ProductosController_listar"];
         put?: never;
@@ -666,6 +750,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/catalogo/formatos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Buscar formatos de venta (E3-H6 y registro de inventario)
+         * @description Solo formatos activos de productos activos, nunca packs, por nombre del producto, nombre del formato o SKU, ordenados por producto y formato. Lleva el stock en ubicaciones activas y el precio minorista (neto y con IVA). La usan quienes gestionan el catálogo (armar packs) y quienes registran inventario (entradas, salidas, ajustes y transferencias).
+         */
+        get: operations["FormatosController_buscar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/catalogo/formatos/{id}": {
         parameters: {
             query?: never;
@@ -705,7 +809,7 @@ export interface paths {
         put: operations["ImagenesController_ordenar"];
         /**
          * Subir una imagen a un artículo (E3-H3)
-         * @description Recibe una imagen JPEG, PNG o WebP de hasta 5 MB en el campo `imagen` (el tipo se reconoce por el contenido, no por la extensión). Queda al final del orden; la primera del artículo queda como principal. Un artículo tiene hasta 10 imágenes. El id del artículo es el del formato. Devuelve todas las imágenes del artículo.
+         * @description Recibe una imagen JPEG, PNG o WebP de hasta 4 MB en el campo `imagen` (el tipo se reconoce por el contenido, no por la extensión). Queda al final del orden; la primera del artículo queda como principal. Un artículo tiene hasta 10 imágenes. El id del artículo es el del formato. Devuelve todas las imágenes del artículo.
          */
         post: operations["ImagenesController_subir"];
         delete?: never;
@@ -814,7 +918,7 @@ export interface paths {
         put?: never;
         /**
          * Sugerir la descripción y los ingredientes desde la foto del reverso (E4-H1)
-         * @description Recibe la foto del reverso del producto (JPEG, PNG o WebP de hasta 5 MB) en el campo `imagen` y devuelve una descripción de venta sugerida y los ingredientes transcritos, para revisarlos antes de guardarlos. No guarda la foto ni la sugerencia. `ingredientes` es `null` si la foto no los muestra. Hasta 15 por minuto por cuenta.
+         * @description Recibe la foto del reverso del producto (JPEG, PNG o WebP de hasta 4 MB) en el campo `imagen` y devuelve una descripción de venta sugerida y los ingredientes en español (con el nombre común de cada uno si el envase usa INCI), para revisarlos antes de guardarlos. No guarda la foto ni la sugerencia. `ingredientes` es `null` si la foto no los muestra. Hasta 15 por minuto por cuenta.
          */
         post: operations["SugerenciaDescripcionController_sugerir"];
         delete?: never;
@@ -832,9 +936,29 @@ export interface paths {
         };
         /**
          * Explorar, buscar y filtrar productos (E2-H1, E2-H2 y E2-H4)
-         * @description Productos activos y a la venta, ordenados por nombre y paginados, con imagen, nombre y precio minorista con IVA. Con `categoriaId` incluye los de sus subcategorías. Con `buscar`, cada palabra debe estar en el nombre, la marca o la categoría (propia o superior), sin distinguir mayúsculas. Búsqueda y filtros se combinan; sin coincidencias devuelve una lista vacía. La sesión es opcional: con el token de una cuenta profesional se incluyen los productos exclusivos y cada producto trae además `precioMayorista` con IVA y `exclusivo` (`precio` es `null` en los exclusivos). Visitantes, clientes y personal ven solo los de venta general, sin precio mayorista.
+         * @description Productos activos y a la venta, ordenados por nombre y paginados, con imagen, nombre y precio minorista con IVA. `categoriaId` y `marcaId` se repiten para marcar varias: dentro de cada grupo basta una y entre grupos se exigen las dos; cada categoría incluye sus subcategorías. Con `buscar`, cada palabra debe estar en el nombre, la marca o la categoría (propia o superior), sin distinguir mayúsculas. Búsqueda y filtros se combinan; sin coincidencias devuelve una lista vacía. La sesión es opcional: con el token de una cuenta profesional se incluyen los productos exclusivos y cada producto trae además `precioMayorista` con IVA y `exclusivo` (`precio` es `null` en los exclusivos). Visitantes, clientes y personal ven solo los de venta general, sin precio mayorista.
          */
         get: operations["TiendaController_listarProductos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tienda/facetas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Conteos de los filtros de la tienda (E2-H2)
+         * @description Cuántos productos hay en cada categoría (con sus subcategorías) y en cada marca, con la misma búsqueda, filtros y visibilidad que `GET /tienda/productos`. Cada grupo cuenta con la búsqueda y los filtros del otro grupo, no con los suyos, así marcar una categoría no deja en 0 a las demás. Solo trae las opciones con productos.
+         */
+        get: operations["TiendaController_facetas"];
         put?: never;
         post?: never;
         delete?: never;
@@ -958,7 +1082,7 @@ export interface paths {
         put?: never;
         /**
          * Registrar la factura emitida en el SII (E9-H3)
-         * @description Recibe el PDF de la factura en el campo `archivo` (hasta 5 MB, reconocido por su contenido), el `folio` y, opcionalmente, la `fechaEmision` (AAAA-MM-DD, no futura; por defecto hoy). Guarda el documento con los datos del receptor y los montos del pedido tal como están al registrarlo. El pedido debe estar pagado y haber pedido factura; tiene una sola factura y el folio no puede repetirse. El archivo es privado: no se devuelve en la respuesta.
+         * @description Recibe el PDF de la factura en el campo `archivo` (hasta 4 MB, reconocido por su contenido), el `folio` y, opcionalmente, la `fechaEmision` (AAAA-MM-DD, no futura; por defecto hoy). Guarda el documento con los datos del receptor y los montos del pedido tal como están al registrarlo. El pedido debe estar pagado y haber pedido factura; tiene una sola factura y el folio no puede repetirse. El archivo es privado: no se devuelve en la respuesta.
          */
         post: operations["RegistrarFacturaController_registrar"];
         delete?: never;
@@ -1018,7 +1142,7 @@ export interface paths {
         put?: never;
         /**
          * Adjuntar los documentos de mi solicitud de verificación (E10-H2)
-         * @description Para quien no pasó la verificación automática: la solicitud está `pendiente` y `requiereDocumentos` es `true`. Recibe de 1 a 5 documentos en el campo `archivos` (PDF, JPG o PNG, hasta 5 MB cada uno, reconocidos por su contenido) y, en el campo `tipos`, el tipo de cada uno en el mismo orden (`titulo`, `certificado` u `otro`; un certificado de curso vale como `certificado`). La solicitud pasa a `revision_manual`, a la espera del personal. Los archivos se guardan privados y no se entregan por esta API.
+         * @description Para quien no pasó la verificación automática: la solicitud está `pendiente` y `requiereDocumentos` es `true`. Recibe de 1 a 5 documentos en el campo `archivos` (PDF, JPG o PNG, hasta 4 MB cada uno, reconocidos por su contenido) y, en el campo `tipos`, el tipo de cada uno en el mismo orden (`titulo`, `certificado` u `otro`; un certificado de curso vale como `certificado`). La solicitud pasa a `revision_manual`, a la espera del personal. Los archivos se guardan privados y no se entregan por esta API.
          */
         post: operations["SolicitudVerificacionController_adjuntarDocumentos"];
         delete?: never;
@@ -1312,6 +1436,71 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/marketing/cupones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar los cupones (SCRUM-150)
+         * @description Del más nuevo al más antiguo, con sus usos y lo descontado.
+         */
+        get: operations["CuponesController_listar"];
+        put?: never;
+        /**
+         * Crear un cupón (SCRUM-150)
+         * @description Porcentaje (con tope opcional) o monto fijo, sobre todo el pedido, ciertos formatos o packs, o categorías y marcas. Con `campanaId`, solo lo usan las cuentas a las que se envió esa campaña.
+         */
+        post: operations["CuponesController_crear"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/cupones/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ver un cupón (SCRUM-150) */
+        get: operations["CuponesController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Editar o desactivar un cupón (SCRUM-150)
+         * @description Cada campo que llega reemplaza al anterior. Los pedidos que ya lo usaron conservan su descuento.
+         */
+        patch: operations["CuponesController_actualizar"];
+        trace?: never;
+    };
+    "/api/carrito/cupon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ver cuánto descuenta un cupón en mi carrito (SCRUM-150)
+         * @description Revisa el código con las mismas reglas que el pedido (vigencia, campaña, usos, rol, compra mínima y lo que cubre) y devuelve el descuento con IVA. No reserva el cupón: se aplica al crear el pedido con `codigoCupon`.
+         */
+        post: operations["CuponCarritoController_validar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/pedidos": {
         parameters: {
             query?: never;
@@ -1370,6 +1559,86 @@ export interface paths {
          * @description Deja el pedido cancelado, devuelve su stock a las ubicaciones de donde salió y registra el cambio en el historial con quién lo hizo y el comentario opcional, todo en una transacción. Solo se puede cancelar un pedido pendiente de pago.
          */
         post: operations["CancelarPedidoController_cancelar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/gestion/pedidos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar los pedidos del panel (E8-H2)
+         * @description Del más reciente al más antiguo, paginados, del `grupo` pedido (por defecto `por_preparar`: pagados y en preparación; `listos_para_retiro`, `despachados`, `pendientes_pago` y `todos`) y con la búsqueda `q`. Cada pedido trae código, fecha, cliente (razón social si pidió factura), entrega, estado, total con IVA y unidades. `grupos` da los chips en orden con su `cantidad` (`null` en los que no muestran conteo) y `grupo`, el aplicado.
+         */
+        get: operations["GestionPedidosController_listar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/gestion/pedidos/{codigoPedido}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver un pedido desde el panel (E8-H2)
+         * @description El detalle del pedido (artículos, montos, entrega, documento) más el cliente (nombre, correo y teléfono), el historial del primero al último con su comentario y quién lo hizo («Sistema», «Cliente» o el nombre del personal), los `cambiosPermitidos` desde el estado actual (con su sentido, si piden código de seguimiento y si avisan al cliente) y `sePuedeCancelar` (solo pendiente de pago).
+         */
+        get: operations["GestionPedidosController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/gestion/facturas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar las facturas del panel (E9-H3)
+         * @description Los pedidos pagados (no cancelados) que pidieron factura: primero los por emitir, del pedido más antiguo al más nuevo, y después los emitidos, de la emisión más reciente a la más antigua. Cada uno con razón social, RUT, total con IVA, `estado` (`por_emitir` o `emitida`) y folio. `porEmitir` es el conteo de la pestaña.
+         */
+        get: operations["GestionFacturasController_listar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/gestion/facturas/{codigoPedido}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver los datos para emitir la factura de un pedido (E9-H3)
+         * @description El receptor (razón social, RUT, giro, dirección y comuna), los montos, la tasa de IVA y, si ya se emitió, folio y fecha. Por emitir, los datos de facturación del pedido; emitida, los que copió la factura.
+         */
+        get: operations["GestionFacturasController_obtener"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1476,6 +1745,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reportes/indicadores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Indicadores de los objetivos del proyecto (E14-H1)
+         * @description Entre las dos fechas, ambas incluidas y en hora de Chile, cada objetivo con su porcentaje y su meta. **OE1** (meta 30 %): de las cuentas verificadas como profesionales en el período, cuántas compraron (pedido pagado) desde su aprobación. **OE2** (meta 70 %): de las solicitudes de verificación presentadas en el período, cuántas se resolvieron en 48 horas o menos; las que siguen sin resolver y aún están dentro de las 48 horas no cuentan. **OE3** (meta 80 %): de los productos creados en el período, cuántos tienen la descripción de la IA, aceptada o corregida. Sin datos, `porcentaje` es `null` y `sinDatos` es `true`.
+         */
+        get: operations["ReporteIndicadoresController_indicadores"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reportes/carritos-abandonados": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Carritos abandonados y recuperados por mes (E14-H3)
+         * @description Por cada mes entre los dos indicados, ambos incluidos y en hora de Chile: cuántos carritos se abandonaron (una serie de recordatorios cuenta una vez, en el mes de su primer recordatorio) y cuántos de ellos terminaron en una compra pagada de la misma cuenta dentro de 7 días desde el primer recordatorio y antes del abandono siguiente. Los meses sin abandonos salen en cero.
+         */
+        get: operations["ReporteCarritosController_carritosAbandonados"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reportes/campanas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resultados de las campañas de un período (E14-H3, SCRUM-150)
+         * @description Las campañas enviadas entre `desde` y `hasta` (ambos incluidos, hora de Chile) y una fila por mes con el saludo de cumpleaños, las más recientes primero. Los porcentajes son sobre los correos enviados.
+         */
+        get: operations["ReporteCampanasController_periodo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reportes/campanas/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resultado de una campaña (E14-H3)
+         * @description Correos de la campaña: enviados, abiertos, con clic, rebotados, cancelados y fallidos, más los pendientes y el total. Sirve para las campañas de envío único y para el saludo de cumpleaños.
+         */
+        get: operations["ReporteCampanasController_resultado"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/territorio/regiones": {
         parameters: {
             query?: never;
@@ -1547,6 +1896,238 @@ export interface paths {
         put?: never;
         /** Confirmar la suscripción con el token del enlace (E12-H1) */
         post: operations["SuscripcionesController_confirmar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/bajas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dejar de recibir publicidad con el enlace del correo (E12-H2)
+         * @description Da de baja la dirección del enlace, sea de una cuenta o de un suscriptor. Responde lo mismo si ya estaba de baja.
+         */
+        post: operations["BajasController_darDeBaja"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cuentas/yo/consentimiento-marketing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Elegir si recibo ofertas por correo (E12-H2)
+         * @description Activarlo guarda la fecha del consentimiento; desactivarlo la conserva.
+         */
+        put: operations["ConsentimientoController_actualizar"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/campanas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar las campañas de correo (E12-H3)
+         * @description De la más nueva a la más antigua, con su estado de envío, a cuántas direcciones va o fue y su apertura, más los contadores de contactos con consentimiento.
+         */
+        get: operations["CampanasController_listar"];
+        put?: never;
+        /**
+         * Redactar una campaña de correo (E12-H3)
+         * @description Asunto, cuerpo en texto plano y segmento. Queda como borrador hasta confirmar el envío.
+         */
+        post: operations["CampanasController_crear"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/campanas/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver una campaña de correo (E12-H3)
+         * @description Incluye el segmento usado y cuántos correos quedaron pendientes, enviados, fallidos o cancelados.
+         */
+        get: operations["CampanasController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Editar el borrador de una campaña (E12-H3)
+         * @description Cambia el asunto, el cuerpo o el segmento. Una campaña ya enviada no se edita.
+         */
+        patch: operations["CampanasController_actualizar"];
+        trace?: never;
+    };
+    "/api/marketing/campanas/vista-previa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Vista previa en vivo de un correo de campaña (SCRUM-150)
+         * @description Arma el correo con el asunto y el cuerpo que se están escribiendo, sin guardarlos. Los marcadores ({nombre}, {apellido}, {nombre_completo}, {enlace_tienda}) se completan con los datos de quien la pide. No cuenta destinatarios ni entrega la `confirmacion`: para enviar se guarda el borrador y se pide `POST /:id/vista-previa`.
+         */
+        post: operations["CampanasController_vistaPreviaEnVivo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/campanas/{id}/vista-previa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Vista previa de una campaña (E12-H3)
+         * @description Devuelve el correo (HTML y texto), cuántas direcciones lo recibirían hoy y la `confirmacion` que exige el envío.
+         */
+        post: operations["CampanasController_vistaPrevia"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/campanas/{id}/envio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirmar el envío de una campaña (E12-H3)
+         * @description Encola la campaña para las direcciones del segmento que aceptan publicidad, una vez cada una, y guarda el segmento usado. Sale una sola vez.
+         */
+        post: operations["CampanasController_enviar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/cumpleanos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver el saludo de cumpleaños (E12-H5)
+         * @description Si está activo, asunto, saludo y oferta, con las cuentas programadas este mes y la apertura del mes anterior. Si nunca se configuró, devuelve el saludo por defecto (activo, sin oferta), con `configurado: false`.
+         */
+        get: operations["CumpleanosController_obtener"];
+        /**
+         * Configurar el saludo de cumpleaños y su oferta (E12-H5)
+         * @description Reemplaza todo: si está activo, el asunto, el saludo y la oferta. Apagado, no sale ningún saludo. Los que salgan desde ahora llevan la oferta si está activa.
+         */
+        put: operations["CumpleanosController_configurar"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/seguimiento/apertura/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Registrar la apertura de un correo publicitario (E12-H6)
+         * @description La imagen invisible del correo. Guarda la fecha de la primera apertura; las siguientes no la cambian. Siempre responde la imagen, aunque el enlace no sea válido.
+         */
+        get: operations["SeguimientoController_apertura"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/seguimiento/clic/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Registrar el clic en un enlace de un correo publicitario (E12-H6)
+         * @description Guarda la fecha del primer clic (y la de apertura, si no estaba) y redirige al destino, que debe ser de la tienda. Un destino de otro sitio lleva a la portada de la tienda; un enlace no válido redirige sin registrar.
+         */
+        get: operations["SeguimientoController_clic"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/marketing/rebotes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Recibir un aviso de rebote de Resend (E12-H6)
+         * @description Webhook de Resend con el evento `email.bounced`; valida la firma (`svix-id`, `svix-timestamp`, `svix-signature`). Marca el correo como `rebotada` y deja su dirección sin publicidad, como la baja. Otros eventos se ignoran. El mismo aviso otra vez no cambia nada.
+         */
+        post: operations["RebotesController_recibir"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1711,6 +2292,19 @@ export interface components {
             /** @description Debe ser igual a la contraseña. */
             confirmacionContrasena: string;
         };
+        CambiarRolDto: {
+            /**
+             * @description Un administrador pasa a vendedor o bodeguero; un profesional, a cliente.
+             * @example vendedor
+             * @enum {string}
+             */
+            rol: "vendedor" | "bodeguero" | "cliente";
+            /**
+             * @description Obligatorio al pasar de profesional a cliente: se le envía por correo. Opcional para el personal.
+             * @example Dejó de ejercer como peluquera según nos informó.
+             */
+            motivo?: string | null;
+        };
         CrearProveedorDto: {
             /**
              * @description Con o sin puntos y guion. Se guarda como 76086428-5.
@@ -1725,6 +2319,62 @@ export interface components {
             telefono?: Record<string, never>;
             /** @example ventas@distribuidora.cl */
             email?: Record<string, never>;
+        };
+        ProveedorListadoDto: {
+            /** @example 1 */
+            id: number;
+            /** @example Distribuidora Capilar SpA */
+            razonSocial: string;
+        };
+        UbicacionResumenDto: {
+            /** @example 3 */
+            id: number;
+            /** @example A-01 */
+            codigo: string;
+            /**
+             * @description Nombre de la bodega.
+             * @example Bodega principal
+             */
+            bodega: string;
+        };
+        RegistradoPorEntradaDto: {
+            /** @example Camila Rojas */
+            nombre: string;
+        };
+        EntradaListadoDto: {
+            /** @example 12 */
+            id: number;
+            /**
+             * Format: date
+             * @example 2026-11-06
+             */
+            fechaRecepcion: string;
+            /** @enum {string} */
+            tipoDocumento: "factura" | "guia_despacho";
+            /** @example F-1234 */
+            numeroDocumento: string;
+            proveedor: components["schemas"]["ProveedorListadoDto"];
+            /** @description La ubicación de destino de la entrada. */
+            ubicacion: components["schemas"]["UbicacionResumenDto"];
+            /**
+             * @description Formatos distintos recibidos.
+             * @example 2
+             */
+            cantidadFormatos: number;
+            /** @example 30 */
+            unidades: number;
+            /** @example 95772 */
+            costoNetoTotal: number;
+            registradoPor: components["schemas"]["RegistradoPorEntradaDto"];
+        };
+        ListadoEntradasDto: {
+            items: components["schemas"]["EntradaListadoDto"][];
+            /** @example 1 */
+            total: number;
+            /** @example 1 */
+            pagina: number;
+            /** @example 20 */
+            limite: number;
         };
         DetalleEntradaDto: {
             /**
@@ -1769,9 +2419,62 @@ export interface components {
              */
             ubicacionId: number;
             /** @example Llegó una caja abierta */
-            observacion?: Record<string, never> | null;
+            observacion?: string | null;
             /** @description Formatos recibidos; cada uno una sola vez. */
             detalles: components["schemas"]["DetalleEntradaDto"][];
+        };
+        ProveedorEntradaRegistradaDto: {
+            /** @example 1 */
+            id: number;
+            /** @example 76086430-7 */
+            rut: string;
+            /** @example Distribuidora Capilar SpA */
+            razonSocial: string;
+        };
+        DetalleEntradaRegistradoDto: {
+            /** @example 21 */
+            formatoId: number;
+            /** @example 24 */
+            cantidad: number;
+            /** @example 1990.5 */
+            costoUnitarioNeto: number;
+            /**
+             * @description Cantidad por costo unitario neto.
+             * @example 47772
+             */
+            subtotalNeto: number;
+            /**
+             * @description El movimiento de entrada del formato.
+             * @example 90
+             */
+            movimientoId: number;
+        };
+        EntradaRegistradaDto: {
+            /** @example 12 */
+            id: number;
+            proveedor: components["schemas"]["ProveedorEntradaRegistradaDto"];
+            /**
+             * Format: date
+             * @example 2026-11-06
+             */
+            fechaRecepcion: string;
+            /** @enum {string} */
+            tipoDocumento: "factura" | "guia_despacho";
+            /** @example F-1234 */
+            numeroDocumento: string;
+            observacion: string | null;
+            ubicacion: components["schemas"]["UbicacionResumenDto"];
+            detalles: components["schemas"]["DetalleEntradaRegistradoDto"][];
+            /**
+             * @description Unidades recibidas en total.
+             * @example 30
+             */
+            unidades: number;
+            /**
+             * @description Suma de los subtotales netos.
+             * @example 95772
+             */
+            costoNetoTotal: number;
         };
         CrearSalidaDto: {
             /**
@@ -1792,7 +2495,7 @@ export interface components {
             /** @example 2 */
             cantidad: number;
             /** @example Envase roto al reponer */
-            observacion?: Record<string, never> | null;
+            observacion?: string | null;
         };
         CrearAjusteDto: {
             /**
@@ -1835,7 +2538,131 @@ export interface components {
             /** @example 5 */
             cantidad: number;
             /** @example Reposición de la góndola */
-            observacion?: Record<string, never> | null;
+            observacion?: string | null;
+        };
+        UbicacionConStockDto: {
+            /** @example 3 */
+            id: number;
+            /** @example A-01 */
+            codigo: string;
+        };
+        ProveedorDeEntradaDto: {
+            /** @example 1 */
+            id: number;
+            /** @example Distribuidora Capilar SpA */
+            razonSocial: string;
+        };
+        UltimaEntradaListadoDto: {
+            /**
+             * @description Costo unitario neto.
+             * @example 4200.5
+             */
+            costoUnitarioNeto: number;
+            proveedor: components["schemas"]["ProveedorDeEntradaDto"];
+        };
+        StockListadoDto: {
+            /** @example 21 */
+            formatoId: number;
+            /** @example SH-REP-300 */
+            sku: string;
+            /** @example Shampoo reparador */
+            producto: string;
+            /** @example 300 ml */
+            nombreFormato: string;
+            /** @description URL de la foto principal del formato; `null` si no tiene. */
+            imagen: string | null;
+            /** @description Ubicaciones con unidades (de la bodega elegida, o de todas), por código. */
+            ubicaciones: components["schemas"]["UbicacionConStockDto"][];
+            /**
+             * @description Unidades en la bodega elegida, o en todas.
+             * @example 12
+             */
+            stock: number;
+            /**
+             * @description 0: el formato no tiene mínimo.
+             * @example 5
+             */
+            stockMinimo: number;
+            /** @description El stock total del formato (todas sus ubicaciones) está bajo su mínimo: la misma regla del aviso de E11-H6. */
+            bajoMinimo: boolean;
+            /** @description Costo y proveedor de la entrada más reciente; `null` si nunca se recibió. */
+            ultimaEntrada: components["schemas"]["UltimaEntradaListadoDto"] | null;
+        };
+        ListadoStockDto: {
+            items: components["schemas"]["StockListadoDto"][];
+            /** @example 1 */
+            total: number;
+            /** @example 1 */
+            pagina: number;
+            /** @example 20 */
+            limite: number;
+            /**
+             * @description Formatos bajo el mínimo con la misma bodega y búsqueda (sin el filtro `bajoMinimo`).
+             * @example 2
+             */
+            totalBajoMinimo: number;
+        };
+        BodegaDeUbicacionDto: {
+            /** @example 1 */
+            id: number;
+            /** @example Bodega principal */
+            nombre: string;
+        };
+        UbicacionInventarioDto: {
+            /** @example 3 */
+            id: number;
+            /** @example A-01 */
+            codigo: string;
+            bodega: components["schemas"]["BodegaDeUbicacionDto"];
+        };
+        FormatoDelMovimientoDto: {
+            /** @example 21 */
+            id: number;
+            /** @example Shampoo reparador */
+            producto: string;
+            /** @example 300 ml */
+            nombreFormato: string;
+        };
+        RegistradoPorDto: {
+            /** @example Camila Rojas */
+            nombre: string;
+        };
+        MovimientoListadoDto: {
+            /** @example 90 */
+            id: number;
+            /**
+             * Format: date-time
+             * @example 2026-11-06T13:15:00.000Z
+             */
+            fechaHora: string;
+            /** @enum {string} */
+            tipo: "entrada" | "merma_vencimiento" | "merma_dano" | "consumo_peluqueria" | "ajuste_positivo" | "ajuste_negativo" | "transferencia" | "venta" | "reingreso";
+            formato: components["schemas"]["FormatoDelMovimientoDto"];
+            /**
+             * @description Con signo: positiva si suma stock y negativa si lo resta; la transferencia, positiva.
+             * @example -2
+             */
+            cantidad: number;
+            /** @description La ubicación del movimiento; en la transferencia, la de origen. */
+            ubicacion: components["schemas"]["UbicacionResumenDto"];
+            /** @description Solo en la transferencia: la ubicación de destino. */
+            destino: components["schemas"]["UbicacionResumenDto"] | null;
+            /**
+             * @description N.º de documento de la entrada, código del pedido (venta y reingreso) u observación.
+             * @example F-1234
+             */
+            referencia: string | null;
+            /** @description `null`: lo registró el sistema (ventas y reingresos de pedidos). */
+            registradoPor: components["schemas"]["RegistradoPorDto"] | null;
+        };
+        ListadoMovimientosDto: {
+            items: components["schemas"]["MovimientoListadoDto"][];
+            /** @example 1 */
+            total: number;
+            /** @example 1 */
+            pagina: number;
+            /** @example 20 */
+            limite: number;
         };
         CrearMarcaDto: {
             /** @example L'Oréal Professionnel */
@@ -1897,6 +2724,76 @@ export interface components {
              * @enum {string}
              */
             canalVenta: "general" | "profesional";
+        };
+        ReferenciaNombreDto: {
+            /** @example 2 */
+            id: number;
+            /** @example Kerastase */
+            nombre: string;
+        };
+        ProductoListadoPanelDto: {
+            /** @example 7 */
+            id: number;
+            /** @example 2 */
+            marcaId: number | null;
+            /** @example 3 */
+            categoriaId: number;
+            /** @example Shampoo reparador */
+            nombre: string;
+            descripcion: string;
+            /** @enum {string} */
+            origenDescripcion: "manual" | "ia" | "ia_editada";
+            ingredientes: string | null;
+            /** @enum {string} */
+            canalVenta: "general" | "profesional";
+            activo: boolean;
+            /** Format: date-time */
+            fechaCreacion: string;
+            marca: components["schemas"]["ReferenciaNombreDto"] | null;
+            categoria: components["schemas"]["ReferenciaNombreDto"];
+            /** @description URL de la foto principal del formato predeterminado, o `null`. */
+            imagen: string | null;
+            /**
+             * @description Formatos activos.
+             * @example 2
+             */
+            formatos: number;
+            /**
+             * @description Menor precio con IVA, en pesos enteros, entre sus formatos activos y del canal del producto (minorista si es general, mayorista si es exclusivo); `null` sin precios.
+             * @example 12990
+             */
+            precioDesde: number | null;
+            /**
+             * @description Unidades en ubicaciones activas de bodegas activas, sumando sus formatos.
+             * @example 24
+             */
+            stockTotal: number;
+            /** @description Algún formato está bajo su stock mínimo (regla del aviso de E11-H6: stock total en todas sus ubicaciones). */
+            stockBajo: boolean;
+        };
+        ConteosProductosPanelDto: {
+            /**
+             * @description Con los inactivos.
+             * @example 86
+             */
+            todos: number;
+            /** @example 12 */
+            exclusivos: number;
+            /** @example 4 */
+            stockBajo: number;
+            /** @example 3 */
+            inactivos: number;
+        };
+        ListadoProductosPanelDto: {
+            items: components["schemas"]["ProductoListadoPanelDto"][];
+            /** @example 86 */
+            total: number;
+            /** @example 1 */
+            pagina: number;
+            /** @example 20 */
+            limite: number;
+            /** @description Productos de cada chip con la búsqueda, la categoría y la marca aplicadas. */
+            conteos: components["schemas"]["ConteosProductosPanelDto"];
         };
         ActualizarProductoDto: {
             /** @example Shampoo reparador */
@@ -1969,6 +2866,50 @@ export interface components {
             largoCm: number;
             /** @description Con `true` queda como el único predeterminado del producto. El primer formato de un producto siempre lo es. */
             esPredeterminado?: boolean;
+        };
+        ProductoDelFormatoDto: {
+            /** @example 7 */
+            id: number;
+            /** @example Shampoo reparador */
+            nombre: string;
+        };
+        FormatoBuscadoDto: {
+            /** @example 21 */
+            formatoId: number;
+            /** @example SH-REP-300 */
+            sku: string;
+            /** @example 300 ml */
+            nombreFormato: string;
+            producto: components["schemas"]["ProductoDelFormatoDto"];
+            /**
+             * @description Canal del producto: un pack general no admite formatos exclusivos.
+             * @enum {string}
+             */
+            canalVenta: "general" | "profesional";
+            /**
+             * @description Unidades en ubicaciones activas de bodegas activas.
+             * @example 2
+             */
+            stockTotal: number;
+            /**
+             * @description Precio minorista neto; `null` si aún no tiene.
+             * @example 10916
+             */
+            precioMinoristaNeto: number | null;
+            /**
+             * @description Precio minorista con IVA en pesos enteros, como en la tienda.
+             * @example 12990
+             */
+            precioMinoristaConIva: number | null;
+        };
+        ListadoFormatosBuscadosDto: {
+            items: components["schemas"]["FormatoBuscadoDto"][];
+            /** @example 1 */
+            total: number;
+            /** @example 1 */
+            pagina: number;
+            /** @example 20 */
+            limite: number;
         };
         ActualizarFormatoDto: {
             /** @example SHA-REP-300 */
@@ -2092,6 +3033,21 @@ export interface components {
             /** @example Alza del proveedor */
             motivo: string;
         };
+        FacetaTiendaDto: {
+            /** @example 3305 */
+            id: number;
+            /**
+             * @description Productos con la búsqueda y los filtros.
+             * @example 24
+             */
+            total: number;
+        };
+        FacetasTiendaDto: {
+            /** @description Por categoría, con sus subcategorías; cuenta con la búsqueda y las marcas marcadas. */
+            categorias: components["schemas"]["FacetaTiendaDto"][];
+            /** @description Por marca; cuenta con la búsqueda y las categorías marcadas. */
+            marcas: components["schemas"]["FacetaTiendaDto"][];
+        };
         RechazarSolicitudDto: {
             /**
              * @description Obligatorio. Se recorta y queda guardado en la solicitud; quien solicitó lo ve.
@@ -2177,6 +3133,211 @@ export interface components {
              */
             codigoSeguimiento?: string;
         };
+        ElegidoCuponDto: {
+            /** @example 12 */
+            id: number;
+            /** @example L'Oréal */
+            nombre: string;
+        };
+        CampanaCuponDto: {
+            /** @example 12 */
+            id: number;
+            /** @example Novedades para tu salón */
+            asunto: string;
+            /** @description Si ya se envió. */
+            enviada: boolean;
+        };
+        CuponPanelDto: {
+            /** @example 3 */
+            id: number;
+            /** @example LOREAL20 */
+            codigo: string;
+            descripcion: string | null;
+            /** @enum {string} */
+            tipoDescuento: "porcentaje" | "monto_fijo";
+            /** @example 20 */
+            valor: number;
+            topeDescuento: number | null;
+            /** @enum {string} */
+            alcance: "pedido" | "articulos" | "categorias_marcas";
+            /** @description Formatos y packs, con su nombre. */
+            articulos: components["schemas"]["ElegidoCuponDto"][];
+            categorias: components["schemas"]["ElegidoCuponDto"][];
+            marcas: components["schemas"]["ElegidoCuponDto"][];
+            compraMinima: number | null;
+            /** Format: date-time */
+            fechaInicio: string | null;
+            /** Format: date-time */
+            fechaFin: string | null;
+            usosMaximos: number | null;
+            usosPorCuenta: number | null;
+            incluyeProfesionales: boolean;
+            activo: boolean;
+            campana: components["schemas"]["CampanaCuponDto"] | null;
+            /**
+             * @description Pedidos no cancelados que lo usaron.
+             * @example 18
+             */
+            usos: number;
+            /**
+             * @description Total descontado en esos pedidos, en pesos con IVA.
+             * @example 54000
+             */
+            descontado: number;
+            /** Format: date-time */
+            fechaCreacion: string;
+        };
+        CrearCuponDto: {
+            /**
+             * @description Letras, números y guiones; se guarda en mayúsculas. Es el que escribe el comprador.
+             * @example LOREAL20
+             */
+            codigo: string;
+            /**
+             * @description Lo que verá el comprador al aplicarlo.
+             * @example 20 % en productos L'Oréal
+             */
+            descripcion?: string | null;
+            /**
+             * @example porcentaje
+             * @enum {string}
+             */
+            tipoDescuento: "porcentaje" | "monto_fijo";
+            /**
+             * @description Porcentaje (1 a 100) o monto en pesos con IVA.
+             * @example 20
+             */
+            valor: number;
+            /**
+             * @description Tope en pesos del descuento; solo con porcentaje.
+             * @example 10000
+             */
+            topeDescuento?: number | null;
+            /**
+             * @example categorias_marcas
+             * @enum {string}
+             */
+            alcance: "pedido" | "articulos" | "categorias_marcas";
+            /** @description Formatos o packs (ids de artículo); con alcance `articulos`. */
+            articulos?: number[];
+            /** @description Categorías (con sus subcategorías); con alcance `categorias_marcas`. */
+            categorias?: number[];
+            /** @description Marcas; con alcance `categorias_marcas`. */
+            marcas?: number[];
+            /**
+             * @description Subtotal de productos con IVA mínimo para usarlo.
+             * @example 30000
+             */
+            compraMinima?: number | null;
+            /** Format: date-time */
+            fechaInicio?: string | null;
+            /** Format: date-time */
+            fechaFin?: string | null;
+            /**
+             * @description Usos en total (pedidos no cancelados).
+             * @example 100
+             */
+            usosMaximos?: number | null;
+            /**
+             * @description Usos por cuenta.
+             * @example 1
+             */
+            usosPorCuenta?: number | null;
+            /** @description También sobre el precio profesional (mayorista). */
+            incluyeProfesionales?: boolean;
+            /** @description Si se puede usar. Por omisión, sí. */
+            activo?: boolean;
+            /**
+             * @description Campaña de envío único: solo lo usan las cuentas a las que se les envió.
+             * @example 12
+             */
+            campanaId?: number | null;
+        };
+        ActualizarCuponDto: {
+            /**
+             * @description Letras, números y guiones; se guarda en mayúsculas. Es el que escribe el comprador.
+             * @example LOREAL20
+             */
+            codigo?: string;
+            /**
+             * @description Lo que verá el comprador al aplicarlo.
+             * @example 20 % en productos L'Oréal
+             */
+            descripcion?: string | null;
+            /**
+             * @example porcentaje
+             * @enum {string}
+             */
+            tipoDescuento?: "porcentaje" | "monto_fijo";
+            /**
+             * @description Porcentaje (1 a 100) o monto en pesos con IVA.
+             * @example 20
+             */
+            valor?: number;
+            /**
+             * @description Tope en pesos del descuento; solo con porcentaje.
+             * @example 10000
+             */
+            topeDescuento?: number | null;
+            /**
+             * @example categorias_marcas
+             * @enum {string}
+             */
+            alcance?: "pedido" | "articulos" | "categorias_marcas";
+            /** @description Formatos o packs (ids de artículo); con alcance `articulos`. */
+            articulos?: number[];
+            /** @description Categorías (con sus subcategorías); con alcance `categorias_marcas`. */
+            categorias?: number[];
+            /** @description Marcas; con alcance `categorias_marcas`. */
+            marcas?: number[];
+            /**
+             * @description Subtotal de productos con IVA mínimo para usarlo.
+             * @example 30000
+             */
+            compraMinima?: number | null;
+            /** Format: date-time */
+            fechaInicio?: string | null;
+            /** Format: date-time */
+            fechaFin?: string | null;
+            /**
+             * @description Usos en total (pedidos no cancelados).
+             * @example 100
+             */
+            usosMaximos?: number | null;
+            /**
+             * @description Usos por cuenta.
+             * @example 1
+             */
+            usosPorCuenta?: number | null;
+            /** @description También sobre el precio profesional (mayorista). */
+            incluyeProfesionales?: boolean;
+            /** @description Si se puede usar. Por omisión, sí. */
+            activo?: boolean;
+            /**
+             * @description Campaña de envío único: solo lo usan las cuentas a las que se les envió.
+             * @example 12
+             */
+            campanaId?: number | null;
+        };
+        ValidarCuponDto: {
+            /** @example LOREAL20 */
+            codigo: string;
+        };
+        CuponCarritoDto: {
+            /** @example LOREAL20 */
+            codigo: string;
+            descripcion: string | null;
+            /**
+             * @description En pesos con IVA.
+             * @example 4000
+             */
+            descuento: number;
+            /**
+             * @description Total de los productos del carrito con el descuento, con IVA y sin el despacho.
+             * @example 16000
+             */
+            totalProductos: number;
+        };
         CrearPedidoDto: {
             /**
              * @description UUID que el navegador genera para esta confirmación y repite si reintenta.
@@ -2203,6 +3364,11 @@ export interface components {
              * @example 3
              */
             datosFacturacionId?: number;
+            /**
+             * @description Código de un cupón (SCRUM-150): se valida y se aplica al crear el pedido. Sin mayúsculas ni espacios también vale.
+             * @example LOREAL20
+             */
+            codigoCupon?: string | null;
         };
         CancelarPedidoDto: {
             /**
@@ -2211,12 +3377,448 @@ export interface components {
              */
             comentario?: string;
         };
+        PedidoGestionDto: {
+            /** @example AB12CD34EF56 */
+            codigoPublico: string;
+            /** Format: date-time */
+            fechaPedido: string;
+            /**
+             * @description Razón social si pidió factura; si no, nombre y apellido de la cuenta.
+             * @example Camila Rojas
+             */
+            cliente: string;
+            /** @enum {string} */
+            tipoEntrega: "despacho" | "retiro";
+            /** @enum {string} */
+            estado: "pendiente_pago" | "pagado" | "en_preparacion" | "despachado" | "entregado" | "listo_para_retiro" | "retirado" | "cancelado";
+            /**
+             * @description Total con IVA, en pesos.
+             * @example 25990
+             */
+            total: number;
+            /**
+             * @description Suma de las cantidades del pedido.
+             * @example 3
+             */
+            unidades: number;
+        };
+        GrupoPedidosDto: {
+            /** @example por_preparar */
+            clave: string;
+            /** @example Por preparar */
+            nombre: string;
+            /**
+             * @description `null`: el grupo no muestra cuántos pedidos tiene.
+             * @example 4
+             */
+            cantidad: number | null;
+        };
+        ListadoPedidosGestionDto: {
+            items: components["schemas"]["PedidoGestionDto"][];
+            /** @example 12 */
+            total: number;
+            /** @example 1 */
+            pagina: number;
+            /** @example 20 */
+            limite: number;
+            /** @description Los chips del filtro, en orden. */
+            grupos: components["schemas"]["GrupoPedidosDto"][];
+            /**
+             * @description El grupo aplicado.
+             * @example por_preparar
+             */
+            grupo: string;
+        };
+        MontosDto: {
+            /** @example 21840 */
+            neto: number;
+            /** @example 4150 */
+            iva: number;
+            /** @example 25990 */
+            total: number;
+            /**
+             * @description Lo que descontó el cupón, con IVA (SCRUM-150); ya va restado del neto, el IVA y el total.
+             * @example 0
+             */
+            descuento: number;
+        };
+        LineaPedidoDto: {
+            /** @example 21 */
+            articuloId: number;
+            /** @enum {string} */
+            tipo: "formato" | "pack";
+            /** @example Shampoo reparador */
+            nombre: string;
+            /** @example 300 ml */
+            nombreFormato: string | null;
+            imagen: string | null;
+            /** @example 2 */
+            cantidad: number;
+            /**
+             * @description Precio unitario con IVA que se cobró.
+             * @example 12990
+             */
+            precioUnitario: number;
+            /** @example 25980 */
+            subtotal: number;
+        };
+        ComunaDto: {
+            /** @example 13101 */
+            codigoCut: string;
+            /** @example Santiago */
+            nombre: string;
+        };
+        EnvioPedidoDto: {
+            /** @example DIA HABIL SIGUIENTE */
+            servicio: string;
+            /**
+             * @description Costo con IVA, en pesos.
+             * @example 3990
+             */
+            costo: number;
+            /** @example pendiente */
+            estado: string;
+            codigoSeguimiento: string | null;
+            /** Format: date */
+            fechaEstimada: string | null;
+            destinatario: string;
+            telefonoContacto: string | null;
+            calle: string;
+            numero: string;
+            referencia: string | null;
+            comuna: components["schemas"]["ComunaDto"];
+        };
+        DocumentoPedidoDto: {
+            /** @enum {string} */
+            tipo: "factura";
+            /** @enum {string} */
+            estado: "pendiente" | "disponible";
+            folio: number | null;
+            /** Format: date */
+            fechaEmision: string | null;
+        };
+        ClientePedidoDto: {
+            /** @example Camila Rojas */
+            nombre: string;
+            /** @example camila@correo.cl */
+            correo: string;
+            telefono: string | null;
+        };
+        CambioHistorialDto: {
+            /** @enum {string} */
+            estado: "pendiente_pago" | "pagado" | "en_preparacion" | "despachado" | "entregado" | "listo_para_retiro" | "retirado" | "cancelado";
+            /** Format: date-time */
+            fecha: string;
+            comentario: string | null;
+            /**
+             * @description «Sistema», «Cliente» o el nombre del personal.
+             * @example Sistema
+             */
+            realizadoPor: string;
+        };
+        CambioPermitidoDto: {
+            /** @enum {string} */
+            estado: "pendiente_pago" | "pagado" | "en_preparacion" | "despachado" | "entregado" | "listo_para_retiro" | "retirado" | "cancelado";
+            /** @enum {string} */
+            sentido: "avance" | "retroceso";
+            /** @description Al despachar se pide la OT de Chilexpress (E7-H3). */
+            pideCodigoSeguimiento: boolean;
+            /** @description Se avisa al cliente por correo. */
+            avisaAlCliente: boolean;
+            /** @description Volver a un estado anterior exige un comentario. */
+            pideComentario: boolean;
+        };
+        DetallePedidoGestionDto: {
+            /** @example AB12CD34EF56 */
+            codigoPublico: string;
+            /** Format: date-time */
+            fechaPedido: string;
+            /** @enum {string} */
+            estado: "pendiente_pago" | "pagado" | "en_preparacion" | "despachado" | "entregado" | "listo_para_retiro" | "retirado" | "cancelado";
+            /**
+             * Format: date-time
+             * @description Hasta cuándo se puede pagar; solo mientras espera el pago.
+             */
+            pagarHasta: string | null;
+            /** @enum {string} */
+            tipoEntrega: "despacho" | "retiro";
+            /** @enum {string} */
+            tipoDocumento: "boleta" | "factura";
+            /** @example 19 */
+            porcentajeIva: number;
+            montos: components["schemas"]["MontosDto"];
+            /**
+             * @description Código del cupón aplicado (SCRUM-150).
+             * @example LOREAL20
+             */
+            cupon: string | null;
+            items: components["schemas"]["LineaPedidoDto"][];
+            envio: components["schemas"]["EnvioPedidoDto"] | null;
+            documento: components["schemas"]["DocumentoPedidoDto"] | null;
+            idTransaccionPago: string | null;
+            cliente: components["schemas"]["ClientePedidoDto"];
+            /** @description Del primero al último. */
+            historial: components["schemas"]["CambioHistorialDto"][];
+            cambiosPermitidos: components["schemas"]["CambioPermitidoDto"][];
+            /** @description Solo un pedido pendiente de pago (E8-H3). */
+            sePuedeCancelar: boolean;
+        };
+        FacturaGestionDto: {
+            /** @example AB12CD34EF56 */
+            codigoPedido: string;
+            /** @example Peluquería Bella Ltda. */
+            razonSocial: string;
+            /** @example 76123456-0 */
+            rut: string;
+            /**
+             * @description Total con IVA, en pesos.
+             * @example 25990
+             */
+            total: number;
+            /** @enum {string} */
+            estado: "por_emitir" | "emitida";
+            /** @description `null` mientras está por emitir. */
+            folio: number | null;
+        };
+        ListadoFacturasGestionDto: {
+            items: components["schemas"]["FacturaGestionDto"][];
+            /**
+             * @description Cuántas quedan por emitir.
+             * @example 3
+             */
+            porEmitir: number;
+            /** @example 10 */
+            total: number;
+            /** @example 1 */
+            pagina: number;
+            /** @example 20 */
+            limite: number;
+        };
+        ReceptorFacturaDto: {
+            razonSocial: string;
+            /** @example 76123456-0 */
+            rut: string;
+            giro: string;
+            direccion: string;
+            /** @description Nombre de la comuna. */
+            comuna: string;
+        };
+        MontosFacturaDto: {
+            /** @example 21840 */
+            neto: number;
+            /** @example 4150 */
+            iva: number;
+            /** @example 25990 */
+            total: number;
+        };
+        DetalleFacturaGestionDto: {
+            /** @example AB12CD34EF56 */
+            codigoPedido: string;
+            /** @enum {string} */
+            estado: "por_emitir" | "emitida";
+            receptor: components["schemas"]["ReceptorFacturaDto"];
+            montos: components["schemas"]["MontosFacturaDto"];
+            /** @example 19 */
+            porcentajeIva: number;
+            folio: number | null;
+            /** Format: date */
+            fechaEmision: string | null;
+        };
         ConfirmarPagoDto: {
             /**
              * @description Id del pago que Mercado Pago entrega al volver a la tienda (`payment_id`).
              * @example 1234567890
              */
             pagoId: string;
+        };
+        IndicadorDto: {
+            /** @enum {string} */
+            codigo: "OE1" | "OE2" | "OE3";
+            /** @example Profesionales verificados que compran */
+            nombre: string;
+            /**
+             * @description Meta en porcentaje.
+             * @example 30
+             */
+            meta: number;
+            /**
+             * @description Con un decimal; `null` sin nada que medir en el período.
+             * @example 42.9
+             */
+            porcentaje: number | null;
+            /**
+             * @description Lo que cumple el objetivo, de `total`.
+             * @example 3
+             */
+            cumplidos: number;
+            /** @example 7 */
+            total: number;
+            sinDatos: boolean;
+            /**
+             * @description Frente a la meta: `sobre-la-meta` si la alcanza o la supera, `bajo-la-meta` si no, `sin-datos` sin nada que medir.
+             * @enum {string}
+             */
+            estado: "sobre-la-meta" | "bajo-la-meta" | "sin-datos";
+        };
+        ReporteIndicadoresRespuestaDto: {
+            /**
+             * Format: date
+             * @example 2026-11-01
+             */
+            desde: string;
+            /**
+             * Format: date
+             * @example 2026-11-30
+             */
+            hasta: string;
+            indicadores: components["schemas"]["IndicadorDto"][];
+        };
+        CarritosDelMesDto: {
+            /**
+             * @description AAAA-MM, en hora de Chile.
+             * @example 2026-11
+             */
+            mes: string;
+            /** @example 12 */
+            abandonados: number;
+            /**
+             * @description De los abandonados ese mes, cuántos terminaron en una compra pagada.
+             * @example 3
+             */
+            recuperados: number;
+            /**
+             * @description Recuperados sobre abandonados, de 0 a 100 al entero; `null` sin abandonos.
+             * @example 25
+             */
+            porcentajeRecuperados: number | null;
+        };
+        TotalCarritosDto: {
+            /** @example 30 */
+            abandonados: number;
+            /** @example 6 */
+            recuperados: number;
+            /** @example 20 */
+            porcentajeRecuperados: number | null;
+        };
+        ReporteCarritosRespuestaDto: {
+            /** @example 2026-01 */
+            desde: string;
+            /** @example 2026-12 */
+            hasta: string;
+            meses: components["schemas"]["CarritosDelMesDto"][];
+            total: components["schemas"]["TotalCarritosDto"];
+        };
+        SegmentoGuardadoDto: {
+            /**
+             * @example [
+             *       "profesional"
+             *     ]
+             */
+            tipos: ("cliente" | "profesional" | "suscriptor")[];
+            /**
+             * @description Ids de las categorías (con sus subcategorías).
+             * @example [
+             *       3
+             *     ]
+             */
+            categorias: number[];
+            /**
+             * @description Ids de las marcas.
+             * @example []
+             */
+            marcas: number[];
+            /** @description Con un pedido pagado en los últimos N días. */
+            compraEnUltimosDias: number | null;
+            /** @description Último pedido pagado hace más de N días. */
+            sinComprarHaceDias: number | null;
+            /** @description Mínimo de pedidos pagados. */
+            pedidosMinimo: number | null;
+            /** @description Máximo de pedidos pagados. */
+            pedidosMaximo: number | null;
+            /** @description Gasto mínimo con IVA, en pesos. */
+            gastoMinimo: number | null;
+            /** @description Gasto máximo con IVA, en pesos. */
+            gastoMaximo: number | null;
+            /** @description Edad mínima en años cumplidos. */
+            edadMinima: number | null;
+            /** @description Edad máxima en años cumplidos. */
+            edadMaxima: number | null;
+            /** @description Cuenta creada en los últimos N días. */
+            registroUltimosDias: number | null;
+            /** @description Cuenta creada hace más de N días. */
+            registroHaceMasDias: number | null;
+            /** @description Código CUT de las regiones de sus direcciones. */
+            regiones: string[];
+            /** @description Código CUT de las comunas de sus direcciones. */
+            comunas: string[];
+            /** @description Meses de cumpleaños (1 a 12). */
+            mesesCumpleanos: number[];
+            /** @description Géneros, tal como los escribió la cuenta. */
+            generos: string[];
+            /** @description Solo cuentas con productos en el carrito. */
+            conCarrito: boolean;
+        };
+        FilaReporteCampanaDto: {
+            /**
+             * @description Id de la campaña. `null` en el saludo de cumpleaños por defecto, que no tiene fila.
+             * @example 12
+             */
+            id: number | null;
+            /**
+             * @description Asunto de la campaña, o «Saludo de cumpleaños».
+             * @example Nueva línea reparadora
+             */
+            nombre: string;
+            /**
+             * @description El saludo de cumpleaños: sus correos de un mes, en una fila.
+             * @example false
+             */
+            automatica: boolean;
+            /**
+             * @description Campaña: cuándo se confirmó el envío (ISO 8601). Automática: el mes (AAAA-MM, hora de Chile).
+             * @example 2026-11-04T15:30:00.000Z
+             */
+            fecha: string;
+            /** @description `null` en el saludo de cumpleaños. */
+            segmento: components["schemas"]["SegmentoGuardadoDto"] | null;
+            /**
+             * @description Correos que salieron.
+             * @example 120
+             */
+            enviados: number;
+            /**
+             * @description De los enviados, cuántos se abrieron (0 a 100, sin decimales). `null` si no salió ninguno.
+             * @example 41
+             */
+            porcentajeAbiertos: number | null;
+            /**
+             * @description De los enviados, cuántos tuvieron un clic (0 a 100, sin decimales). `null` si no salió ninguno.
+             * @example 9
+             */
+            porcentajeClic: number | null;
+            /** @example 2 */
+            rebotados: number;
+            /**
+             * @description No salieron porque la persona ya no aceptaba publicidad al enviar (E12-H2).
+             * @example 1
+             */
+            cancelados: number;
+            /** @example 0 */
+            fallidos: number;
+        };
+        ReportePeriodoCampanasDto: {
+            /**
+             * Format: date
+             * @example 2026-11-01
+             */
+            desde: string;
+            /**
+             * Format: date
+             * @example 2026-11-30
+             */
+            hasta: string;
+            /** @description Las más recientes primero. */
+            campanas: components["schemas"]["FilaReporteCampanaDto"][];
         };
         UbicacionOficialDto: {
             /**
@@ -2237,6 +3839,352 @@ export interface components {
         ConfirmarSuscripcionDto: {
             /** @description Token firmado que llegó en el enlace del correo. */
             token: string;
+        };
+        DarDeBajaDto: {
+            /** @description Token firmado que llegó en el enlace de baja del correo. */
+            token: string;
+        };
+        ActualizarConsentimientoDto: {
+            /**
+             * @description Recibir ofertas por correo.
+             * @example true
+             */
+            acepta: boolean;
+        };
+        SegmentoCampanaDto: {
+            /**
+             * @description Al menos uno. `suscriptor`: personas suscritas a ofertas sin cuenta. Solo reciben quienes aceptaron publicidad.
+             * @example [
+             *       "cliente"
+             *     ]
+             */
+            tipos: ("cliente" | "profesional" | "suscriptor")[];
+            /**
+             * @description Solo cuentas que compraron algún producto de estas categorías (o sus subcategorías) o de las marcas indicadas.
+             * @example [
+             *       3
+             *     ]
+             */
+            categorias?: number[];
+            /**
+             * @description Solo cuentas que compraron algún producto de estas marcas o de las categorías indicadas.
+             * @example [
+             *       7
+             *     ]
+             */
+            marcas?: number[];
+            /**
+             * @description Con un pedido pagado en los últimos N días.
+             * @example 30
+             */
+            compraEnUltimosDias?: number | null;
+            /**
+             * @description Compró alguna vez, pero su último pedido pagado es de hace más de N días (para reactivar).
+             * @example 90
+             */
+            sinComprarHaceDias?: number | null;
+            /** @description Mínimo de pedidos pagados. */
+            pedidosMinimo?: number | null;
+            /** @description Máximo de pedidos pagados (0: nunca compró). */
+            pedidosMaximo?: number | null;
+            /** @description Mínimo gastado en pedidos pagados, en pesos con IVA. */
+            gastoMinimo?: number | null;
+            /** @description Máximo gastado en pedidos pagados, en pesos con IVA. */
+            gastoMaximo?: number | null;
+            /**
+             * @description Código CUT de regiones: cuentas con alguna dirección guardada en una de ellas o en las comunas indicadas.
+             * @example [
+             *       "13"
+             *     ]
+             */
+            regiones?: string[];
+            /**
+             * @description Código CUT de comunas: cuentas con alguna dirección guardada en una de ellas o en las regiones indicadas.
+             * @example [
+             *       "13101"
+             *     ]
+             */
+            comunas?: string[];
+            /**
+             * @description Mes de cumpleaños (1 a 12).
+             * @example [
+             *       11,
+             *       12
+             *     ]
+             */
+            mesesCumpleanos?: number[];
+            /** @description Edad mínima en años cumplidos (sin fecha de nacimiento no entra). */
+            edadMinima?: number | null;
+            /** @description Edad máxima en años cumplidos (sin fecha de nacimiento no entra). */
+            edadMaxima?: number | null;
+            /**
+             * @description Género que escribió la cuenta, tal cual.
+             * @example [
+             *       "Femenino"
+             *     ]
+             */
+            generos?: string[];
+            /** @description Cuenta creada en los últimos N días. */
+            registroUltimosDias?: number | null;
+            /** @description Cuenta creada hace más de N días. */
+            registroHaceMasDias?: number | null;
+            /** @description Solo cuentas con productos en el carrito, aún sin comprar. */
+            conCarrito?: boolean;
+        };
+        CrearCampanaDto: {
+            /** @example Nueva línea reparadora con 20 % de descuento */
+            asunto: string;
+            /**
+             * @description Texto plano. Una línea en blanco separa los párrafos; el HTML se muestra tal cual, sin interpretarse. Acepta los marcadores {nombre}, {apellido}, {nombre_completo} y {enlace_tienda}, que cada correo cambia por los datos de quien lo recibe.
+             * @example Hola:
+             *
+             *     Llegó la nueva línea reparadora. Encuéntrala en la tienda.
+             */
+            cuerpo: string;
+            segmento: components["schemas"]["SegmentoCampanaDto"];
+        };
+        AutorCampanaDto: {
+            /** @example Camila */
+            nombre: string;
+            /** @example Rojas */
+            apellido: string;
+        };
+        EnviosCampanaDto: {
+            /** @example 120 */
+            total: number;
+            /** @example 0 */
+            pendientes: number;
+            /** @example 115 */
+            enviados: number;
+            /** @example 1 */
+            fallidos: number;
+            /** @example 2 */
+            cancelados: number;
+            /** @example 2 */
+            rebotados: number;
+        };
+        DetalleCampanaDto: {
+            /** @example 12 */
+            id: number;
+            /** @example Nueva línea reparadora */
+            asunto: string;
+            /** @description Texto plano: una línea en blanco separa los párrafos. */
+            cuerpo: string;
+            segmento: components["schemas"]["SegmentoGuardadoDto"];
+            /**
+             * @description Si ya se confirmó el envío.
+             * @example false
+             */
+            enviada: boolean;
+            /**
+             * Format: date-time
+             * @example 2026-11-04T15:30:00.000Z
+             */
+            fechaCreacion: string;
+            /**
+             * Format: date-time
+             * @description Cuándo se confirmó el envío; `null` en un borrador.
+             * @example null
+             */
+            fechaEnvio: string | null;
+            creadaPor: components["schemas"]["AutorCampanaDto"];
+            /** @description Sus correos por estado. */
+            envios: components["schemas"]["EnviosCampanaDto"];
+        };
+        ContactosCampanasDto: {
+            /**
+             * @description Direcciones que recibirían hoy una campaña a todos (cuentas y suscriptores sin cuenta, cada una una vez).
+             * @example 812
+             */
+            aceptanPublicidad: number;
+            /**
+             * @description Cuentas cliente o profesional activas, con el correo verificado, que aceptan publicidad.
+             * @example 640
+             */
+            cuentasVerificadas: number;
+            /**
+             * @description Suscriptores confirmados, sin baja y sin una cuenta con el mismo correo.
+             * @example 172
+             */
+            suscriptoresSinCuenta: number;
+            /**
+             * @description Direcciones con algún correo rebotado.
+             * @example 9
+             */
+            conRebote: number;
+        };
+        CampanaListadaDto: {
+            /** @example 12 */
+            id: number;
+            /** @example Nueva línea reparadora */
+            asunto: string;
+            /** @description Texto plano: una línea en blanco separa los párrafos. */
+            cuerpo: string;
+            segmento: components["schemas"]["SegmentoGuardadoDto"];
+            /**
+             * @description Si ya se confirmó el envío.
+             * @example false
+             */
+            enviada: boolean;
+            /**
+             * Format: date-time
+             * @example 2026-11-04T15:30:00.000Z
+             */
+            fechaCreacion: string;
+            /**
+             * Format: date-time
+             * @description Cuándo se confirmó el envío; `null` en un borrador.
+             * @example null
+             */
+            fechaEnvio: string | null;
+            creadaPor: components["schemas"]["AutorCampanaDto"];
+            /**
+             * @description Borrador: cuántas direcciones la recibirían hoy. Enviada: a cuántas salió.
+             * @example 812
+             */
+            destinatarios: number;
+            /**
+             * @description Enviada: de los correos enviados, cuántos se abrieron (0 a 100, sin decimales). `null` en un borrador o sin envíos.
+             * @example 41
+             */
+            porcentajeApertura: number | null;
+        };
+        ListadoCampanasDto: {
+            contactos: components["schemas"]["ContactosCampanasDto"];
+            /** @description De la más nueva a la más antigua. */
+            items: components["schemas"]["CampanaListadaDto"][];
+            /** @example 14 */
+            total: number;
+            /** @example 1 */
+            pagina: number;
+            /** @example 20 */
+            limite: number;
+        };
+        ActualizarCampanaDto: {
+            asunto?: string;
+            cuerpo?: string;
+            /** @description Reemplaza el segmento completo. */
+            segmento?: components["schemas"]["SegmentoCampanaDto"];
+        };
+        RenderizarCampanaDto: {
+            /** @example Nueva línea reparadora con 20 % de descuento */
+            asunto: string;
+            /**
+             * @description Texto plano. Una línea en blanco separa los párrafos; el HTML se muestra tal cual, sin interpretarse. Acepta los marcadores {nombre}, {apellido}, {nombre_completo} y {enlace_tienda}, que cada correo cambia por los datos de quien lo recibe.
+             * @example Hola:
+             *
+             *     Llegó la nueva línea reparadora. Encuéntrala en la tienda.
+             */
+            cuerpo: string;
+            /**
+             * @description El borrador que se está editando: con él, `{cupon}` muestra el código de su cupón activo (SCRUM-150).
+             * @example 12
+             */
+            campanaId?: number;
+        };
+        CorreoCampanaDto: {
+            /** @example Nueva línea reparadora */
+            asunto: string;
+            /** @description HTML del correo. El enlace de baja lleva a la pantalla de baja sin token. */
+            html: string;
+            /** @description Versión en texto plano del correo. */
+            texto: string;
+        };
+        VistaPreviaCampanaDto: {
+            /** @example Nueva línea reparadora */
+            asunto: string;
+            /** @description HTML del correo. */
+            html: string;
+            /** @description Versión en texto plano del correo. */
+            texto: string;
+            /**
+             * @description Direcciones que lo recibirían hoy (cada una una vez).
+             * @example 812
+             */
+            destinatarios: number;
+            /** @description Se entrega en `POST /:id/envio`. Vence a la hora. */
+            confirmacion: string;
+        };
+        EnviarCampanaDto: {
+            /**
+             * @description El valor `confirmacion` de una vista previa de la última hora. Si la campaña cambió después o pasó la hora, hay que pedir otra.
+             * @example 1793920312.q3Zr0cU9mJ1kHk2b8vY6xW4tS7nP5aL0eD3fG2hJ1kM
+             */
+            confirmacion: string;
+        };
+        CampanaEnviadaDto: {
+            /** @example 12 */
+            id: number;
+            /**
+             * Format: date-time
+             * @example 2026-11-06T15:30:00.000Z
+             */
+            fechaEnvio: string;
+            /** @example 812 */
+            destinatarios: number;
+        };
+        OfertaGuardadaCumpleanosDto: {
+            /** @example true */
+            activa: boolean;
+            /**
+             * @description Se conserva aunque la oferta esté inactiva.
+             * @example 20 % de descuento durante tu semana de cumpleaños.
+             */
+            texto: string | null;
+        };
+        ConfiguracionCumpleanosDto: {
+            /**
+             * @description Si el saludo sale. Por defecto, activo.
+             * @example true
+             */
+            activo: boolean;
+            /** @example ¡Feliz cumpleaños de parte de Cabello Perfecto! */
+            asunto: string;
+            /** @description Saludo en texto plano. */
+            cuerpo: string;
+            oferta: components["schemas"]["OfertaGuardadaCumpleanosDto"];
+            /**
+             * @description `false` mientras nunca se guardó: rige el saludo por defecto, sin oferta.
+             * @example true
+             */
+            configurado: boolean;
+            /**
+             * @description Cuentas que cumplen años este mes (hora de Chile) y recibirían el saludo: activas, con correo verificado y que aceptan publicidad. 0 con el saludo apagado.
+             * @example 12
+             */
+            programadosEsteMes: number;
+            /**
+             * @description Porcentaje (0 a 100, sin decimales) de los saludos enviados el mes calendario anterior que se abrieron. `null` si ese mes no se envió ninguno.
+             * @example 41
+             */
+            porcentajeAperturaUltimoMes: number | null;
+        };
+        OfertaCumpleanosDto: {
+            /**
+             * @description Incluir la oferta en el saludo.
+             * @example true
+             */
+            activa: boolean;
+            /**
+             * @description Texto plano de la oferta. Obligatorio si está activa; si no, se guarda para activarla después.
+             * @example 20 % de descuento en toda la tienda durante tu semana de cumpleaños.
+             */
+            texto?: string | null;
+        };
+        ConfigurarCumpleanosDto: {
+            /**
+             * @description Si el saludo sale. Apagado, no se envía ninguno; la oferta y los textos se conservan.
+             * @example true
+             */
+            activo: boolean;
+            /** @example ¡Feliz cumpleaños de parte de Cabello Perfecto! */
+            asunto: string;
+            /**
+             * @description Texto plano. Una línea en blanco separa los párrafos; el HTML se muestra tal cual, sin interpretarse. El correo antepone «Hola, {nombre}:».
+             * @example En Cabello Perfecto queremos desearte un muy feliz cumpleaños.
+             */
+            cuerpo: string;
+            oferta: components["schemas"]["OfertaCumpleanosDto"];
         };
     };
     responses: never;
@@ -3227,6 +5175,65 @@ export interface operations {
             };
         };
     };
+    CambioRolController_cambiar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codigoPublico: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CambiarRolDto"];
+            };
+        };
+        responses: {
+            /** @description Rol cambiado y registrado en el historial. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Rol no permitido o motivo faltante o inválido. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Solo el administrador. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No existe esa cuenta. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta desactivada, cambio que no baja el rol o último administrador activo. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     ProveedoresController_listar: {
         parameters: {
             query?: {
@@ -3312,6 +5319,58 @@ export interface operations {
             };
         };
     };
+    EntradasController_listar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+                /** @description Solo las entradas recibidas en una ubicación de esta bodega. */
+                bodegaId?: number;
+                /** @description Texto contenido en la razón social del proveedor o en el número de documento. */
+                buscar?: string;
+                /** @description Recibidas desde este día. */
+                desde?: string;
+                /** @description Recibidas hasta este día incluido. */
+                hasta?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Entradas, paginadas. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListadoEntradasDto"];
+                };
+            };
+            /** @description Filtros inválidos o `hasta` anterior a `desde`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de registrar inventario. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     EntradasController_registrar: {
         parameters: {
             query?: never;
@@ -3325,12 +5384,14 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Entrada registrada. */
+            /** @description Entrada registrada, con sus subtotales y totales. */
             201: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["EntradaRegistradaDto"];
+                };
             };
             /** @description Faltan datos o son inválidos, un formato está repetido, la fecha es futura, o el proveedor, la ubicación o algún formato no existe o está desactivado. */
             400: {
@@ -3491,6 +5552,56 @@ export interface operations {
             };
         };
     };
+    StockController_listar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+                /** @description Solo los formatos con unidades en esta bodega; las ubicaciones y el stock de cada fila son los de ella. */
+                bodegaId?: number;
+                /** @description Texto contenido en el nombre del producto, el del formato o el SKU, sin distinguir mayúsculas. */
+                buscar?: string;
+                /** @description Con `true`, solo los formatos bajo su stock mínimo. */
+                bajoMinimo?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Stock por formato. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListadoStockDto"];
+                };
+            };
+            /** @description Bodega, búsqueda o paginación inválidas. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de consultar inventario. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     StockController_bajoMinimo: {
         parameters: {
             query?: never;
@@ -3557,6 +5668,94 @@ export interface operations {
             };
             /** @description El formato no existe. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UbicacionesController_listar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ubicaciones activas. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UbicacionInventarioDto"][];
+                };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de consultar inventario. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MovimientosController_listar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+                /** @description Solo los movimientos con origen o destino en una ubicación de esta bodega. */
+                bodegaId?: number;
+                /** @description «entradas»: entrada, ajuste positivo y reingreso; «salidas»: mermas, consumo y ajuste negativo. Sin él, todos. */
+                grupo?: "entradas" | "ventas" | "salidas" | "transferencias";
+                /** @description Desde este día, en hora de Chile. */
+                desde?: string;
+                /** @description Hasta este día incluido, en hora de Chile. */
+                hasta?: string;
+                /** @description Texto contenido en el producto, el formato o la referencia (documento, código del pedido u observación). */
+                buscar?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Movimientos, paginados. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListadoMovimientosDto"];
+                };
+            };
+            /** @description Filtros inválidos o `hasta` anterior a `desde`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de consultar inventario. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3795,7 +5994,7 @@ export interface operations {
             query?: {
                 pagina?: number;
                 limite?: number;
-                /** @description Texto contenido en el nombre, sin distinguir mayúsculas. */
+                /** @description Texto contenido en el nombre, la marca o el SKU de un formato, sin distinguir mayúsculas. */
                 buscar?: string;
                 /** @description Solo productos de esta categoría. */
                 categoriaId?: number;
@@ -3803,6 +6002,12 @@ export interface operations {
                 marcaId?: number;
                 /** @description Con `true` incluye también los productos desactivados. */
                 incluirInactivos?: boolean;
+                /** @description Con `true`, solo los productos desactivados (SCRUM-150). */
+                soloInactivos?: boolean;
+                /** @description Solo los productos de este canal; `profesional` son los exclusivos (SCRUM-150). */
+                canalVenta?: "general" | "profesional";
+                /** @description Con `true`, solo los que tienen algún formato bajo su stock mínimo (SCRUM-150). */
+                stockBajo?: boolean;
             };
             header?: never;
             path?: never;
@@ -3810,12 +6015,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Página de productos con el total. */
+            /** @description Página de productos con el total y los conteos. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ListadoProductosPanelDto"];
+                };
             };
             /** @description Filtros inválidos. */
             400: {
@@ -4124,6 +6331,52 @@ export interface operations {
             };
         };
     };
+    FormatosController_buscar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+                /** @description Texto contenido en el nombre del producto, el del formato o el SKU, sin distinguir mayúsculas. */
+                buscar?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Formatos encontrados, paginados. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListadoFormatosBuscadosDto"];
+                };
+            };
+            /** @description Búsqueda o paginación inválidas. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no gestiona el catálogo ni registra inventario. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     FormatosController_actualizar: {
         parameters: {
             query?: never;
@@ -4336,7 +6589,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description La imagen supera los 5 MB. */
+            /** @description La imagen supera los 4 MB. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -4737,7 +6990,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description La imagen supera los 5 MB. */
+            /** @description La imagen supera los 4 MB. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -4770,14 +7023,16 @@ export interface operations {
     TiendaController_listarProductos: {
         parameters: {
             query?: {
-                pagina?: number;
-                limite?: number;
                 /** @description Texto a buscar, sin distinguir mayúsculas. Cada palabra debe estar en el nombre del producto, en su marca o en su categoría o subcategoría. Hasta 5 palabras. Vacío no filtra. */
                 buscar?: string;
-                /** @description Productos de esta categoría y de todas sus subcategorías, a cualquier profundidad. */
-                categoriaId?: number;
-                /** @description Solo productos de esta marca. */
-                marcaId?: number;
+                /** @description Productos de estas categorías y de todas sus subcategorías, a cualquier profundidad. Se repite para marcar varias (`categoriaId=3&categoriaId=5`): basta estar en una. */
+                categoriaId?: number[];
+                /** @description Productos de estas marcas. Se repite para marcar varias: basta ser de una. Entre categorías y marcas se exigen las dos. */
+                marcaId?: number[];
+                pagina?: number;
+                limite?: number;
+                /** @description Sin él, por nombre. `mas-vendidos`: unidades vendidas en los últimos 30 días en pedidos pagados (no cancelados); `novedades`: los creados más recientemente. Los empates, por nombre. */
+                orden?: "mas-vendidos" | "novedades";
             };
             header?: never;
             path?: never;
@@ -4806,7 +7061,55 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description La categoría no existe, o la marca no existe o no está activa. */
+            /** @description Alguna categoría no existe, o alguna marca no existe o no está activa. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TiendaController_facetas: {
+        parameters: {
+            query?: {
+                /** @description Texto a buscar, sin distinguir mayúsculas. Cada palabra debe estar en el nombre del producto, en su marca o en su categoría o subcategoría. Hasta 5 palabras. Vacío no filtra. */
+                buscar?: string;
+                /** @description Productos de estas categorías y de todas sus subcategorías, a cualquier profundidad. Se repite para marcar varias (`categoriaId=3&categoriaId=5`): basta estar en una. */
+                categoriaId?: number[];
+                /** @description Productos de estas marcas. Se repite para marcar varias: basta ser de una. Entre categorías y marcas se exigen las dos. */
+                marcaId?: number[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Conteos por categoría y marca. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FacetasTiendaDto"];
+                };
+            };
+            /** @description Filtros inválidos. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Llegó un token de acceso inválido, vencido o de una sesión cerrada. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Alguna categoría no existe, o alguna marca no existe o no está activa. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -5066,7 +7369,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description El PDF supera los 5 MB. */
+            /** @description El PDF supera los 4 MB. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -5234,7 +7537,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Un documento supera los 5 MB. */
+            /** @description Un documento supera los 4 MB. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -5895,6 +8198,8 @@ export interface operations {
             query: {
                 /** @description Id de una dirección de la cuenta. */
                 direccionId: number;
+                /** @description Cupón que se aplicará (SCRUM-150): el total ya trae su descuento. Si no aplica, 400 junto a `codigoCupon`. */
+                codigoCupon?: string | null;
             };
             header?: never;
             path?: never;
@@ -6012,6 +8317,236 @@ export interface operations {
             };
             /** @description El cambio no está permitido desde el estado actual del pedido, o el pedido no tiene los datos del envío. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CuponesController_listar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuponPanelDto"][];
+                };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CuponesController_crear: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrearCuponDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuponPanelDto"];
+                };
+            };
+            /** @description Datos inválidos, reglas que no calzan entre sí, o artículos, categorías, marcas o campaña que no existen. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ya existe un cupón con ese código. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CuponesController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuponPanelDto"];
+                };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El cupón no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CuponesController_actualizar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActualizarCuponDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuponPanelDto"];
+                };
+            };
+            /** @description Datos inválidos. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El cupón no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ya existe un cupón con ese código. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CuponCarritoController_validar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ValidarCuponDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CuponCarritoDto"];
+                };
+            };
+            /** @description El cupón no existe, no está vigente, no es para la cuenta, se agotó o no aplica al carrito; el mensaje va en el campo `codigoCupon`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -6225,6 +8760,184 @@ export interface operations {
             };
             /** @description El pedido no está pendiente de pago (ya pagado o cancelado). */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GestionPedidosController_listar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+                /** @description Grupo del filtro; sin él, `por_preparar`. */
+                grupo?: "por_preparar" | "listos_para_retiro" | "despachados" | "pendientes_pago" | "todos";
+                /** @description Texto contenido en el código del pedido, el nombre, apellido o correo del cliente, la razón social de su factura o el nombre de un producto o pack del pedido. */
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pedidos, grupos y el grupo aplicado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListadoPedidosGestionDto"];
+                };
+            };
+            /** @description Grupo, búsqueda o paginación inválidos. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar pedidos. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GestionPedidosController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codigoPedido: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Detalle del pedido para el personal. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetallePedidoGestionDto"];
+                };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar pedidos. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pedido no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GestionFacturasController_listar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Facturas, paginadas, con el conteo por emitir. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListadoFacturasGestionDto"];
+                };
+            };
+            /** @description Paginación inválida. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar la facturación. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GestionFacturasController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codigoPedido: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Datos de la factura del pedido. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetalleFacturaGestionDto"];
+                };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar la facturación. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pedido no existe, no pidió factura o aún no está pagado. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -6480,6 +9193,186 @@ export interface operations {
             };
         };
     };
+    ReporteIndicadoresController_indicadores: {
+        parameters: {
+            query: {
+                desde: string;
+                hasta: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `desde`, `hasta` e `indicadores`: por cada objetivo `codigo`, `nombre`, `meta`, `porcentaje` (con un decimal, o `null`), `cumplidos`, `total`, `sinDatos` y `estado` frente a la meta. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReporteIndicadoresRespuestaDto"];
+                };
+            };
+            /** @description Fechas inválidas, la fecha hasta anterior a la desde o un período de más de 366 días. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de ver los reportes. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ReporteCarritosController_carritosAbandonados: {
+        parameters: {
+            query: {
+                desde: string;
+                hasta: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `desde`, `hasta`, `meses` (cada uno con `mes`, `abandonados`, `recuperados` y `porcentajeRecuperados`) y `total`. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReporteCarritosRespuestaDto"];
+                };
+            };
+            /** @description Meses inválidos, el mes hasta anterior al desde o un período de más de 24 meses. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de ver los reportes. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ReporteCampanasController_periodo: {
+        parameters: {
+            query: {
+                desde: string;
+                hasta: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Resultados del período. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportePeriodoCampanasDto"];
+                };
+            };
+            /** @description Fechas inválidas, `hasta` anterior a `desde` o un período de más de 366 días. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de ver los reportes. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ReporteCampanasController_resultado: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `id`, `tipo`, `asunto`, `fechaEnvio` y `envios` con `total`, `pendientes`, `enviados`, `abiertos`, `clics`, `rebotados`, `cancelados` y `fallidos`. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de ver los reportes. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La campaña no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La campaña aún no se envía: no tiene resultados. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     TerritorioController_listarRegiones: {
         parameters: {
             query?: never;
@@ -6593,6 +9486,599 @@ export interface operations {
             };
             /** @description Más de 5 peticiones por minuto desde la misma IP. */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BajasController_darDeBaja: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DarDeBajaDto"];
+            };
+        };
+        responses: {
+            /** @description La dirección ya no recibe publicidad. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Enlace inválido. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 5 peticiones por minuto desde la misma IP. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ConsentimientoController_actualizar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActualizarConsentimientoDto"];
+            };
+        };
+        responses: {
+            /** @description Preferencia guardada. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta `acepta` o no es booleano. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cuenta del personal de tienda. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CampanasController_listar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Página de campañas. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListadoCampanasDto"];
+                };
+            };
+            /** @description Paginación inválida. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CampanasController_crear: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrearCampanaDto"];
+            };
+        };
+        responses: {
+            /** @description Campaña creada como borrador. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetalleCampanaDto"];
+                };
+            };
+            /** @description Datos inválidos, categorías o marcas que no existen, o suscriptores con un filtro de compras. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CampanasController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Campaña. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetalleCampanaDto"];
+                };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La campaña no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CampanasController_actualizar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActualizarCampanaDto"];
+            };
+        };
+        responses: {
+            /** @description Campaña actualizada. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetalleCampanaDto"];
+                };
+            };
+            /** @description Datos inválidos o cuerpo vacío. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La campaña no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La campaña ya fue enviada. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CampanasController_vistaPreviaEnVivo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenderizarCampanaDto"];
+            };
+        };
+        responses: {
+            /** @description Correo armado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorreoCampanaDto"];
+                };
+            };
+            /** @description Asunto o cuerpo inválidos. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CampanasController_vistaPrevia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Vista previa. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VistaPreviaCampanaDto"];
+                };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La campaña no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La campaña ya fue enviada. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CampanasController_enviar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnviarCampanaDto"];
+            };
+        };
+        responses: {
+            /** @description Campaña encolada. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampanaEnviadaDto"];
+                };
+            };
+            /** @description Falta la confirmación. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La campaña no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Ya fue enviada, cambió después de la vista previa o no tiene destinatarios. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CumpleanosController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Saludo de cumpleaños. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfiguracionCumpleanosDto"];
+                };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CumpleanosController_configurar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfigurarCumpleanosDto"];
+            };
+        };
+        responses: {
+            /** @description Saludo guardado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfiguracionCumpleanosDto"];
+                };
+            };
+            /** @description Datos inválidos, o oferta activa sin texto. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SeguimientoController_apertura: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description GIF transparente de 1×1. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 120 peticiones por minuto desde la misma IP. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SeguimientoController_clic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Redirige al destino del enlace. */
+            302: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 120 peticiones por minuto desde la misma IP. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RebotesController_recibir: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Aviso recibido. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin una firma válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta configurar el secreto del webhook. */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

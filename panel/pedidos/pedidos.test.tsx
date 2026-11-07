@@ -63,13 +63,15 @@ const LISTADO: ListadoPedidosGestion = {
 };
 
 const cambio = (
-  estado: string,
+  estado: CambioPermitido['estado'],
   datos: Partial<CambioPermitido> = {},
 ): CambioPermitido => ({
   estado,
   sentido: 'avance',
   pideCodigoSeguimiento: false,
   avisaAlCliente: false,
+  // Como el backend: volver atrás pide comentario
+  pideComentario: datos.sentido === 'retroceso',
   ...datos,
 });
 
@@ -81,7 +83,8 @@ const DETALLE: DetallePedidoGestion = {
   tipoEntrega: 'despacho',
   tipoDocumento: 'boleta',
   porcentajeIva: 19,
-  montos: { neto: 24345, iva: 4625, total: 28970 },
+  montos: { neto: 24345, iva: 4625, total: 28970, descuento: 0 },
+  cupon: null,
   items: [
     {
       articuloId: 11,
@@ -162,8 +165,24 @@ const simularBackend = (rutas: Record<string, Manejador> = {}) => {
   return { pedidas };
 };
 
-const error = (status: number, message: string | string[]) =>
-  Response.json({ statusCode: status, message }, { status });
+const error = (
+  status: number,
+  message: string | string[],
+  /** Campos a los que pertenece el error (`errores` del backend, SCRUM-150). */
+  campos: string[] = [],
+) =>
+  Response.json(
+    {
+      statusCode: status,
+      message,
+      ...(campos.length > 0 && {
+        errores: campos.flatMap((campo) =>
+          [message].flat().map((mensaje) => ({ campo, mensaje })),
+        ),
+      }),
+    },
+    { status },
+  );
 
 const mostrar = (pantalla: ReactNode) =>
   render(
@@ -667,6 +686,7 @@ describe('Panel de pedidos · cambio de estado (SCRUM-130)', () => {
         error(
           409,
           'Ese código de seguimiento ya está registrado en otro pedido.',
+          ['codigoSeguimiento'],
         ),
     });
     const usuario = userEvent.setup();

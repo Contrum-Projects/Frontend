@@ -30,12 +30,12 @@ Estado al 31-10-2026 (Swagger local y `main` del backend): **Parcial**.
 | Uso                                       | Endpoint                                            | Estado                                                                                                           |
 | ----------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | Registrar entrada (CA2, CA3)              | `POST /api/inventario/entradas` (`CrearEntradaDto`) | Real. El Swagger no declara la respuesta (`EntradaRegistrada` de `entradas.service.ts`, tipo en `respuestas.ts`) |
-| Lista de entradas (CA1)                   | `GET /api/inventario/entradas`                      | **Simulado** (`compartido/api/simulado/panelInventario.ts`)                                                      |
-| Ubicaciones de destino y filtro de bodega | `GET /api/inventario/ubicaciones`                   | **Simulado**                                                                                                     |
-| Buscar formatos                           | `GET /api/catalogo/formatos?buscar=`                | Simulado desde SCRUM-105                                                                                         |
+| Lista de entradas (CA1)                   | `GET /api/inventario/entradas`                      | Real desde SCRUM-150                                                                                             |
+| Ubicaciones de destino y filtro de bodega | `GET /api/inventario/ubicaciones`                   | Real desde SCRUM-150 (`inventario.consultar`)                                                                    |
+| Buscar formatos                           | `GET /api/catalogo/formatos?buscar=`                | Real desde SCRUM-150 (`catalogo.gestionar` o `inventario.registrar`)                                             |
 | Proveedores activos                       | `GET /api/inventario/proveedores`                   | Real                                                                                                             |
 
-Forma simulada (propuesta del frontend; pedirla a SCRUM-37):
+Forma propuesta a SCRUM-37 (real desde SCRUM-150, tipada en el Swagger):
 
 - `GET /api/inventario/entradas?bodegaId=&buscar=&desde=AAAA-MM-DD&hasta=AAAA-MM-DD&pagina=` →
   `{ items: [{ id, fechaRecepcion, tipoDocumento, numeroDocumento, proveedor: { id, razonSocial },
@@ -70,6 +70,8 @@ registradoPor: { nombre } }], total, pagina, limite }`, de la más reciente a la
 - **Ubicaciones:** la semilla del backend no crea bodegas ni ubicaciones y no hay endpoint para
   crearlas; con la API simulada (ids 1–4) el POST real solo funciona si esas ubicaciones existen
   en la base local. **Pedido a SCRUM-37:** el GET de ubicaciones y ubicaciones en la semilla.
+  **06-11-2026 (SCRUM-150):** el GET existe y se borró su ruta simulada; la semilla sigue sin
+  bodegas ni ubicaciones.
 - El selector de proveedor usa `GET /inventario/proveedores`, que pide `proveedores.gestionar`.
   Hoy todo rol con `inventario.registrar` también lo tiene; si eso cambia, confirmar con SCRUM-37.
 - `BuscadorFormatos` (packs) acepta ahora `destino` y `aviso` para reutilizarlo aquí.
@@ -86,3 +88,5 @@ simulados: `GET /inventario/entradas` y `GET /inventario/ubicaciones`).
 **01-11-2026:** pasa a «Hecha» por decisión del equipo. Siguen pendientes del backend
 (SCRUM-37) `GET /inventario/entradas` y `GET /inventario/ubicaciones`: al tenerlos, quitar sus
 rutas simuladas y probar la pantalla con el backend real.
+
+**06-11-2026 (SCRUM-150):** el backend entrega `GET /inventario/entradas`, `GET /inventario/ubicaciones` y los subtotales y totales en la respuesta del `POST`; se borró `simulado/panelInventario.ts` y la semilla del backend crea bodegas y ubicaciones de prueba. Falta probar la pantalla con el backend real y la revisión visual.

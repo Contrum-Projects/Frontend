@@ -57,6 +57,7 @@ export function InfoProducto({ producto }: InfoProductoProps) {
         />
       }
       descripcion={producto.descripcion}
+      ingredientes={producto.ingredientes}
       galeria={
         <Galeria
           key={elegido.id}
