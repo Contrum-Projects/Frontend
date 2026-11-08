@@ -1204,3 +1204,9 @@ export type DatosCupon = components['schemas']['CrearCuponDto'];
 
 /** POST /api/carrito/cupon: lo que descuenta un cupón sobre el carrito de la cuenta. */
 export type CuponCarrito = components['schemas']['CuponCarritoDto'];
+
+/** Bodegas del panel con sus ubicaciones y stock (SCRUM-151): GET, POST y PATCH /api/inventario/bodegas. */
+export type BodegaPanel = components['schemas']['BodegaPanelDto'];
+export type UbicacionPanel = BodegaPanel['ubicaciones'][number];
+export type DatosBodega = components['schemas']['CrearBodegaDto'];
+export type DatosUbicacion = components['schemas']['CrearUbicacionDto'];
