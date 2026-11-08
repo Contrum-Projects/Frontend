@@ -149,6 +149,56 @@ describe('SCRUM-97 · Mis datos', () => {
     expect(escrituras).toEqual([]);
   });
 
+  it('SCRUM-152 · CA3 con la fecha de nacimiento guardada, se muestra sin poder cambiarla y no se envía', async () => {
+    const escrituras = simularBackend({
+      'GET /api/cuentas/yo': () =>
+        responder({ ...DATOS, fechaNacimiento: '1990-05-21' }),
+      'GET /api/cuentas/yo/direcciones': () => responder([]),
+      'PATCH /api/cuentas/yo': () =>
+        responder({
+          ...DATOS,
+          nombre: 'Camila Andrea',
+          fechaNacimiento: '1990-05-21',
+        }),
+    });
+    mostrarMisDatos();
+    const tarjeta = await tarjetaDatos();
+    const usuario = userEvent.setup();
+
+    const fecha = within(tarjeta).getByLabelText('Fecha de nacimiento');
+    expect(fecha).toHaveValue('21 may 1990');
+    expect(fecha).toHaveAttribute('readonly');
+    expect(fecha).toHaveAccessibleDescription(
+      /Ya está registrada y no se puede cambiar/,
+    );
+
+    const nombre = within(tarjeta).getByLabelText(/Nombre/);
+    await usuario.clear(nombre);
+    await usuario.type(nombre, 'Camila Andrea');
+    await usuario.click(
+      within(tarjeta).getByRole('button', { name: 'Guardar cambios' }),
+    );
+    await vi.waitFor(() =>
+      expect(
+        escrituras.find((e) => e.peticion === 'PATCH /api/cuentas/yo')?.cuerpo,
+      ).toEqual({
+        nombre: 'Camila Andrea',
+      }),
+    );
+  });
+
+  it('SCRUM-152 · CA1 sin fecha guardada se puede indicar con el calendario', async () => {
+    conDatos(() => responder(DATOS));
+    mostrarMisDatos();
+    const tarjeta = await tarjetaDatos();
+
+    const fecha = within(tarjeta).getByLabelText('Fecha de nacimiento');
+    expect(fecha).not.toHaveAttribute('readonly');
+    expect(
+      within(tarjeta).queryByText(/Ya está registrada/),
+    ).not.toBeInTheDocument();
+  });
+
   it('E1-H5 FE · RUT repetido: muestra el error junto al campo y conserva lo escrito', async () => {
     conDatos(() =>
       responder(
