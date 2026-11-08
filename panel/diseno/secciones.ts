@@ -108,6 +108,10 @@ const PERMISOS_DE_RUTA: readonly { prefijo: string; permiso: Permiso }[] = [
     permiso: PERMISOS.CATALOGO_GESTIONAR,
   },
   {
+    prefijo: '/panel/inventario/bodegas',
+    permiso: PERMISOS.BODEGAS_GESTIONAR,
+  },
+  {
     prefijo: '/panel/inventario/proveedores',
     permiso: PERMISOS.PROVEEDORES_GESTIONAR,
   },

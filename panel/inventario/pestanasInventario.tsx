@@ -9,13 +9,15 @@ import { puedeAbrir } from '@/panel/diseno/secciones';
 
 /**
  * Pestañas de Inventario (Figma P5f 2064:3101). Cada una pide el permiso de su ruta, así que el
- * vendedor no ve «Entradas» ni «Proveedores».
+ * vendedor no ve «Entradas» ni «Proveedores», y solo el administrador ve «Bodegas».
  */
 const PESTANAS: readonly { texto: string; href: Route }[] = [
   { texto: 'Stock', href: '/panel/inventario' },
   { texto: 'Movimientos', href: '/panel/inventario/movimientos' },
   { texto: 'Entradas', href: '/panel/inventario/entradas' },
   { texto: 'Proveedores', href: '/panel/inventario/proveedores' },
+  // SCRUM-151: solo el administrador (bodegas.gestionar)
+  { texto: 'Bodegas', href: '/panel/inventario/bodegas' },
 ];
 
 export const PestanasInventario = () => {
