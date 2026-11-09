@@ -175,17 +175,41 @@ export function FormularioEstado({
         {cambio?.pideCodigoSeguimiento && (
           <CampoFormulario
             id={`${idTitulo}-codigo`}
-            etiqueta="Código de seguimiento de Chilexpress"
+            etiqueta={
+              cambio.creaOt
+                ? 'Código de seguimiento (opcional)'
+                : 'Código de seguimiento de Chilexpress'
+            }
             error={errors.codigoSeguimiento?.message}
-            obligatorio
+            obligatorio={!cambio.creaOt}
           >
             {(propsControl) => (
-              <Input
-                {...propsControl}
-                {...register('codigoSeguimiento')}
-                inputMode="numeric"
-                autoComplete="off"
-              />
+              <div className="flex flex-col gap-1">
+                <Input
+                  {...propsControl}
+                  aria-describedby={
+                    [
+                      propsControl['aria-describedby'],
+                      cambio.creaOt && `${idTitulo}-codigo-ayuda`,
+                    ]
+                      .filter(Boolean)
+                      .join(' ') || undefined
+                  }
+                  {...register('codigoSeguimiento')}
+                  inputMode="numeric"
+                  autoComplete="off"
+                />
+                {/* SCRUM-153: la OT se crea en Chilexpress al despachar; el número es el respaldo */}
+                {cambio.creaOt && (
+                  <p
+                    id={`${idTitulo}-codigo-ayuda`}
+                    className="texto-leyenda text-texto-secundario"
+                  >
+                    Déjalo vacío y creamos la OT en Chilexpress. Escríbelo solo
+                    si ya la creaste en su portal.
+                  </p>
+                )}
+              </div>
             )}
           </CampoFormulario>
         )}

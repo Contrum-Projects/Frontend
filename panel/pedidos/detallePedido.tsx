@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Store, Truck } from 'lucide-react';
+import { ArrowLeft, Printer, Store, Truck } from 'lucide-react';
 import Link from 'next/link';
 import { useId, useRef, type ReactNode } from 'react';
 import { errorDeApi } from '@/compartido/api/errores';
@@ -21,7 +21,10 @@ import {
 import { textoDireccion } from '@/tienda/pedidos/entregaPedido';
 import { EstadoPedido, etiquetaEstado } from '@/tienda/pedidos/estadoPedido';
 import { CancelarPedido } from './cancelarPedido';
-import { useDetallePedidoPanel } from './consultasPedidos';
+import {
+  useDescargarEtiqueta,
+  useDetallePedidoPanel,
+} from './consultasPedidos';
 import { FormularioEstado } from './formularioEstado';
 
 /**
@@ -162,7 +165,37 @@ const Cliente = ({ pedido }: { pedido: DetallePedidoGestion }) => {
           Código de seguimiento: {envio.codigoSeguimiento}
         </p>
       )}
+      {pedido.tieneEtiqueta && (
+        <ImprimirEtiqueta codigoPedido={pedido.codigoPublico} />
+      )}
     </section>
+  );
+};
+
+/** SCRUM-153 · La etiqueta de la OT que se creó al despachar, para pegarla en el paquete. */
+const ImprimirEtiqueta = ({ codigoPedido }: { codigoPedido: string }) => {
+  const descarga = useDescargarEtiqueta(codigoPedido);
+  return (
+    <div className="flex flex-col gap-1">
+      <Button
+        type="button"
+        variant="contorno"
+        className="w-fit gap-2 aria-disabled:opacity-50"
+        // aria-disabled y no disabled: el botón conserva el foco y se lee «Descargando…»
+        aria-disabled={descarga.isPending}
+        onClick={() => {
+          if (!descarga.isPending) descarga.mutate();
+        }}
+      >
+        <Printer className="size-4" strokeWidth={1.75} aria-hidden />
+        {descarga.isPending ? 'Descargando…' : 'Imprimir etiqueta'}
+      </Button>
+      {descarga.isError && (
+        <p role="alert" className="texto-pequeno text-estado-error">
+          {descarga.error.message}
+        </p>
+      )}
+    </div>
   );
 };
 

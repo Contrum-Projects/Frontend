@@ -43,7 +43,11 @@ const useAlGuardar = () => {
         ? lista.map((b) => (b.id === bodega.id ? bodega : b))
         : [...(lista ?? []), bodega],
     );
-    return clienteConsultas.invalidateQueries({ queryKey: CLAVE_UBICACIONES });
+    // Marcar la bodega de despacho le quita la marca a otra: la lista se vuelve a pedir
+    return Promise.all([
+      clienteConsultas.invalidateQueries({ queryKey: CLAVE_BODEGAS }),
+      clienteConsultas.invalidateQueries({ queryKey: CLAVE_UBICACIONES }),
+    ]);
   };
 };
 
@@ -56,7 +60,7 @@ export const useGuardarBodega = () => {
       datos,
     }: {
       id: number | null;
-      datos: Partial<DatosBodega> & { activa?: boolean };
+      datos: Partial<DatosBodega> & { activa?: boolean; esDespacho?: boolean };
     }) =>
       conErrorDeApi(async () =>
         exigir(

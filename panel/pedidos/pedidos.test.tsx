@@ -69,6 +69,7 @@ const cambio = (
   estado,
   sentido: 'avance',
   pideCodigoSeguimiento: false,
+  creaOt: false,
   avisaAlCliente: false,
   // Como el backend: volver atrás pide comentario
   pideComentario: datos.sentido === 'retroceso',
@@ -133,6 +134,7 @@ const DETALLE: DetallePedidoGestion = {
   ],
   cambiosPermitidos: [cambio('en_preparacion')],
   sePuedeCancelar: false,
+  tieneEtiqueta: false,
 };
 
 type Manejador = (peticion: Request) => Response | Promise<Response>;
@@ -647,6 +649,86 @@ describe('Panel de pedidos · cambio de estado (SCRUM-130)', () => {
         { estado: 'despachado', codigoSeguimiento: '990000000001' },
       ]),
     );
+  });
+
+  it('SCRUM-153 · con la OT automática, despachar sin código la deja crear al backend; el código es solo el respaldo', async () => {
+    const { pedidas } = simularBackend({
+      'GET /api/gestion/pedidos/PAGADODESP01': () =>
+        Response.json({
+          ...DETALLE,
+          estado: 'en_preparacion',
+          cambiosPermitidos: [
+            cambio('despachado', {
+              pideCodigoSeguimiento: true,
+              creaOt: true,
+              avisaAlCliente: true,
+            }),
+          ],
+        }),
+      'POST /api/pedidos/PAGADODESP01/estado': () =>
+        Response.json({ codigoPublico: 'PAGADODESP01', estado: 'despachado' }),
+    });
+    const usuario = userEvent.setup();
+    mostrarDetalle();
+
+    const codigo = await screen.findByLabelText(
+      'Código de seguimiento (opcional)',
+    );
+    expect(codigo).toHaveAccessibleDescription(
+      /Déjalo vacío y creamos la OT en Chilexpress/,
+    );
+    await usuario.click(
+      screen.getByRole('button', { name: 'Guardar y avisar al cliente' }),
+    );
+
+    await waitFor(async () =>
+      expect(await cuerposEnviados(pedidas)).toEqual([
+        { estado: 'despachado' },
+      ]),
+    );
+  });
+
+  it('SCRUM-153 · CA4 con la OT creada por la API, «Imprimir etiqueta» la descarga', async () => {
+    const { pedidas } = simularBackend({
+      'GET /api/gestion/pedidos/PAGADODESP01': () =>
+        Response.json({
+          ...DETALLE,
+          estado: 'despachado',
+          tieneEtiqueta: true,
+          envio: { ...DETALLE.envio!, codigoSeguimiento: '712100833404' },
+          cambiosPermitidos: [],
+        }),
+      'GET /api/gestion/pedidos/PAGADODESP01/etiqueta': () =>
+        new Response(new Blob(['%PDF-1.4'], { type: 'application/pdf' }), {
+          headers: {
+            'content-type': 'application/pdf',
+            'content-disposition':
+              'attachment; filename="etiqueta-PAGADODESP01.pdf"',
+          },
+        }),
+    });
+    vi.stubGlobal(
+      'URL',
+      Object.assign(URL, { createObjectURL: vi.fn(() => 'blob:etiqueta') }),
+    );
+    const clic = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {});
+    const usuario = userEvent.setup();
+    mostrarDetalle();
+
+    await usuario.click(
+      await screen.findByRole('button', { name: 'Imprimir etiqueta' }),
+    );
+
+    await waitFor(() => expect(clic).toHaveBeenCalled());
+    expect(
+      pedidas.some(
+        (peticion) =>
+          new URL(peticion.url).pathname ===
+          '/api/gestion/pedidos/PAGADODESP01/etiqueta',
+      ),
+    ).toBe(true);
   });
 
   it('E8-H2 FE · CA2 cambiar estado: si el backend rechaza, muestra su mensaje sin perder lo escrito', async () => {
