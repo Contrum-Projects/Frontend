@@ -1,4 +1,4 @@
-import { BadgeCheck, ShoppingCart } from 'lucide-react';
+import { BadgeCheck } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type {
@@ -6,10 +6,10 @@ import type {
   ProductoTiendaProfesional,
 } from '@/compartido/api/respuestas';
 import { formatearPesos } from '@/compartido/formato/moneda';
-import { Button } from '@/compartido/ui/button';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { urlProducto } from '@/tienda/diseno/enlaces';
 import { InsigniaExclusivo } from '@/tienda/profesional/insignias';
+import { BotonAgregarTarjeta } from './botonAgregarTarjeta';
 
 /** Ancho de la foto según dónde va la tarjeta, para que next/image baje el tamaño justo. */
 export const TAMANOS_FOTO = {
@@ -22,7 +22,7 @@ export const TAMANOS_FOTO = {
 } as const;
 
 /**
- * Marco de las tarjetas de producto y de pack (SCRUM-150): en reposo una sombra tenue; al pasar
+ * Marco de las tarjetas de pack (SCRUM-150; las de producto cambiaron con SCRUM-157): en reposo una sombra tenue; al pasar
  * el mouse o con el foco dentro se eleva, sube 2 px y el borde toma el menta. Sin movimiento con
  * `prefers-reduced-motion`.
  */
@@ -41,11 +41,11 @@ interface TarjetaProductoProps {
 }
 
 /**
- * Tarjeta de producto (Figma › Componentes › Tarjeta de producto, minorista 5:80 y profesional
- * 5:107): foto principal del formato que elige el backend sobre fondo menta, marca, nombre,
- * precio con IVA y botón del carrito. Si el backend entrega el mayorista (sesión profesional,
- * SCRUM-109), muestra ese precio con «Mín. 3 unidades» y marca los exclusivos. La línea de
- * formatos («2 formatos · desde 300 ml») espera que la API la entregue.
+ * Tarjeta de producto (SCRUM-157, mezcla de los estilos «Limpia» y «Flotante» elegida el
+ * 11-11-2026): la foto vertical sin caja, con esquinas amplias, y encima un panel de vidrio
+ * esmerilado con la marca, el nombre y el precio con IVA. Toda la tarjeta lleva a la ficha; el
+ * botón del panel agrega al carrito (o lleva a elegir formato si hay varios). Si el backend
+ * entrega el mayorista (sesión profesional, SCRUM-109), muestra ese precio y marca los exclusivos.
  */
 export const TarjetaProducto = ({
   producto,
@@ -54,9 +54,8 @@ export const TarjetaProducto = ({
 }: TarjetaProductoProps) => {
   const profesional = 'precioMayorista' in producto ? producto : null;
   return (
-    <article className={MARCO_TARJETA}>
-      {/* 264 × 240 en Figma (11:10). Las fotos van en esa proporción; el menta se ve mientras cargan */}
-      <div className="relative aspect-[11/10] overflow-hidden rounded-md bg-marca-acento-suave">
+    <article className="group relative">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-marca-acento-suave">
         {/* El nombre ya está en el enlace de la tarjeta: la foto no lo repite */}
         <Image
           src={producto.imagen}
@@ -64,56 +63,50 @@ export const TarjetaProducto = ({
           fill
           sizes={tamanos}
           priority={prioridad}
-          className="object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"
+          className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04] motion-reduce:transition-none"
         />
         {profesional?.exclusivo && <InsigniaExclusivo />}
-      </div>
-      <div className="flex flex-1 flex-col gap-1 px-2 pt-3">
-        {producto.marca && (
-          <p className="texto-sobretitulo text-texto-secundario">
-            {producto.marca.nombre}
-          </p>
-        )}
-        <h3 className="titulo-h3 text-texto-principal">
-          <Link
-            href={urlProducto(producto.id)}
-            className="rounded-md outline-none after:absolute after:inset-0 after:rounded-lg focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-marca-profundo"
-          >
-            {producto.nombre}
-          </Link>
-        </h3>
-      </div>
-      <div className="flex items-end justify-between gap-2 px-2 pt-3">
-        {'precioMayorista' in producto ? (
-          <PrecioProfesional precio={producto.precioMayorista} />
-        ) : (
-          <p className="texto-precio text-marca-profundo">
-            {formatearPesos(producto.precio)}
-          </p>
-        )}
-        {/* Sin historia: el carrito agrega formatos y la tarjeta muestra el producto (SCRUM-116 agrega
-            desde la ficha). Deshabilitado, el clic pasa al enlace de la tarjeta */}
-        <Button
-          type="button"
-          size="icono"
-          className="size-11"
-          disabled
-          aria-label={`Agregar ${producto.nombre} al carrito`}
-        >
-          <ShoppingCart aria-hidden />
-        </Button>
+        <div className="absolute inset-x-2 bottom-2 flex items-end justify-between gap-2 rounded-lg border border-fondo-superficie/60 bg-fondo-superficie/85 p-3 backdrop-blur-md md:inset-x-3 md:bottom-3 md:gap-3 md:px-4">
+          <div className="flex min-w-0 flex-col">
+            {producto.marca && (
+              <p className="truncate texto-leyenda text-texto-secundario">
+                {producto.marca.nombre}
+              </p>
+            )}
+            <h3 className="line-clamp-2 texto-cuerpo-fuerte text-texto-principal">
+              <Link
+                href={urlProducto(producto.id)}
+                className="outline-none after:absolute after:inset-0 after:rounded-xl focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-marca-profundo"
+              >
+                {producto.nombre}
+              </Link>
+            </h3>
+            {'precioMayorista' in producto ? (
+              <PrecioProfesional precio={producto.precioMayorista} />
+            ) : (
+              <p className="mt-0.5 texto-cuerpo-fuerte text-marca-profundo tabular-nums">
+                {formatearPesos(producto.precio)}
+              </p>
+            )}
+          </div>
+          <BotonAgregarTarjeta
+            productoId={producto.id}
+            nombre={producto.nombre}
+            formatoId={producto.formatoId}
+            formatos={producto.formatos}
+          />
+        </div>
       </div>
     </article>
   );
 };
 
 /**
- * Precio mayorista con IVA (Figma 5:127; en celular, la tarjeta compacta 9:776 dice solo
- * «Profesional»). Puede encogerse: a 360 px la columna mide unos 70 px. Sin mínimo de unidades
- * (SCRUM-146).
+ * Precio mayorista con IVA (Figma 5:127): en celular dice solo «Profesional». Sin mínimo de
+ * unidades (SCRUM-146).
  */
 const PrecioProfesional = ({ precio }: { precio: number }) => (
-  <div className="flex min-w-0 flex-1 flex-col">
+  <div className="mt-0.5 flex min-w-0 flex-col">
     <p className="flex items-center gap-1 texto-leyenda text-marca-profundo">
       <BadgeCheck
         aria-hidden
@@ -123,35 +116,33 @@ const PrecioProfesional = ({ precio }: { precio: number }) => (
       <span className="md:hidden">Profesional</span>
       <span className="hidden md:inline">Precio profesional</span>
     </p>
-    <p className="texto-precio text-marca-profundo">{formatearPesos(precio)}</p>
+    <p className="texto-cuerpo-fuerte text-marca-profundo tabular-nums">
+      {formatearPesos(precio)}
+    </p>
   </div>
 );
 
 /**
- * Misma estructura y altura que la tarjeta, para que no salte al cargar. `profesional`: con las
- * dos líneas del precio profesional.
+ * Misma forma que la tarjeta, para que no salte al cargar. `profesional`: con las dos líneas del
+ * precio profesional.
  */
 export const TarjetaProductoEsqueleto = ({
   profesional = false,
 }: {
   profesional?: boolean;
 }) => (
-  <div aria-hidden className={MARCO_TARJETA_ESQUELETO}>
-    <Skeleton className="aspect-[11/10] rounded-md" />
-    <div className="flex flex-col gap-1 px-2 pt-3">
-      <Skeleton className="h-4 w-16" />
-      <Skeleton className="h-6 w-3/4" />
-    </div>
-    <div className="flex items-end justify-between px-2 pt-3">
-      {profesional ? (
-        <div className="flex flex-col gap-1">
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-6 w-20" />
-        </div>
-      ) : (
-        <Skeleton className="h-6 w-20" />
-      )}
-      <Skeleton className="size-11 rounded-full" />
+  <div
+    aria-hidden
+    className="relative aspect-[4/5] overflow-hidden rounded-xl bg-fondo-hueso-oscuro/60"
+  >
+    <div className="absolute inset-x-2 bottom-2 flex items-end justify-between gap-2 rounded-lg bg-fondo-superficie/85 p-3 md:inset-x-3 md:bottom-3 md:px-4">
+      <div className="flex flex-1 flex-col gap-1">
+        <Skeleton className="h-3 w-14" />
+        <Skeleton className="h-5 w-3/4" />
+        {profesional && <Skeleton className="h-3 w-20" />}
+        <Skeleton className="h-5 w-16" />
+      </div>
+      <Skeleton className="size-10 rounded-full" />
     </div>
   </div>
 );
