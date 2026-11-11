@@ -107,7 +107,7 @@ describe('SCRUM-157 · Portada del inicio', () => {
     expect(document.body).not.toHaveTextContent('Error interno');
   });
 
-  it('SCRUM-157 FE · criterio 8: avanza sola cada 6 s y se detiene con la pausa', () => {
+  it('SCRUM-157 FE · criterio 8: avanza sola cada 6 s, sin botón de pausa', () => {
     vi.useFakeTimers();
     renderizar(<SliderPortada slides={SLIDES} />);
 
@@ -116,13 +116,9 @@ describe('SCRUM-157 · Portada del inicio', () => {
     expect(
       screen.getByRole('button', { name: 'Ir a la imagen 2 de 3' }),
     ).toHaveAttribute('aria-current', 'true');
-
-    fireEvent.click(screen.getByRole('button', { name: 'Pausar la portada' }));
-    act(() => vi.advanceTimersByTime(SEGUNDOS_POR_SLIDE * 3000));
-    expect(desplazamientos).toHaveLength(1);
     expect(
-      screen.getByRole('button', { name: 'Reanudar la portada' }),
-    ).toBeInTheDocument();
+      screen.queryByRole('button', { name: /Pausar/ }),
+    ).not.toBeInTheDocument();
   });
 
   it('SCRUM-157 FE · criterio 8: con el mouse encima no avanza; las flechas y los puntos llevan a cada imagen', () => {
@@ -157,9 +153,6 @@ describe('SCRUM-157 · Portada del inicio', () => {
 
     act(() => vi.advanceTimersByTime(SEGUNDOS_POR_SLIDE * 2000));
     expect(desplazamientos).toHaveLength(0);
-    expect(
-      screen.queryByRole('button', { name: 'Pausar la portada' }),
-    ).not.toBeInTheDocument();
   });
 
   it('SCRUM-157 FE · con una sola imagen no muestra controles', () => {

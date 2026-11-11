@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getImageProps } from 'next/image';
 import Link from 'next/link';
 import {
@@ -46,20 +46,19 @@ const useMovimientoReducido = () =>
 /**
  * Portada del inicio (SCRUM-157): las imágenes que la tienda carga en el panel, cada una enlazada
  * a su destino. Se desliza con el dedo (scroll-snap nativo), con las flechas o los puntos, y
- * avanza sola cada 6 s. El avance se detiene con el mouse encima, con el foco dentro, con la
- * pestaña oculta o con el botón de pausa (WCAG 2.2.2); con «reducir movimiento» no avanza solo.
+ * avanza sola cada 6 s. El avance se detiene con el mouse encima, con el foco dentro o con la
+ * pestaña oculta; con «reducir movimiento» no avanza sola.
  */
 export function SliderPortada({ slides }: { slides: SlidePortada[] }) {
   const pista = useRef<HTMLUListElement>(null);
   const [activo, setActivo] = useState(0);
   const [encima, setEncima] = useState(false);
   const [enfocado, setEnfocado] = useState(false);
-  const [pausado, setPausado] = useState(false);
   const [oculta, setOculta] = useState(false);
   const reducido = useMovimientoReducido();
   const total = slides.length;
   const varios = total > 1;
-  const avanzando = varios && !reducido && !pausado && !encima && !enfocado;
+  const avanzando = varios && !reducido && !encima && !enfocado;
 
   const irA = useCallback(
     (indice: number) => {
@@ -129,7 +128,8 @@ export function SliderPortada({ slides }: { slides: SlidePortada[] }) {
         <ul
           ref={pista}
           aria-live={avanzando ? 'off' : 'polite'}
-          className="flex snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto overscroll-x-contain [&::-webkit-scrollbar]:hidden"
+          // overflow-y-hidden: la pista solo se desplaza de lado; la rueda del mouse pasa a la página
+          className="flex snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto overflow-y-hidden overscroll-x-contain [&::-webkit-scrollbar]:hidden"
         >
           {slides.map((slide, indice) => (
             <li
@@ -148,16 +148,7 @@ export function SliderPortada({ slides }: { slides: SlidePortada[] }) {
             </li>
           ))}
         </ul>
-        {varios && (
-          <Controles
-            total={total}
-            activo={activo}
-            pausado={pausado || reducido}
-            puedePausar={!reducido}
-            alIr={irA}
-            alPausar={() => setPausado((antes) => !antes)}
-          />
-        )}
+        {varios && <Controles total={total} activo={activo} alIr={irA} />}
       </div>
     </section>
   );
@@ -226,33 +217,15 @@ const ImagenSlide = ({
 interface ControlesProps {
   total: number;
   activo: number;
-  pausado: boolean;
-  puedePausar: boolean;
   alIr: (indice: number) => void;
-  alPausar: () => void;
 }
 
 /**
- * Flechas, puntos y pausa en una píldora sobre la esquina inferior. El fondo de superficie
+ * Flechas y puntos en una píldora sobre la esquina inferior. El fondo de superficie
  * semitransparente con desenfoque mantiene el contraste sobre cualquier foto.
  */
-const Controles = ({
-  total,
-  activo,
-  pausado,
-  puedePausar,
-  alIr,
-  alPausar,
-}: ControlesProps) => (
+const Controles = ({ total, activo, alIr }: ControlesProps) => (
   <div className="absolute right-3 bottom-3 flex items-center gap-1 rounded-full border border-fondo-superficie/60 bg-fondo-superficie/85 p-1 shadow-tarjeta backdrop-blur-md md:right-16 md:bottom-8">
-    {puedePausar && (
-      <BotonControl
-        etiqueta={pausado ? 'Reanudar la portada' : 'Pausar la portada'}
-        onClick={alPausar}
-      >
-        {pausado ? <Play aria-hidden /> : <Pause aria-hidden />}
-      </BotonControl>
-    )}
     <BotonControl
       etiqueta="Imagen anterior"
       onClick={() => alIr(activo - 1)}
