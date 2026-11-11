@@ -17,7 +17,7 @@ export async function MarcasInicio() {
     <section
       id="marcas"
       aria-labelledby="titulo-marcas"
-      className={`${CLASE_SECCION} scroll-mt-4`}
+      className={`${CLASE_SECCION} scroll-mt-24`}
     >
       <CintaMarcas marcas={marcas} titulo="Marcas" />
     </section>

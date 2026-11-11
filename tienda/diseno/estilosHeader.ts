@@ -8,3 +8,9 @@ export const CLASE_ENLACE_HEADER =
 /** Ícono redondo de 40 px (cuenta y carrito), con el mismo hover que los enlaces. */
 export const CLASE_ICONO_HEADER =
   'relative inline-flex size-10 items-center justify-center rounded-full text-texto-principal transition-colors outline-none hover:bg-marca-acento-suave hover:text-marca-profundo focus-visible:ring-[3px] focus-visible:ring-ring/60';
+
+/**
+ * Alto del header (el mismo flotando o fijo, ver MarcoHeader) desde `md`: la portada del inicio
+ * sube eso para quedar detrás de él (SCRUM-157). Si cambia el alto del header, cambia aquí.
+ */
+export const SUBIR_BAJO_HEADER = 'md:-mt-[76px] lg:-mt-[84px]';

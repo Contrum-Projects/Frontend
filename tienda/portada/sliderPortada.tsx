@@ -13,6 +13,7 @@ import {
 } from 'react';
 import { cn } from '@/compartido/lib/utils';
 import { hrefDestino, type SlidePortada } from './destinoPortada';
+import { SUBIR_BAJO_HEADER } from '@/tienda/diseno/estilosHeader';
 import { useArrastreMouse } from './useArrastreMouse';
 
 /** Segundos que se ve cada imagen antes de pasar a la siguiente (SCRUM-157, criterio 8). */
@@ -130,7 +131,8 @@ export function SliderPortada({ slides }: { slides: SlidePortada[] }) {
     <section
       aria-roledescription="carrusel"
       aria-label="Portada"
-      className="w-full"
+      // Desde `md` sube bajo el header flotante, que queda encima de la imagen
+      className={cn('w-full', SUBIR_BAJO_HEADER)}
       onMouseEnter={() => setEncima(true)}
       onMouseLeave={() => setEncima(false)}
       onFocus={() => setEnfocado(true)}

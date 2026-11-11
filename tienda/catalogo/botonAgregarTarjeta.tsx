@@ -27,7 +27,7 @@ interface BotonAgregarTarjetaProps {
 
 /** Píldora oscura: un «+» que al pasar el mouse se abre con su rótulo. */
 const CLASE_BOTON =
-  'relative z-10 inline-flex h-10 min-w-10 shrink-0 items-center justify-center gap-1.5 overflow-hidden rounded-full px-2.5 texto-etiqueta whitespace-nowrap outline-none transition-[background-color,padding] duration-200 ease-out focus-visible:ring-2 focus-visible:ring-marca-acento focus-visible:ring-offset-2 active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.75] md:group-hover:px-3.5';
+  'relative z-10 inline-flex h-10 min-w-10 shrink-0 items-center justify-center gap-1.5 overflow-hidden rounded-full px-2.5 texto-etiqueta whitespace-nowrap outline-none transition-[background-color,padding] duration-200 ease-out focus-visible:ring-2 focus-visible:ring-marca-profundo focus-visible:ring-offset-2 active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.75] md:group-hover:px-3.5';
 
 /** El rótulo se abre al pasar el mouse por la tarjeta (en celular queda el ícono). */
 const Rotulo = ({

@@ -1,4 +1,6 @@
+import { cn } from '@/compartido/lib/utils';
 import { Skeleton } from '@/compartido/ui/skeleton';
+import { SUBIR_BAJO_HEADER } from '@/tienda/diseno/estilosHeader';
 import { Promociones } from '@/tienda/catalogo/promociones';
 import { leerPortada } from './consultas';
 import { hrefDestino } from './destinoPortada';
@@ -22,6 +24,9 @@ export async function PortadaInicio() {
 export const PortadaEsqueleto = () => (
   <Skeleton
     aria-hidden
-    className="aspect-[4/5] w-full rounded-none md:aspect-[12/5] md:max-h-[85dvh]"
+    className={cn(
+      'aspect-[4/5] w-full rounded-none md:aspect-[12/5] md:max-h-[85dvh]',
+      SUBIR_BAJO_HEADER,
+    )}
   />
 );
