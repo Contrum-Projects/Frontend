@@ -17,7 +17,8 @@ import { AvisoProfesionalCelular } from './promociones';
  */
 export function Inicio() {
   return (
-    <main>
+    // data-inicio: el header flota arriba de todo solo en esta página (SCRUM-157)
+    <main data-inicio>
       <h1 className="sr-only">Cabello Perfecto · Productos capilares</h1>
       <Suspense fallback={<ChipsEsqueleto />}>
         <ChipsInicio />

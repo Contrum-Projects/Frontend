@@ -10,6 +10,12 @@
 /* El diseño solo tiene modo claro: `dark:` existe para los componentes de shadcn, pero no se activa. */
 @custom-variant dark (&:is(.dark *));
 
+/* Header flotante (SCRUM-157): solo en el inicio (marcado con `data-inicio`) y con la página arriba
+   de todo (`data-arriba`, lo pone MarcoHeader). Con :has() se resuelve en el primer pintado, sin
+   leer la ruta en el cliente. `flotante` va en el <header>; `flotante-dentro`, en sus hijos. */
+@custom-variant flotante (body:has([data-inicio]) &[data-arriba]);
+@custom-variant flotante-dentro (body:has([data-inicio]) [data-arriba] &);
+
 /* ── 1. Tokens de Figma (nombres en español, como en el archivo) ── */
 @theme {
   /* marca/* */
