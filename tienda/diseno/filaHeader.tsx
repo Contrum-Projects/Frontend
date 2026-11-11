@@ -55,7 +55,7 @@ export function FilaHeader({
   };
 
   return (
-    <div className="relative flex h-16 items-center gap-2 px-3 lg:h-[72px] lg:gap-6 lg:px-6">
+    <div className="relative flex h-16 items-center gap-2 px-4 lg:h-[72px] lg:gap-6 lg:px-8 xl:px-16">
       <div className="lg:hidden">{menuCelular}</div>
       <Link href={RUTAS.inicio} className="shrink-0 rounded-md text-marca-logo">
         <Logo className="h-auto w-[92px] lg:w-[118px] lg:p-4" />
