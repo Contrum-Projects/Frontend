@@ -41,7 +41,7 @@ export function DireccionesCuenta() {
     <section
       id="direcciones"
       aria-labelledby="titulo-direcciones"
-      className="flex scroll-mt-24 flex-col gap-4 rounded-lg border bg-card p-6"
+      className="flex scroll-mt-8 flex-col gap-4 rounded-lg border bg-card p-6"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2

@@ -3,7 +3,6 @@ import { Skeleton } from '@/compartido/ui/skeleton';
 import { CarritoHeader } from './carritoHeader';
 import { CuentaHeader } from './cuentaHeader';
 import { FilaHeader } from './filaHeader';
-import { MarcoHeader } from './marcoHeader';
 import { MenuCelularCargado, MenuCelularEsqueleto } from './menuCelularCargado';
 import { NavegacionCategorias } from './navegacionCategorias';
 
@@ -11,13 +10,10 @@ import { NavegacionCategorias } from './navegacionCategorias';
  * Header de la tienda en una sola fila: logo, categorías, buscar, cuenta y carrito. Bajo `lg`
  * las categorías van en el menú lateral. «Precio profesional» queda en el footer y en ese menú.
  * Las categorías vienen de la API, dentro de <Suspense>.
- *
- * Arriba de todo flota sobre la portada y al desplazarse queda como barra fija (MarcoHeader,
- * SCRUM-157).
  */
 export function Header() {
   return (
-    <MarcoHeader>
+    <header className="border-b bg-fondo-hueso">
       <FilaHeader
         menuCelular={
           <Suspense fallback={<MenuCelularEsqueleto />}>
@@ -36,7 +32,7 @@ export function Header() {
           </>
         }
       />
-    </MarcoHeader>
+    </header>
   );
 }
 
