@@ -69,12 +69,8 @@ describe('SCRUM-106 · Catálogo por categoría o marca', () => {
     expect(
       within(tarjeta).getByRole('link', { name: 'Shampoo hidratante' }),
     ).toHaveAttribute('href', '/productos/11');
-    // Con un solo formato, el botón agrega al carrito sin salir del listado (SCRUM-157)
-    expect(
-      within(tarjeta).getByRole('button', {
-        name: 'Agregar Shampoo hidratante al carrito',
-      }),
-    ).toBeEnabled();
+    // La tarjeta solo lleva a la ficha: sin botón de agregar (SCRUM-157)
+    expect(within(tarjeta).queryByRole('button')).not.toBeInTheDocument();
     expect(pedidas(api)).toContain(
       '/api/tienda/productos?categoriaId=1&pagina=1&limite=12',
     );

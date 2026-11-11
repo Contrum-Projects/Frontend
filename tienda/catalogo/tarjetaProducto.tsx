@@ -9,7 +9,6 @@ import { formatearPesos } from '@/compartido/formato/moneda';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { urlProducto } from '@/tienda/diseno/enlaces';
 import { InsigniaExclusivo } from '@/tienda/profesional/insignias';
-import { BotonAgregarTarjeta } from './botonAgregarTarjeta';
 
 /** Ancho de la foto según dónde va la tarjeta, para que next/image baje el tamaño justo. */
 export const TAMANOS_FOTO = {
@@ -43,9 +42,8 @@ interface TarjetaProductoProps {
 /**
  * Tarjeta de producto (SCRUM-157, mezcla de los estilos «Limpia» y «Flotante» elegida el
  * 11-11-2026): la foto vertical arriba y debajo, sobre fondo de superficie, la marca, el nombre,
- * el precio con IVA y los botones «Ver producto» y agregar; esquinas amplias y sombra tenue que
- * sube al pasar el mouse. Toda la tarjeta lleva a la ficha; el botón agrega al carrito (o
- * lleva a elegir formato si hay varios). Si el backend entrega el mayorista (sesión profesional,
+ * el precio con IVA y «Ver producto»; esquinas amplias y sombra tenue que sube al pasar el mouse.
+ * Toda la tarjeta lleva a la ficha. Si el backend entrega el mayorista (sesión profesional,
  * SCRUM-109), muestra ese precio y marca los exclusivos.
  */
 export const TarjetaProducto = ({
@@ -91,26 +89,19 @@ export const TarjetaProducto = ({
             </p>
           )}
         </div>
-        <div className="mt-auto flex items-center gap-2">
+        <div className="mt-auto flex">
           {/* Señal visual del enlace de la tarjeta (el del nombre la cubre entera): un clic aquí
               abre la ficha y el teclado y los lectores usan ese enlace, sin repetirlo */}
           <span
             aria-hidden
             className="inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-1 overflow-hidden rounded-full border-[1.5px] border-fondo-hueso-oscuro px-3 texto-etiqueta whitespace-nowrap text-marca-profundo transition-colors group-hover:border-marca-profundo group-hover:bg-marca-acento-suave motion-reduce:transition-none"
           >
-            <span className="sm:hidden">Ver</span>
-            <span className="max-sm:hidden">Ver producto</span>
+            Ver producto
             <ArrowRight
               className="size-4 shrink-0 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
               strokeWidth={1.75}
             />
           </span>
-          <BotonAgregarTarjeta
-            productoId={producto.id}
-            nombre={producto.nombre}
-            formatoId={producto.formatoId}
-            formatos={producto.formatos}
-          />
         </div>
       </div>
     </article>
@@ -158,10 +149,7 @@ export const TarjetaProductoEsqueleto = ({
         <Skeleton className="h-5 w-3/4" />
         {profesional && <Skeleton className="h-3 w-20" />}
         <Skeleton className="h-5 w-16" />
-        <div className="mt-2 flex gap-2">
-          <Skeleton className="h-10 flex-1 rounded-full" />
-          <Skeleton className="size-10 rounded-full" />
-        </div>
+        <Skeleton className="mt-2 h-10 rounded-full" />
       </div>
     </div>
   </div>

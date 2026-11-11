@@ -89,7 +89,7 @@ Decididos el 12 de octubre para que el sitio se vea como tienda y no como landin
   header: queda en el footer y en el menú del celular (decisión del 11-11-2026, reemplaza al
   buscador grande y la segunda fila de Figma › Header 6:32). Sin franja de anuncio.
 - Tarjeta de producto (SCRUM-157): foto vertical 4:5 y, debajo, sobre fondo de superficie, marca,
-  nombre, precio, «Ver producto» y el botón de agregar (con varios formatos lleva a la ficha).
+  nombre, precio y «Ver producto»; toda la tarjeta lleva a la ficha.
 - Blue Express aparece solo donde se decide o consulta el envío (checkout, detalle de pedido);
   Mercado Pago solo en el botón de pagar y en el aviso de pago no aprobado.
 - «IVA incluido» en la ficha, el carrito y el checkout; no en cada tarjeta.
