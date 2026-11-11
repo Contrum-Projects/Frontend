@@ -107,7 +107,8 @@ formato de respuesta acordaste con quien hace la historia backend.
     Figma; el detalle lo da el mensaje del backend.
 - **Para el backend (SCRUM-19):**
   - Mensaje en español para el 429 del registro y la confirmación (hoy el de Nest, en inglés).
-  - Agregar el consentimiento de ofertas al registro (p. ej. `aceptaOfertas: boolean`).
+  - ~~Agregar el consentimiento de ofertas al registro.~~ Hecho el 11-11-2026: `aceptaMarketing: true`
+    es obligatorio (decisión del equipo) y la casilla del formulario lo envía.
   - Ruta para reenviar el correo de confirmación (la pantalla tiene «Reenviar correo»).
   - Incluir el campo en los errores de validación y de 409, para no depender del texto.
   - Declarar `type: String` en los opcionales del DTO (en el Swagger salen como

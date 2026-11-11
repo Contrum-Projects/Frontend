@@ -13,6 +13,7 @@ import {
   ListaCampanasCelular,
   TablaCampanas,
 } from './listaCampanas';
+import { TarjetaBajaCorreo } from './tarjetaBajaCorreo';
 import { TarjetaCumpleanos } from './tarjetaCumpleanos';
 import { useNombresCatalogo } from './textoSegmento';
 
@@ -21,8 +22,8 @@ export const RUTA_CAMPANA_NUEVA: Route = '/panel/campanas/nueva';
 
 /**
  * «Campañas» (Figma P7 2045:1569 y 2047:1225, E12-H3): contactos con consentimiento y campañas
- * con su segmento, destinatarios, estado y apertura; y el saludo de cumpleaños (E12-H5), a la
- * derecha de la lista en escritorio y sobre ella en celular.
+ * con su segmento, destinatarios, estado y apertura; el saludo de cumpleaños (E12-H5) y la baja de
+ * un correo (E12-H2, SCRUM-19), a la derecha de la lista en escritorio y sobre ella en celular.
  */
 export function PantallaCampanas() {
   return (
@@ -48,10 +49,11 @@ const CLASE_SALUDO = 'lg:col-start-2 lg:row-start-3';
 const ContenidoCampanas = () => {
   const consulta = useCampanas();
   const nombres = useNombresCatalogo();
-  // El saludo tiene su propia consulta: se ve aunque la lista falle o siga cargando
+  // El saludo y la baja no dependen de la lista: se ven aunque falle o siga cargando
   const saludo = (
-    <div key="saludo" className={CLASE_SALUDO}>
+    <div key="saludo" className={cn('flex flex-col gap-4', CLASE_SALUDO)}>
       <TarjetaCumpleanos />
+      <TarjetaBajaCorreo />
     </div>
   );
 

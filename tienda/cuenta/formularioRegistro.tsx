@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import { api } from '@/compartido/api/cliente';
 import { ErrorDeApi, errorDeApi, exigir } from '@/compartido/api/errores';
@@ -198,16 +198,50 @@ export function FormularioRegistro({
 
       <CamposOpcionales register={register} control={control} errors={errors} />
 
-      {/* TODO(backend SCRUM-19): el DTO del registro aún no recibe el consentimiento; no se envía */}
-      <div className="flex min-h-10 items-center gap-2">
-        <Checkbox id="registro-ofertas" />
-        {/* Texto pequeño, no etiqueta: <Label> trae texto-etiqueta de base */}
-        <label
-          htmlFor="registro-ofertas"
-          className="flex min-h-10 flex-1 cursor-pointer items-center texto-pequeno text-texto-principal"
-        >
-          Quiero recibir ofertas por correo
-        </label>
+      {/* Obligatoria para crear la cuenta (decisión del equipo del 11 nov, SCRUM-19) */}
+      <div className="flex flex-col gap-1">
+        <div className="flex min-h-10 items-center gap-2">
+          <Controller
+            name="aceptaMarketing"
+            control={control}
+            render={({ field }) => (
+              <Checkbox
+                id="registro-ofertas"
+                ref={field.ref}
+                name={field.name}
+                checked={field.value}
+                onCheckedChange={(marcada) => field.onChange(marcada === true)}
+                onBlur={field.onBlur}
+                aria-required
+                aria-invalid={errors.aceptaMarketing ? true : undefined}
+                aria-describedby={
+                  errors.aceptaMarketing ? 'registro-ofertas-error' : undefined
+                }
+              />
+            )}
+          />
+          {/* Texto pequeño, no etiqueta: <Label> trae texto-etiqueta de base */}
+          <label
+            htmlFor="registro-ofertas"
+            className="flex min-h-10 flex-1 cursor-pointer items-center texto-pequeno text-texto-principal"
+          >
+            <span>
+              Quiero recibir ofertas y novedades por correo
+              <span aria-hidden className="text-destructive">
+                {' '}
+                *
+              </span>
+            </span>
+          </label>
+        </div>
+        {errors.aceptaMarketing?.message && (
+          <p
+            id="registro-ofertas-error"
+            className="texto-pequeno text-destructive"
+          >
+            {errors.aceptaMarketing.message}
+          </p>
+        )}
       </div>
 
       {aviso && (

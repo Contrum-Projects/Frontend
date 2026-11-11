@@ -1,12 +1,9 @@
-'use client';
-
 import { Check } from 'lucide-react';
 import { useId } from 'react';
 import type { PreferenciaOfertas } from '@/compartido/api/respuestas';
 import { formatearFechaLarga } from '@/compartido/formato/fecha';
 import { Separator } from '@/compartido/ui/separator';
-import { Switch } from '@/compartido/ui/switch';
-import { useCambiarOfertas } from './consultasOfertas';
+import { CORREO_CONTACTO } from '@/tienda/diseno/contacto';
 
 /** Lo que incluye la publicidad por correo (Figma 2066:3845 a 2066:3856). */
 const INCLUYE = [
@@ -15,17 +12,18 @@ const INCLUYE = [
   'Recordatorios si dejas productos en el carrito.',
 ] as const;
 
-const estadoActual = (acepta: boolean, fecha: string | null) => {
+const estadoActual = ({ acepta, fechaConsentimiento }: PreferenciaOfertas) => {
   if (!acepta) return 'No recibes ofertas por correo.';
-  return fecha
-    ? `Activado el ${formatearFechaLarga(fecha)}.`
+  return fechaConsentimiento
+    ? `Activado el ${formatearFechaLarga(fechaConsentimiento)}.`
     : 'Recibes ofertas por correo.';
 };
 
 /**
- * Tarjeta «Preferencia» (Figma 2066:3712). El interruptor guarda al tocarlo: Figma no tiene
- * botón «Guardar». No muestra el aviso de correo sin verificar (E12-H2, criterio 2): una cuenta
- * compradora no puede iniciar sesión sin verificarlo, así que aquí siempre lo está (SCRUM-150).
+ * Tarjeta «Preferencia» (Figma 2066:3712), solo para leer. Las ofertas se aceptan al crear la
+ * cuenta y la cuenta ya no puede desactivarlas sola: para dejar de recibirlas escribe al correo
+ * de contacto y el administrador la da de baja en el panel (decisión del equipo del 11 nov,
+ * SCRUM-19). Por eso no tiene el interruptor de Figma.
  */
 export const TarjetaOfertas = ({
   preferencia,
@@ -33,83 +31,56 @@ export const TarjetaOfertas = ({
   preferencia: PreferenciaOfertas;
 }) => {
   const id = useId();
-  const cambio = useCambiarOfertas();
-  // Mientras guarda muestra lo pedido; si el backend lo rechaza, vuelve a lo guardado
-  const acepta = cambio.isPending ? cambio.variables : preferencia.acepta;
-  // El interruptor deshabilitado no se enfoca: el error se lee con su descripción
-  const descripcion = [`${id}-estado`, cambio.isError && `${id}-error`]
-    .filter(Boolean)
-    .join(' ');
 
   return (
     <section
       aria-labelledby={`${id}-titulo`}
       className="flex flex-col gap-4 rounded-lg border bg-card p-6"
     >
-      <div className="flex items-start gap-4">
-        <Switch
-          id={`${id}-interruptor`}
-          checked={acepta}
-          disabled={cambio.isPending}
-          onCheckedChange={(valor) => cambio.mutate(valor)}
-          aria-describedby={descripcion}
-          className="order-last md:order-first"
-        />
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <h2
-            id={`${id}-titulo`}
-            className="texto-cuerpo-fuerte text-texto-principal"
-          >
-            <label htmlFor={`${id}-interruptor`}>
-              Recibir ofertas y novedades por correo
-            </label>
-          </h2>
-          <p
-            id={`${id}-estado`}
-            aria-live="polite"
-            className="texto-pequeno text-texto-secundario"
-          >
-            {/* Mientras guarda no se muestra el estado anterior junto al interruptor ya movido */}
-            {cambio.isPending
-              ? 'Guardando…'
-              : estadoActual(
-                  preferencia.acepta,
-                  preferencia.fechaConsentimiento,
-                )}
-          </p>
-        </div>
+      <div className="flex flex-col gap-1">
+        <h2
+          id={`${id}-titulo`}
+          className="texto-cuerpo-fuerte text-texto-principal"
+        >
+          Ofertas y novedades por correo
+        </h2>
+        <p className="texto-pequeno text-texto-secundario">
+          {estadoActual(preferencia)}
+        </p>
       </div>
 
-      {cambio.isError && (
-        <p
-          id={`${id}-error`}
-          role="alert"
-          className="texto-pequeno text-estado-error"
-        >
-          {cambio.error.message}
-        </p>
+      {preferencia.acepta && (
+        <>
+          <Separator />
+          <p className="texto-etiqueta text-texto-principal">Recibes</p>
+          <ul className="flex flex-col gap-3">
+            {INCLUYE.map((texto) => (
+              <li key={texto} className="flex items-start gap-3">
+                <Check
+                  aria-hidden
+                  className="mt-0.5 size-4 shrink-0 stroke-[1.75] text-texto-principal"
+                />
+                <span className="texto-pequeno text-texto-principal">
+                  {texto}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="texto-pequeno text-texto-secundario">
+            Para dejar de recibirlas, escríbenos a{' '}
+            <a
+              href={`mailto:${CORREO_CONTACTO}`}
+              className="texto-etiqueta text-marca-profundo underline-offset-2 hover:underline"
+            >
+              {CORREO_CONTACTO}
+            </a>
+            .
+          </p>
+        </>
       )}
 
-      <Separator />
-
-      <p className="texto-etiqueta text-texto-principal">
-        Con esta opción activa recibes
-      </p>
-      <ul className="flex flex-col gap-3">
-        {INCLUYE.map((texto) => (
-          <li key={texto} className="flex items-start gap-3">
-            <Check
-              aria-hidden
-              className="mt-0.5 size-4 shrink-0 stroke-[1.75] text-texto-principal"
-            />
-            <span className="texto-pequeno text-texto-principal">{texto}</span>
-          </li>
-        ))}
-      </ul>
       <p className="texto-pequeno text-texto-secundario">
-        Los correos de tus pedidos, pagos y cuenta llegan siempre, aunque
-        desactives esta opción. También puedes darte de baja desde el enlace de
-        cualquier correo de ofertas.
+        Los correos de tus pedidos, pagos y cuenta llegan siempre.
       </p>
     </section>
   );

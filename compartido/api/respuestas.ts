@@ -1077,9 +1077,8 @@ export interface SolicitudResuelta {
 
 /**
  * Si la cuenta recibe ofertas por correo (E12-H2). Viene en `GET /api/cuentas/yo`
- * (`consentimientoMarketing`) y es la respuesta de `PUT /api/cuentas/yo/consentimiento-marketing`.
- * backend: src/modulos/marketing/consentimiento.service.ts › ConsentimientoMarketing y
- * src/modulos/cuentas/mi-cuenta.service.ts › DatosPersonales (SCRUM-150)
+ * (`consentimientoMarketing`); la cuenta ya no lo cambia (SCRUM-19, decisión del 11 nov).
+ * backend: src/modulos/cuentas/mi-cuenta.service.ts › DatosPersonales (SCRUM-150)
  */
 export interface PreferenciaOfertas {
   /** Si la cuenta acepta publicidad por correo. */

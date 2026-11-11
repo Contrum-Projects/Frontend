@@ -66,6 +66,13 @@ export const esquemaRegistro = z
       .pipe(z.email('Escribe un correo válido.')),
     contrasena: contrasenaNueva,
     confirmacionContrasena,
+    // Condición para crear la cuenta (decisión del equipo del 11 nov, SCRUM-19); el backend la exige
+    aceptaMarketing: z
+      .boolean()
+      .refine(
+        (acepta) => acepta,
+        'Para crear tu cuenta debes aceptar recibir ofertas por correo.',
+      ),
   })
   .refine(
     (datos) => datos.contrasena === datos.confirmacionContrasena,
@@ -85,6 +92,7 @@ export const REGISTRO_VACIO: DatosRegistro = {
   rut: '',
   fechaNacimiento: '',
   genero: '',
+  aceptaMarketing: false,
 };
 
 type CuerpoRegistro = components['schemas']['RegistrarCuentaDto'];
@@ -92,8 +100,7 @@ type CuerpoRegistro = components['schemas']['RegistrarCuentaDto'];
 /**
  * Cuerpo de POST /api/cuentas/registro, sin los opcionales vacíos y con el RUT en formato
  * único. El Swagger declara los opcionales como `Record<string, never>` (les falta
- * `type: String` en el DTO): por eso el cast. La casilla de ofertas no se envía porque el
- * DTO todavía no la recibe.
+ * `type: String` en el DTO): por eso el cast.
  */
 export const cuerpoRegistro = (
   datos: z.output<typeof esquemaRegistro>,
@@ -110,6 +117,7 @@ export const cuerpoRegistro = (
     email: datos.email,
     contrasena: datos.contrasena,
     confirmacionContrasena: datos.confirmacionContrasena,
+    aceptaMarketing: datos.aceptaMarketing,
     ...(opcionales as Partial<CuerpoRegistro>),
   };
 };
