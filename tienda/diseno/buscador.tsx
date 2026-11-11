@@ -1,17 +1,20 @@
 'use client';
 
 import { Search, X } from 'lucide-react';
-import { Suspense, useEffect, useRef, type FocusEvent } from 'react';
+import { Suspense, type ComponentProps, type FocusEvent } from 'react';
 import { cn } from '@/compartido/lib/utils';
 import { Button } from '@/compartido/ui/button';
 import { CampoBuscador, type PropsCampoBuscador } from './campoBuscador';
 import { RUTAS } from './enlaces';
 
-interface BuscadorProps extends PropsCampoBuscador {
+interface BuscadorProps
+  extends
+    PropsCampoBuscador,
+    Pick<ComponentProps<'form'>, 'inert' | 'aria-hidden'> {
   className?: string;
   /**
-   * Con esta función el buscador se abrió desde el header: toma el foco al aparecer, muestra
-   * la X y se cierra con Esc o al salir de él vacío. `devolverFoco` es falso cuando el foco ya
+   * Con esta función el buscador se abre desde el header: muestra la X y se cierra con Esc o
+   * al salir de él vacío (quien lo abre le da el foco). `devolverFoco` es falso cuando el foco ya
    * se fue a otra parte (clic fuera) y no hay que traerlo de vuelta.
    */
   alCerrar?: (devolverFoco: boolean) => void;
@@ -21,15 +24,13 @@ interface BuscadorProps extends PropsCampoBuscador {
  * Buscador del header (RF-02.07). Es un formulario GET a `/buscar?q=` (SCRUM-107). En la
  * búsqueda, el campo muestra lo que se buscó; mientras lee la URL, el mismo campo vacío.
  */
-export const Buscador = ({ className, alCerrar, ...campo }: BuscadorProps) => {
-  const formulario = useRef<HTMLFormElement>(null);
-
-  useEffect(() => {
-    if (alCerrar) formulario.current?.querySelector('input')?.focus();
-    // Solo al aparecer: si el padre crea otra función en cada render, no hay que volver a enfocar
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+export const Buscador = ({
+  className,
+  alCerrar,
+  inert,
+  'aria-hidden': oculto,
+  ...campo
+}: BuscadorProps) => {
   const alSalir = (evento: FocusEvent<HTMLFormElement>) => {
     if (!alCerrar) return;
     if (evento.currentTarget.contains(evento.relatedTarget)) return;
@@ -39,7 +40,8 @@ export const Buscador = ({ className, alCerrar, ...campo }: BuscadorProps) => {
 
   return (
     <form
-      ref={formulario}
+      inert={inert}
+      aria-hidden={oculto}
       action={RUTAS.buscar}
       role="search"
       onBlur={alSalir}
