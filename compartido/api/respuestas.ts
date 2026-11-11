@@ -62,10 +62,6 @@ export interface ProductoTienda {
   precio: number;
   /** URL pública de la imagen principal del formato mostrado. */
   imagen: string;
-  /** Id del formato mostrado: el `articuloId` que agrega el botón de la tarjeta (SCRUM-157). */
-  formatoId: number;
-  /** Cuántos formatos están a la venta: con más de uno, el botón lleva a la ficha. */
-  formatos: number;
 }
 
 /**

@@ -38,8 +38,6 @@ export const producto = (
   categoria: { id: 1, nombre: 'Shampoo' },
   precio: 12990,
   imagen: `https://imagenes.test/${id}.jpg`,
-  formatoId: id * 10,
-  formatos: 1,
   ...extra,
 });
 
