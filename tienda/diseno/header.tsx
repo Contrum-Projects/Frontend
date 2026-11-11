@@ -9,11 +9,13 @@ import { NavegacionCategorias } from './navegacionCategorias';
 /**
  * Header de la tienda en una sola fila: logo, categorías, buscar, cuenta y carrito. Bajo `lg`
  * las categorías van en el menú lateral. «Precio profesional» queda en el footer y en ese menú.
- * Las categorías vienen de la API, dentro de <Suspense>.
+ * Las categorías vienen de la API, dentro de <Suspense>. Queda fijo arriba al desplazarse
+ * (`z-40`: bajo los diálogos, menús y paneles, que usan `z-50`); por eso las anclas de la tienda
+ * llevan `scroll-mt-24`, para no quedar tapadas.
  */
 export function Header() {
   return (
-    <header className="border-b bg-fondo-hueso">
+    <header className="sticky top-0 z-40 border-b bg-fondo-hueso">
       <FilaHeader
         menuCelular={
           <Suspense fallback={<MenuCelularEsqueleto />}>
