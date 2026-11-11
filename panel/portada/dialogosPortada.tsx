@@ -26,7 +26,7 @@ type Campo = 'escritorio' | 'celular' | 'destino';
 
 /** Ayudas de cada imagen: el tamaño que mejor se ve y qué pasa si falta la de celular. */
 export const AYUDA_ESCRITORIO =
-  'Horizontal, ideal 2400 × 900 px. JPEG, PNG o WebP de hasta 4 MB.';
+  'Horizontal, ideal 2400 × 1000 px. JPEG, PNG o WebP de hasta 4 MB.';
 export const AYUDA_CELULAR =
   'Vertical, ideal 1080 × 1350 px. Si no la subes, el celular muestra la de escritorio recortada al centro.';
 

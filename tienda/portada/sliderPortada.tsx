@@ -18,10 +18,11 @@ import { hrefDestino, type SlidePortada } from './destinoPortada';
 export const SEGUNDOS_POR_SLIDE = 6;
 
 /**
- * Proporciones de la portada: 8:3 en escritorio y 4:5 en celular (el panel recomienda 2400 × 900
- * y 1080 × 1350). Sin imagen de celular, la de escritorio se recorta al centro.
+ * La portada ocupa todo el ancho de la pantalla, en 12:5 en escritorio (sin pasar del 85 % del
+ * alto de la ventana) y 4:5 en celular; el panel recomienda 2400 × 1000 y 1080 × 1350. Sin imagen
+ * de celular, la de escritorio se recorta al centro.
  */
-const SIZES = '(min-width: 1440px) 1312px, (min-width: 768px) 92vw, 100vw';
+const SIZES = '100vw';
 
 const CONSULTA_REDUCIDO = '(prefers-reduced-motion: reduce)';
 
@@ -114,7 +115,7 @@ export function SliderPortada({ slides }: { slides: SlidePortada[] }) {
     <section
       aria-roledescription="carrusel"
       aria-label="Portada"
-      className="mx-auto max-w-[1440px] px-4 pt-4 md:px-16 md:pt-6"
+      className="w-full"
       onMouseEnter={() => setEncima(true)}
       onMouseLeave={() => setEncima(false)}
       onFocus={() => setEnfocado(true)}
@@ -124,7 +125,7 @@ export function SliderPortada({ slides }: { slides: SlidePortada[] }) {
         }
       }}
     >
-      <div className="relative overflow-hidden rounded-xl bg-marca-acento-suave">
+      <div className="relative overflow-hidden bg-marca-acento-suave">
         <ul
           ref={pista}
           aria-live={avanzando ? 'off' : 'polite'}
@@ -137,7 +138,7 @@ export function SliderPortada({ slides }: { slides: SlidePortada[] }) {
               role="group"
               aria-roledescription="imagen"
               aria-label={`${indice + 1} de ${total}`}
-              className="relative aspect-[4/5] w-full shrink-0 snap-start md:aspect-[8/3]"
+              className="relative aspect-[4/5] w-full shrink-0 snap-start md:aspect-[12/5] md:max-h-[85dvh]"
             >
               <ImagenSlide
                 slide={slide}
@@ -243,7 +244,7 @@ const Controles = ({
   alIr,
   alPausar,
 }: ControlesProps) => (
-  <div className="absolute right-3 bottom-3 flex items-center gap-1 rounded-full border border-fondo-superficie/60 bg-fondo-superficie/85 p-1 shadow-tarjeta backdrop-blur-md md:right-6 md:bottom-6">
+  <div className="absolute right-3 bottom-3 flex items-center gap-1 rounded-full border border-fondo-superficie/60 bg-fondo-superficie/85 p-1 shadow-tarjeta backdrop-blur-md md:right-16 md:bottom-8">
     {puedePausar && (
       <BotonControl
         etiqueta={pausado ? 'Reanudar la portada' : 'Pausar la portada'}

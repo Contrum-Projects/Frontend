@@ -80,10 +80,9 @@ Decididos el 12 de octubre para que el sitio se vea como tienda y no como landin
 - El inicio muestra productos: la portada arriba, «Más vendidos», «Novedades» y marcas. Sin pasos
   explicativos ni fila de beneficios. La **portada** (SCRUM-157, decisión del 11-11-2026, reemplaza
   el «sin hero» del 12-10) es un slider de imágenes que la tienda edita en `/panel/portada`: solo
-  imágenes (escritorio 8:3, celular 4:5 opcional), orden y destino elegido de una lista. El texto
+  imágenes (escritorio 12:5 a todo el ancho, celular 4:5 opcional), orden y destino elegido de una lista. El texto
   va dentro de la imagen; la página no superpone titulares ni botones. Avanza cada 6 s, se pausa
-  con el mouse, el foco o su botón, y respeta «reducir movimiento». Bajo ella van las tarjetas de
-  packs y precio profesional. Sin imágenes, el inicio vuelve al banner del pack vigente.
+  con el mouse, el foco o su botón, y respeta «reducir movimiento». Sin imágenes, el inicio vuelve al banner del pack vigente.
 - Header de tienda: buscador grande, cuenta, carrito y fila de categorías con acceso a «Precio
   profesional». Sin franja de anuncio.
 - Blue Express aparece solo donde se decide o consulta el envío (checkout, detalle de pedido);

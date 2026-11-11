@@ -112,7 +112,7 @@ export function TarjetaSlide({
       </button>
 
       <div className="flex shrink-0 items-end gap-2">
-        <div className="relative aspect-[8/3] w-28 overflow-hidden rounded-md bg-marca-acento-suave md:w-48">
+        <div className="relative aspect-[12/5] w-28 overflow-hidden rounded-md bg-marca-acento-suave md:w-48">
           <Image
             src={slide.imagenEscritorio}
             alt=""

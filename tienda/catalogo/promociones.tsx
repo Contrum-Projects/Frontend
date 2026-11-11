@@ -41,36 +41,6 @@ export async function Promociones() {
   );
 }
 
-/**
- * Con portada (SCRUM-157) el banner del pack deja su lugar a las imágenes de la portada: las
- * tarjetas de packs y de precio profesional quedan en una fila bajo ella. En celular, la de
- * precio profesional sigue más abajo (AvisoProfesionalCelular).
- */
-export async function AccesosInicio() {
-  const packs = await leerPacks(1).catch(() => null);
-  return (
-    <section
-      aria-label="Packs y precio profesional"
-      className="mx-auto grid max-w-[1440px] gap-6 px-4 pt-4 md:grid-cols-2 md:px-16 md:pt-6"
-    >
-      <div className="flex h-[168px] md:h-48">
-        <TarjetaPacks imagen={packs?.items[0]?.imagen} />
-      </div>
-      <TarjetaProfesional className="hidden md:flex" />
-    </section>
-  );
-}
-
-export const AccesosInicioEsqueleto = () => (
-  <div
-    aria-hidden
-    className="mx-auto grid max-w-[1440px] gap-6 px-4 pt-4 md:grid-cols-2 md:px-16 md:pt-6"
-  >
-    <Skeleton className="h-[168px] rounded-xl md:h-48" />
-    <Skeleton className="hidden h-48 rounded-xl md:block" />
-  </div>
-);
-
 /** El que vence antes; los que no tienen término, al final (el listado viene por nombre). */
 const packDestacado = (packs: PackTienda[]) =>
   packs.toSorted((a, b) =>
@@ -79,7 +49,7 @@ const packDestacado = (packs: PackTienda[]) =>
     ),
   )[0];
 
-export const TarjetaPacks = ({ imagen }: { imagen?: string }) => (
+const TarjetaPacks = ({ imagen }: { imagen?: string }) => (
   <div className="relative flex flex-1 overflow-hidden rounded-xl bg-fondo-hueso-oscuro p-6 md:p-8">
     <div className="relative z-10 flex max-w-56 flex-col items-start gap-2">
       <h2 className="titulo-h2 text-texto-principal">Packs</h2>
@@ -103,7 +73,7 @@ export const TarjetaPacks = ({ imagen }: { imagen?: string }) => (
   </div>
 );
 
-export const TarjetaProfesional = ({ className }: { className?: string }) => (
+const TarjetaProfesional = ({ className }: { className?: string }) => (
   <div
     className={cn(
       'flex flex-1 flex-col items-start gap-2 rounded-xl bg-marca-acento-suave p-8',

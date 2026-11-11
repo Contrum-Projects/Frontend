@@ -35,7 +35,7 @@ const useVistaPrevia = (archivo: File | null) => {
 };
 
 /**
- * Imagen de un slide nuevo, con su vista previa en la proporción de la tienda (8:3 en escritorio,
+ * Imagen de un slide nuevo, con su vista previa en la proporción de la tienda (12:5 en escritorio,
  * 4:5 en celular). Revisa el tipo y el peso antes de enviar, con los mismos mensajes del backend.
  */
 export function CampoImagen({
@@ -90,7 +90,7 @@ export function CampoImagen({
         htmlFor={id}
         className={cn(
           'relative flex cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border-[1.5px] border-dashed border-texto-secundario bg-fondo-hueso texto-etiqueta text-marca-profundo focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-marca-profundo hover:bg-marca-acento-suave',
-          proporcion === 'escritorio' ? 'aspect-[8/3]' : 'aspect-[4/5] w-40',
+          proporcion === 'escritorio' ? 'aspect-[12/5]' : 'aspect-[4/5] w-40',
           vista && 'border-solid border-fondo-hueso-oscuro',
           mensaje && 'border-estado-error',
         )}
