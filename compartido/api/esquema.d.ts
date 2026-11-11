@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 103.
+ * Versión de la API: 0.1.0. Rutas: 102.
  */
 
 export interface paths {
@@ -1912,30 +1912,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Dejar de recibir publicidad con el enlace del correo (E12-H2)
-         * @description Da de baja la dirección del enlace, sea de una cuenta o de un suscriptor. Responde lo mismo si ya estaba de baja.
+         * Dar de baja una dirección de la publicidad (E12-H2)
+         * @description Deja sin publicidad la cuenta y la suscripción sin cuenta con ese correo. Responde lo mismo si ya estaba de baja.
          */
         post: operations["BajasController_darDeBaja"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/cuentas/yo/consentimiento-marketing": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /**
-         * Elegir si recibo ofertas por correo (E12-H2)
-         * @description Activarlo guarda la fecha del consentimiento; desactivarlo la conserva.
-         */
-        put: operations["ConsentimientoController_actualizar"];
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2162,6 +2142,11 @@ export interface components {
              */
             fechaNacimiento?: Record<string, never>;
             genero?: Record<string, never>;
+            /**
+             * @description Debe ser true: para crear la cuenta hay que aceptar recibir ofertas por correo.
+             * @example true
+             */
+            aceptaMarketing: boolean;
         };
         ConfirmarCorreoDto: {
             /** @description Token recibido en el enlace del correo. */
@@ -3841,15 +3826,18 @@ export interface components {
             token: string;
         };
         DarDeBajaDto: {
-            /** @description Token firmado que llegó en el enlace de baja del correo. */
-            token: string;
+            /** @example camila@correo.cl */
+            email: string;
         };
-        ActualizarConsentimientoDto: {
-            /**
-             * @description Recibir ofertas por correo.
-             * @example true
-             */
-            acepta: boolean;
+        BajaRespuestaDto: {
+            /** @example camila@correo.cl */
+            email: string;
+            /** @description Hay una cuenta con esa dirección. */
+            cuenta: boolean;
+            /** @description Hay una suscripción sin cuenta (LEAD) con esa dirección. */
+            suscripcion: boolean;
+            /** @example Listo. camila@correo.cl ya no recibirá publicidad. */
+            mensaje: string;
         };
         SegmentoCampanaDto: {
             /**
@@ -4085,7 +4073,7 @@ export interface components {
         CorreoCampanaDto: {
             /** @example Nueva línea reparadora */
             asunto: string;
-            /** @description HTML del correo. El enlace de baja lleva a la pantalla de baja sin token. */
+            /** @description HTML del correo, con el correo para pedir la baja en el pie. */
             html: string;
             /** @description Versión en texto plano del correo. */
             texto: string;
@@ -9511,60 +9499,33 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BajaRespuestaDto"];
+                };
             };
-            /** @description Enlace inválido. */
+            /** @description Falta el correo o no es válido. */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description Más de 5 peticiones por minuto desde la misma IP. */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    ConsentimientoController_actualizar: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ActualizarConsentimientoDto"];
-            };
-        };
-        responses: {
-            /** @description Preferencia guardada. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Falta `acepta` o no es booleano. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Sin sesión válida. */
+            /** @description Falta iniciar sesión. */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description Cuenta del personal de tienda. */
+            /** @description El rol no tiene el permiso de gestionar campañas. */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No hay cuenta ni suscripción con ese correo. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

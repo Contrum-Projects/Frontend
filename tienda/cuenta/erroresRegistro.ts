@@ -16,6 +16,7 @@ const CAMPOS_REGISTRO: Partial<Record<string, CampoRegistro>> = {
   rut: 'rut',
   fechaNacimiento: 'fechaNacimiento',
   genero: 'genero',
+  aceptaMarketing: 'aceptaMarketing',
 };
 
 export interface ErroresRepartidos {

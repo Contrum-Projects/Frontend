@@ -44,6 +44,20 @@ SCRUM-69 no tiene endpoints ni rama en el backend. Se trabaja con la **API simul
 
 ## Notas de trabajo
 
+**11-11-2026 · Cambio de regla (SCRUM-19, decisión del equipo)**
+
+- Las ofertas se aceptan al crear la cuenta (la casilla del registro es obligatoria) y la cuenta
+  ya **no** puede desactivarlas sola. Se reemplazan los criterios 1 y 3:
+  - `/cuenta/ofertas` queda solo para leer: estado, fecha del consentimiento, qué incluye y «Para
+    dejar de recibirlas, escríbenos a `CORREO_CONTACTO`». Sin interruptor.
+  - `/ofertas/baja` ya no da de baja: solo recibe los enlaces de correos antiguos, quita el token
+    de la URL y dice a qué correo escribir. No llama al backend.
+  - El administrador registra la baja en «Campañas» › «Dar de baja un correo»
+    (`POST /api/marketing/bajas` `{ email }`, `panel/campanas/tarjetaBajaCorreo.tsx`).
+- El backend quitó `PUT /api/cuentas/yo/consentimiento-marketing` y la baja con token.
+  `CORREO_CONTACTO` (`tienda/diseno/contacto.ts`) es un PLACEHOLDER y debe ser el mismo que la
+  variable `CORREO_CONTACTO` del backend.
+
 PR: https://github.com/Contrum-Projects/Frontend/pull/62
 
 **4-11-2026**

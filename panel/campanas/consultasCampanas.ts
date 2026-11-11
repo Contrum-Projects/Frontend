@@ -229,3 +229,21 @@ export const useCambiarSaludoCumpleanos = () => {
     onSuccess: (saludo) => clienteConsultas.setQueryData(CLAVE_SALUDO, saludo),
   });
 };
+
+/**
+ * E12-H2 · El administrador da de baja una dirección de la publicidad cuando la persona lo pide
+ * por correo: la cuenta ya no puede hacerlo sola (decisión del equipo del 11 nov, SCRUM-19). El
+ * backend la apaga en la cuenta y en la suscripción sin cuenta; 404 si no hay ninguna. Los
+ * contadores de contactos cambian: se vuelven a pedir.
+ */
+export const useDarDeBajaCorreo = () => {
+  const clienteConsultas = useQueryClient();
+  return useMutation({
+    mutationFn: (email: string) =>
+      conErrorDeApi(async () =>
+        exigir(await api.POST('/api/marketing/bajas', { body: { email } })),
+      ),
+    onSuccess: () =>
+      clienteConsultas.invalidateQueries({ queryKey: CLAVE_CAMPANAS }),
+  });
+};

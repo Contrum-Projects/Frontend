@@ -132,7 +132,8 @@ const LISTADO: ListadoCampanas = {
 
 const PIE =
   'Cabello Perfecto te envía este correo porque aceptaste recibir sus ofertas.';
-const BAJA = 'Dejar de recibir ofertas: https://tienda.cl/ofertas/baja';
+const BAJA =
+  'Para dejar de recibir ofertas, escríbenos a contacto@cabelloperfecto.cl.';
 
 /** El correo que arma el backend: asunto, cuerpo, pie y baja, en texto plano. */
 const correo = ({ asunto, cuerpo }: { asunto: string; cuerpo: string }) => ({
@@ -943,5 +944,100 @@ describe('Confirmar el envío (SCRUM-140)', () => {
 
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     expect(pedidas(`POST ${RUTA}/41/envio`)).toHaveLength(0);
+  });
+});
+
+describe('SCRUM-19 · Dar de baja un correo desde el panel', () => {
+  const RUTA_BAJA = 'POST /api/marketing/bajas';
+
+  const tarjetaBaja = async () =>
+    within(
+      await screen.findByRole('region', { name: 'Dar de baja un correo' }),
+    );
+
+  it('E12-H2 FE · baja desde el panel: envía el correo escrito, muestra el mensaje del backend y vuelve a pedir los contadores', async () => {
+    const backend = simularBackend({
+      [RUTA_BAJA]: () =>
+        Response.json({
+          email: 'camila@correo.cl',
+          cuenta: true,
+          suscripcion: false,
+          mensaje: 'Listo. camila@correo.cl ya no recibirá publicidad.',
+        }),
+    });
+    mostrar(<PantallaCampanas />);
+    const usuario = userEvent.setup();
+    const tarjeta = await tarjetaBaja();
+    await screen.findAllByText('Tintes nuevos para el salón');
+
+    await usuario.type(tarjeta.getByLabelText('Correo'), ' camila@correo.cl ');
+    await usuario.click(tarjeta.getByRole('button', { name: 'Dar de baja' }));
+
+    expect(
+      await tarjeta.findByText(
+        'Listo. camila@correo.cl ya no recibirá publicidad.',
+      ),
+    ).toBeInTheDocument();
+    expect(backend.pedidas(RUTA_BAJA)).toEqual([
+      { clave: RUTA_BAJA, cuerpo: { email: 'camila@correo.cl' } },
+    ]);
+    expect(tarjeta.getByLabelText('Correo')).toHaveValue('');
+    await waitFor(() =>
+      expect(backend.pedidas(`GET ${RUTA}`).length).toBeGreaterThan(1),
+    );
+  });
+
+  it('E12-H2 FE · baja desde el panel: un correo sin cuenta ni suscripción muestra el 404 junto al campo y conserva lo escrito', async () => {
+    simularBackend({
+      [RUTA_BAJA]: () =>
+        error(404, 'No hay ninguna cuenta ni suscripción con ese correo.'),
+    });
+    mostrar(<PantallaCampanas />);
+    const usuario = userEvent.setup();
+    const tarjeta = await tarjetaBaja();
+
+    await usuario.type(tarjeta.getByLabelText('Correo'), 'nadie@correo.cl');
+    await usuario.click(tarjeta.getByRole('button', { name: 'Dar de baja' }));
+
+    const campo = tarjeta.getByLabelText('Correo');
+    await waitFor(() =>
+      expect(campo).toHaveAccessibleDescription(
+        'No hay ninguna cuenta ni suscripción con ese correo.',
+      ),
+    );
+    expect(campo).toHaveAttribute('aria-invalid', 'true');
+    expect(campo).toHaveValue('nadie@correo.cl');
+  });
+
+  it('E12-H2 FE · baja desde el panel: un correo inválido se avisa antes de llamar al backend', async () => {
+    const backend = simularBackend();
+    mostrar(<PantallaCampanas />);
+    const usuario = userEvent.setup();
+    const tarjeta = await tarjetaBaja();
+
+    await usuario.type(tarjeta.getByLabelText('Correo'), 'no-es-correo');
+    await usuario.click(tarjeta.getByRole('button', { name: 'Dar de baja' }));
+
+    expect(
+      await tarjeta.findByText('Escribe un correo válido.'),
+    ).toBeInTheDocument();
+    expect(backend.pedidas(RUTA_BAJA)).toEqual([]);
+  });
+
+  it('E12-H2 FE · baja desde el panel: un error del servidor se muestra como aviso sin detalles técnicos', async () => {
+    simularBackend({
+      [RUTA_BAJA]: () => error(500, 'Internal server error'),
+    });
+    mostrar(<PantallaCampanas />);
+    const usuario = userEvent.setup();
+    const tarjeta = await tarjetaBaja();
+
+    await usuario.type(tarjeta.getByLabelText('Correo'), 'camila@correo.cl');
+    await usuario.click(tarjeta.getByRole('button', { name: 'Dar de baja' }));
+
+    await waitFor(() => expect(tarjeta.getByRole('alert')).toBeInTheDocument());
+    expect(
+      tarjeta.queryByText('Internal server error'),
+    ).not.toBeInTheDocument();
   });
 });

@@ -9,8 +9,9 @@ import { usePreferenciaOfertas } from './consultasOfertas';
 import { TarjetaOfertas } from './tarjetaOfertas';
 
 /**
- * 10c Ofertas por correo (Figma 2066:3690 y 2070:2703, E12-H2): el interruptor de la publicidad
- * por correo, desde cuándo está activo y qué incluye.
+ * 10c Ofertas por correo (Figma 2066:3690 y 2070:2703, E12-H2): si la cuenta recibe publicidad
+ * por correo, desde cuándo y qué incluye. Sin interruptor: la baja la registra el administrador
+ * (decisión del equipo del 11 nov, SCRUM-19).
  */
 export function PantallaOfertasCorreo() {
   return (
@@ -55,29 +56,26 @@ function Contenido() {
   return <TarjetaOfertas preferencia={preferencia.data} />;
 }
 
-/** La tarjeta con el interruptor, la lista y las notas. */
+/** La tarjeta con el estado, la lista y las notas. */
 const EsqueletoOfertas = () => (
   <div className="flex flex-col gap-4 rounded-lg border bg-card p-6">
     <span className="sr-only" role="status">
       Cargando tus preferencias…
     </span>
-    <div className="flex items-start gap-4">
-      <Skeleton aria-hidden className="h-6 w-10 rounded-full" />
-      <div className="flex flex-1 flex-col gap-1">
-        <Skeleton aria-hidden className="h-6 w-3/4" />
-        <Skeleton aria-hidden className="h-5 w-1/2" />
-      </div>
+    <div className="flex flex-col gap-1">
+      <Skeleton aria-hidden className="h-6 w-3/4" />
+      <Skeleton aria-hidden className="h-5 w-1/2" />
     </div>
     <Skeleton aria-hidden className="h-px w-full" />
-    <Skeleton aria-hidden className="h-5 w-56" />
+    <Skeleton aria-hidden className="h-5 w-20" />
     {/* Las tres viñetas: la segunda ocupa dos líneas a 360 px */}
     <div className="flex flex-col gap-3">
       <Skeleton aria-hidden className="h-5 w-full" />
       <Skeleton aria-hidden className="h-10 w-full md:h-5" />
       <Skeleton aria-hidden className="h-5 w-2/3" />
     </div>
-    {/* La nota de los correos de pedidos: cinco líneas a 360 px, dos en escritorio */}
-    <Skeleton aria-hidden className="h-24 w-full md:h-10" />
-    <Skeleton aria-hidden className="h-4 w-64 max-w-full" />
+    {/* Las dos notas: cómo darse de baja y los correos de pedidos */}
+    <Skeleton aria-hidden className="h-10 w-full md:h-5" />
+    <Skeleton aria-hidden className="h-10 w-full md:h-5" />
   </div>
 );

@@ -72,8 +72,15 @@ const completarObligatorios = async (
   await usuario.type(porEtiqueta('Correo electrónico'), 'camila@correo.cl');
   await usuario.type(porEtiqueta('Contraseña'), contrasena);
   await usuario.type(porEtiqueta('Repite tu contraseña'), confirmacion);
+  await usuario.click(casillaOfertas());
   return usuario;
 };
+
+/** Casilla de ofertas: obligatoria para crear la cuenta (decisión del 11 nov, SCRUM-19). */
+const casillaOfertas = () =>
+  screen.getByRole('checkbox', {
+    name: 'Quiero recibir ofertas y novedades por correo',
+  });
 
 /**
  * Campo por su etiqueta visible: la de un obligatorio termina en «*» (que el lector de
@@ -97,7 +104,7 @@ afterEach(() => {
 });
 
 describe('SCRUM-93 · Registro', () => {
-  it('E1-H1 FE · formulario de registro: pide los obligatorios, los opcionales y la casilla de ofertas desmarcada', async () => {
+  it('E1-H1 FE · formulario de registro: pide los obligatorios, los opcionales y la casilla de ofertas desmarcada y obligatoria', async () => {
     mostrarRegistro();
 
     for (const campo of [
@@ -137,11 +144,28 @@ describe('SCRUM-93 · Registro', () => {
       'Prefiero no decir',
     ]);
     await usuario.keyboard('{Escape}');
+    expect(casillaOfertas()).not.toBeChecked();
+    expect(casillaOfertas()).toHaveAttribute('aria-required', 'true');
+  });
+
+  it('E1-H1 FE · ofertas obligatorias: sin marcar la casilla avisa junto a ella y no llama al servidor (SCRUM-19)', async () => {
+    const fetch = simularRegistro(() => responder(CREADA, 201));
+    mostrarRegistro();
+
+    const usuario = await completarObligatorios();
+    await usuario.click(casillaOfertas());
+    await crearCuenta(usuario);
+
     expect(
-      screen.getByRole('checkbox', {
-        name: 'Quiero recibir ofertas por correo',
-      }),
-    ).not.toBeChecked();
+      await screen.findByText(
+        'Para crear tu cuenta debes aceptar recibir ofertas por correo.',
+      ),
+    ).toBeInTheDocument();
+    expect(casillaOfertas()).toHaveAttribute('aria-invalid', 'true');
+    expect(casillaOfertas()).toHaveAccessibleDescription(
+      'Para crear tu cuenta debes aceptar recibir ofertas por correo.',
+    );
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it('E1-H1 FE · formulario de registro: envía solo los datos escritos, con el RUT en formato único', async () => {
@@ -176,6 +200,7 @@ describe('SCRUM-93 · Registro', () => {
       email: 'camila@correo.cl',
       contrasena: 'secreta123',
       confirmacionContrasena: 'secreta123',
+      aceptaMarketing: true,
       rut: '12345678-5',
       fechaNacimiento: '1990-05-21',
       genero: 'Femenino',
