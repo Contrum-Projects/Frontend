@@ -90,15 +90,16 @@ describe('Menú del panel según el rol (SCRUM-99)', () => {
     expect(textosDe(menuLateral())).toEqual([
       'Inicio',
       'Pedidos',
+      'Clientes',
+      'Verificaciones',
       'Productos',
       'Packs',
+      'Marcas y categorías',
       'Inventario',
-      'Verificaciones',
       'Campañas',
       'Cupones',
       'Portada',
       'Reportes',
-      'Clientes',
       'Personal',
     ]);
     expect(screen.getByText('Rol: administrador')).toBeInTheDocument();
@@ -113,6 +114,7 @@ describe('Menú del panel según el rol (SCRUM-99)', () => {
       'Pedidos',
       'Productos',
       'Packs',
+      'Marcas y categorías',
       'Inventario',
     ]);
   });
@@ -141,14 +143,38 @@ describe('Menú del panel según el rol (SCRUM-99)', () => {
     ).not.toHaveAttribute('aria-current');
   });
 
-  it('E3-H4 FE · marcas: en Marcas y categorías el menú marca Productos', () => {
+  it('E3-H4 FE · marcas: «Marcas y categorías» tiene su sección en Catálogo y queda marcada', () => {
     ingresarComo('administrador');
     navegacion.ruta = '/panel/marcas-y-categorias';
     mostrarPanel();
 
     expect(
-      within(menuLateral()).getByRole('link', { name: 'Productos' }),
+      within(menuLateral()).getByRole('link', { name: 'Marcas y categorías' }),
     ).toHaveAttribute('aria-current', 'page');
+    expect(
+      within(menuLateral()).getByRole('link', { name: 'Productos' }),
+    ).not.toHaveAttribute('aria-current');
+  });
+
+  it('SCRUM-157 FE · el menú agrupa las secciones en Ventas, Catálogo, Marketing y Administración', () => {
+    ingresarComo('administrador');
+    mostrarPanel();
+
+    const grupo = (nombre: string) =>
+      within(menuLateral())
+        .getByRole('list', { name: nombre })
+        .querySelectorAll('a');
+    const textos = (nombre: string) =>
+      Array.from(grupo(nombre)).map((enlace) => enlace.textContent);
+    expect(textos('Ventas')).toEqual(['Pedidos', 'Clientes', 'Verificaciones']);
+    expect(textos('Catálogo')).toEqual([
+      'Productos',
+      'Packs',
+      'Marcas y categorías',
+      'Inventario',
+    ]);
+    expect(textos('Marketing')).toEqual(['Campañas', 'Cupones', 'Portada']);
+    expect(textos('Administración')).toEqual(['Reportes', 'Personal']);
   });
 
   it('E13-H2 FE · opciones por rol: en celular, «Más» abre las secciones que no caben', async () => {
@@ -167,13 +193,14 @@ describe('Menú del panel según el rol (SCRUM-99)', () => {
 
     const hoja = await screen.findByRole('dialog', { name: 'Más' });
     expect(textosDe(hoja)).toEqual([
-      'Packs',
+      'Clientes',
       'Verificaciones',
+      'Packs',
+      'Marcas y categorías',
       'Campañas',
       'Cupones',
       'Portada',
       'Reportes',
-      'Clientes',
       'Personal',
     ]);
     expect(

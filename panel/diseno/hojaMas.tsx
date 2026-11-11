@@ -15,7 +15,7 @@ import { cn } from '@/compartido/lib/utils';
 import { useSesion } from '@/compartido/sesion/sesion';
 import { useCerrarSesion } from '@/tienda/cuenta/useCerrarSesion';
 import { IconoCerrarSesion } from '@/tienda/diseno/iconoCerrarSesion';
-import type { SeccionPanel } from './secciones';
+import { agruparSecciones, type SeccionPanel } from './secciones';
 import { AvatarPanel, nombreCompleto } from './usuarioPanel';
 
 const CLASE_FILA =
@@ -67,33 +67,54 @@ export function HojaMas({
         </div>
 
         {secciones.length > 0 && (
-          <ul className="flex flex-col gap-1 pb-4">
-            {secciones.map((seccion) => {
-              const activa = seccion === actual;
-              const Icono = seccion.icono;
+          // Agrupadas por área como el menú lateral (SCRUM-157); si no caben, se desplazan
+          <div className="flex max-h-[60dvh] flex-col gap-4 overflow-y-auto pb-4">
+            {agruparSecciones(secciones).map((bloque) => {
+              const idGrupo = bloque.grupo ? `mas-${bloque.grupo}` : undefined;
               return (
-                <li key={seccion.href}>
-                  <Link
-                    href={seccion.href}
-                    onClick={cerrarHoja}
-                    aria-current={activa ? 'page' : undefined}
-                    className={cn(
-                      CLASE_FILA,
-                      activa &&
-                        'bg-marca-acento-suave texto-cuerpo-fuerte text-marca-profundo',
-                    )}
-                  >
-                    <Icono
-                      className="size-5 shrink-0"
-                      strokeWidth={1.75}
-                      aria-hidden
-                    />
-                    {seccion.texto}
-                  </Link>
-                </li>
+                <div
+                  key={bloque.grupo ?? 'inicio'}
+                  className="flex flex-col gap-1"
+                >
+                  {bloque.grupo && (
+                    <p
+                      id={idGrupo}
+                      className="px-3 texto-leyenda text-texto-secundario"
+                    >
+                      {bloque.grupo}
+                    </p>
+                  )}
+                  <ul aria-labelledby={idGrupo} className="flex flex-col gap-1">
+                    {bloque.secciones.map((seccion) => {
+                      const activa = seccion === actual;
+                      const Icono = seccion.icono;
+                      return (
+                        <li key={seccion.href}>
+                          <Link
+                            href={seccion.href}
+                            onClick={cerrarHoja}
+                            aria-current={activa ? 'page' : undefined}
+                            className={cn(
+                              CLASE_FILA,
+                              activa &&
+                                'bg-marca-acento-suave texto-cuerpo-fuerte text-marca-profundo',
+                            )}
+                          >
+                            <Icono
+                              className="size-5 shrink-0"
+                              strokeWidth={1.75}
+                              aria-hidden
+                            />
+                            {seccion.texto}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
               );
             })}
-          </ul>
+          </div>
         )}
 
         {usuario && (

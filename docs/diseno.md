@@ -109,8 +109,10 @@ Decididos el 12 de octubre para que el sitio se vea como tienda y no como landin
 
 Funciona en computador y en celular (RNF-25: 360 px sin desplazamiento horizontal).
 
-- **Escritorio:** menú lateral oscuro (Inicio, Pedidos, Productos, Inventario, Verificaciones,
-  Campañas, Reportes, Personal); tablas; vista dividida lista + detalle en pedidos, verificaciones y
+- **Escritorio:** menú lateral oscuro con Inicio arriba y las secciones agrupadas por área
+  (SCRUM-157): **Ventas** (Pedidos, Clientes, Verificaciones), **Catálogo** (Productos, Packs, Marcas
+  y categorías, Inventario), **Marketing** (Campañas, Cupones, Portada) y **Administración**
+  (Reportes, Personal). La hoja «Más» del celular usa los mismos grupos; tablas; vista dividida lista + detalle en pedidos, verificaciones y
   facturas; panel lateral (`Sheet`) para registrar salidas y crear cuentas de personal; ventana de
   confirmación (`AlertDialog`) para enviar campañas.
 - **Celular:** barra superior con logo y avatar; navegación inferior con Inicio, Pedidos,
