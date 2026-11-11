@@ -1,41 +1,64 @@
 import Link from 'next/link';
 import { leerCategorias, leerMarcas } from '@/tienda/catalogo/consultas';
 import { RUTAS, urlCatalogo } from './enlaces';
-import { MenuMarcas } from './menuMarcas';
+import { CLASE_ENLACE_HEADER } from './estilosHeader';
+import { MenuEnlaces } from './menuEnlaces';
 
-const CLASE_ENLACE =
-  'shrink-0 rounded-md texto-etiqueta text-texto-principal hover:text-marca-profundo hover:underline';
+/** Categorías raíz a la vista; las demás van en «Más» para que la fila no pase a dos líneas. */
+const CATEGORIAS_EN_LINEA = 4;
 
 /**
- * Fila de categorías del header de escritorio: las categorías raíz, «Packs» y «Marcas».
- * Si la API no responde, la fila queda solo con «Packs»: la tienda sigue navegable.
+ * Categorías del header de escritorio, en la misma fila que el logo: las primeras categorías
+ * raíz, «Más» con el resto, «Packs» y «Marcas». Si la API no responde, queda solo «Packs»:
+ * la tienda sigue navegable.
  */
 export async function NavegacionCategorias() {
   const [categorias, marcas] = await Promise.all([
     leerCategorias().catch(() => []),
     leerMarcas().catch(() => []),
   ]);
+  const visibles = categorias.slice(0, CATEGORIAS_EN_LINEA);
+  const resto = categorias.slice(CATEGORIAS_EN_LINEA);
 
   return (
-    <ul className="flex min-w-0 flex-1 flex-wrap items-center gap-x-8 gap-y-2">
-      {categorias.map((categoria) => (
+    <ul className="flex min-w-0 items-center gap-1">
+      {visibles.map((categoria) => (
         <li key={categoria.id}>
           <Link
             href={urlCatalogo({ categoria: categoria.id })}
-            className={CLASE_ENLACE}
+            className={CLASE_ENLACE_HEADER}
           >
             {categoria.nombre}
           </Link>
         </li>
       ))}
+      {resto.length > 0 && (
+        <li>
+          <MenuEnlaces
+            titulo="Más"
+            enlaces={resto.map((categoria) => ({
+              clave: categoria.id,
+              texto: categoria.nombre,
+              href: urlCatalogo({ categoria: categoria.id }),
+            }))}
+          />
+        </li>
+      )}
       <li>
-        <Link href={RUTAS.packs} className={CLASE_ENLACE}>
+        <Link href={RUTAS.packs} className={CLASE_ENLACE_HEADER}>
           Packs
         </Link>
       </li>
       {marcas.length > 0 && (
         <li>
-          <MenuMarcas marcas={marcas} />
+          <MenuEnlaces
+            titulo="Marcas"
+            enlaces={marcas.map((marca) => ({
+              clave: marca.id,
+              texto: marca.nombre,
+              href: urlCatalogo({ marca: marca.id }),
+            }))}
+          />
         </li>
       )}
     </ul>
