@@ -80,7 +80,7 @@ Decididos el 12 de octubre para que el sitio se vea como tienda y no como landin
 - El inicio muestra productos: la portada arriba, «Más vendidos», «Novedades» y marcas. Sin pasos
   explicativos ni fila de beneficios. La **portada** (SCRUM-157, decisión del 11-11-2026, reemplaza
   el «sin hero» del 12-10) es un slider de imágenes que la tienda edita en `/panel/portada`: solo
-  imágenes (escritorio 12:5 a todo el ancho, celular 4:5 opcional), orden y destino elegido de una lista. El texto
+  imágenes (escritorio 12:5 a todo el ancho; celular 4:5 opcional: sin ella, la de escritorio se ve completa, nunca recortada), orden y destino elegido de una lista. El texto
   va dentro de la imagen; la página no superpone titulares ni botones. Avanza cada 6 s, se pausa
   con el mouse o el foco, y respeta «reducir movimiento». Sin imágenes, el inicio vuelve al banner del pack vigente.
 - Header de tienda en una sola fila: logo, categorías (4 en línea, el resto en «Más», luego

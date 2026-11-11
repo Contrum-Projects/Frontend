@@ -20,8 +20,8 @@ export const SEGUNDOS_POR_SLIDE = 6;
 
 /**
  * La portada ocupa todo el ancho de la pantalla, en 12:5 en escritorio (sin pasar del 85 % del
- * alto de la ventana) y 4:5 en celular; el panel recomienda 2400 × 1000 y 1080 × 1350. Sin imagen
- * de celular, la de escritorio se recorta al centro.
+ * alto de la ventana); el panel recomienda 2400 × 1000 y 1080 × 1350 para celular. En celular la
+ * imagen nunca se recorta: ver `proporcionCelular`.
  */
 const SIZES = '100vw';
 
@@ -45,6 +45,14 @@ const useMovimientoReducido = () =>
   );
 
 /**
+ * Proporción de la portada en celular. Sin ninguna imagen de celular, la de escritorio (12:5) se
+ * ve completa. Con alguna, el carrusel va en 4:5 para no cambiar de alto entre imágenes, y las que
+ * no tienen versión de celular se muestran completas sobre un fondo desenfocado de sí mismas.
+ */
+const proporcionCelular = (slides: SlidePortada[]) =>
+  slides.some((slide) => slide.imagenCelular) ? 'vertical' : 'horizontal';
+
+/**
  * Portada del inicio (SCRUM-157): las imágenes que la tienda carga en el panel, cada una enlazada
  * a su destino. Se desliza con el dedo (scroll-snap nativo), con las flechas o los puntos, y
  * avanza sola cada 6 s. El avance se detiene con el mouse encima, con el foco dentro o con la
@@ -57,6 +65,7 @@ export function SliderPortada({ slides }: { slides: SlidePortada[] }) {
   const [enfocado, setEnfocado] = useState(false);
   const [oculta, setOculta] = useState(false);
   const reducido = useMovimientoReducido();
+  const enCelular = proporcionCelular(slides);
   const total = slides.length;
   const varios = total > 1;
   const avanzando = varios && !reducido && !encima && !enfocado;
@@ -151,12 +160,18 @@ export function SliderPortada({ slides }: { slides: SlidePortada[] }) {
               role="group"
               aria-roledescription="imagen"
               aria-label={`${indice + 1} de ${total}`}
-              className="relative aspect-[4/5] w-full shrink-0 snap-start md:aspect-[12/5] md:max-h-[85dvh]"
+              className={cn(
+                'relative w-full shrink-0 snap-start md:aspect-[12/5] md:max-h-[85dvh]',
+                enCelular === 'vertical' ? 'aspect-[4/5]' : 'aspect-[12/5]',
+              )}
             >
               <ImagenSlide
                 slide={slide}
                 primera={indice === 0}
                 visible={indice === activo}
+                completaEnCelular={
+                  enCelular === 'vertical' && !slide.imagenCelular
+                }
               />
             </li>
           ))}
@@ -175,10 +190,13 @@ const ImagenSlide = ({
   slide,
   primera,
   visible,
+  completaEnCelular,
 }: {
   slide: SlidePortada;
   primera: boolean;
   visible: boolean;
+  /** En celular, la de escritorio entera sobre un fondo desenfocado (no hay versión de celular). */
+  completaEnCelular: boolean;
 }) => {
   const href = hrefDestino(slide.destino);
   if (!href) return null;
@@ -214,6 +232,19 @@ const ImagenSlide = ({
     >
       {/* El texto de la imagen (si lo tiene) no se puede leer: se anuncia el destino */}
       <span className="sr-only">Ver {slide.destino.nombre}</span>
+      {completaEnCelular && (
+        // Fondo: la misma imagen ampliada y desenfocada (el navegador la baja una sola vez)
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={img.src}
+          srcSet={celular}
+          sizes="100vw"
+          alt=""
+          aria-hidden
+          draggable={false}
+          className="absolute inset-0 size-full scale-110 object-cover blur-2xl md:hidden"
+        />
+      )}
       <picture>
         <source media="(min-width: 768px)" srcSet={escritorio} />
         {/* Art direction documentado de next/image: <picture> con getImageProps */}
@@ -222,7 +253,10 @@ const ImagenSlide = ({
           alt=""
           draggable={false}
           srcSet={celular}
-          className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.015] motion-reduce:transition-none"
+          className={cn(
+            'size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.015] motion-reduce:transition-none',
+            completaEnCelular && 'max-md:object-contain',
+          )}
         />
       </picture>
     </Link>

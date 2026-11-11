@@ -84,6 +84,38 @@ describe('SCRUM-157 · Portada del inicio', () => {
     );
   });
 
+  it('SCRUM-157 FE · criterio 1: sin ninguna imagen de celular, en celular la de escritorio se ve completa (12:5)', () => {
+    const sinCelular = SLIDES.map((s) => ({ ...s, imagenCelular: null }));
+    renderizar(<SliderPortada slides={sinCelular} />);
+
+    for (const grupo of screen.getAllByRole('group')) {
+      expect(grupo).toHaveClass('aspect-[12/5]');
+      expect(grupo).not.toHaveClass('aspect-[4/5]');
+    }
+    expect(document.querySelectorAll('img[aria-hidden="true"]')).toHaveLength(
+      0,
+    );
+  });
+
+  it('SCRUM-157 FE · criterio 1: con imágenes de celular mezcladas, las que no tienen se muestran completas sobre su fondo', () => {
+    const { container } = renderizar(<SliderPortada slides={SLIDES} />);
+
+    for (const grupo of screen.getAllByRole('group')) {
+      expect(grupo).toHaveClass('aspect-[4/5]');
+    }
+    const [primera, segunda] = Array.from(container.querySelectorAll('li'));
+    // La 1 no tiene versión de celular: fondo desenfocado y la imagen entera encima
+    expect(primera.querySelectorAll('img[aria-hidden="true"]')).toHaveLength(1);
+    expect(primera.querySelector('picture img')).toHaveClass(
+      'max-md:object-contain',
+    );
+    // La 2 sí la tiene: se ve como siempre
+    expect(segunda.querySelectorAll('img[aria-hidden="true"]')).toHaveLength(0);
+    expect(segunda.querySelector('picture img')).not.toHaveClass(
+      'max-md:object-contain',
+    );
+  });
+
   it('SCRUM-157 FE · criterio 6: sin imágenes en la portada muestra el banner del pack', async () => {
     simularTienda({ portada: [], packs: [pack(7)] });
 

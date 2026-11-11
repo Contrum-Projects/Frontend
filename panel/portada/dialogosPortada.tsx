@@ -28,7 +28,7 @@ type Campo = 'escritorio' | 'celular' | 'destino';
 export const AYUDA_ESCRITORIO =
   'Horizontal, ideal 2400 × 1000 px. JPEG, PNG o WebP de hasta 4 MB.';
 export const AYUDA_CELULAR =
-  'Vertical, ideal 1080 × 1350 px. Si no la subes, el celular muestra la de escritorio recortada al centro.';
+  'Vertical, ideal 1080 × 1350 px. Si no la subes, el celular muestra la de escritorio completa, sin recortar.';
 
 const errores = (error: ErrorDeApi | null) =>
   error
