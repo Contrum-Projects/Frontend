@@ -7,9 +7,10 @@ const TRANSICION =
   'transition-[background-color,border-color,box-shadow] duration-300 ease-out motion-reduce:transition-none';
 
 /**
- * Marco del header (SCRUM-157). Arriba de todo es totalmente transparente: el logo, las
- * categorías y los íconos van directo sobre la portada del inicio, sin caja ni degradado
- * (decisión del 11-11-2026). Al desplazarse se vuelve una barra sólida, fija arriba. Los dos estados miden lo mismo
+ * Marco del header (SCRUM-157). Arriba de todo, sobre la portada del inicio, es una franja de
+ * vidrio esmerilado a todo el ancho y sin borde (decisión del 11-11-2026): la foto se ve
+ * desenfocada detrás. El hueso al 70 % es lo mínimo para que el texto oscuro mantenga contraste
+ * AA (unos 5,8:1) sobre una foto negra; menos, y no se lee. Al desplazarse se vuelve una barra sólida, fija arriba. Los dos estados miden lo mismo
  * (`h-[72px] md:h-[76px] lg:h-[84px]`, ver SUBIR_BAJO_HEADER), así el contenido no salta.
  *
  * Sabe si la página está arriba con un IntersectionObserver sobre un punto al inicio del
@@ -42,7 +43,7 @@ export function MarcoHeader({ children }: { children: ReactNode }) {
           'sticky top-0 z-40 h-[72px] border-b md:h-[76px] lg:h-[84px]',
           TRANSICION,
           arriba
-            ? 'border-transparent bg-transparent'
+            ? 'border-transparent bg-fondo-hueso/70 backdrop-blur-xl backdrop-saturate-150'
             : 'border-fondo-hueso-oscuro bg-fondo-hueso/95 shadow-tarjeta backdrop-blur-md',
         )}
       >
