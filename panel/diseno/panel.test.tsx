@@ -97,6 +97,7 @@ describe('Menú del panel según el rol (SCRUM-99)', () => {
       'Campañas',
       'Cupones',
       'Reportes',
+      'Clientes',
       'Personal',
     ]);
     expect(screen.getByText('Rol: administrador')).toBeInTheDocument();
@@ -170,6 +171,7 @@ describe('Menú del panel según el rol (SCRUM-99)', () => {
       'Campañas',
       'Cupones',
       'Reportes',
+      'Clientes',
       'Personal',
     ]);
     expect(
