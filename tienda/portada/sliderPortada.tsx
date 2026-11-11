@@ -13,6 +13,7 @@ import {
 } from 'react';
 import { cn } from '@/compartido/lib/utils';
 import { hrefDestino, type SlidePortada } from './destinoPortada';
+import { useArrastreMouse } from './useArrastreMouse';
 
 /** Segundos que se ve cada imagen antes de pasar a la siguiente (SCRUM-157, criterio 8). */
 export const SEGUNDOS_POR_SLIDE = 6;
@@ -75,6 +76,12 @@ export function SliderPortada({ slides }: { slides: SlidePortada[] }) {
     [total, reducido],
   );
 
+  const { arrastrando, manejadores } = useArrastreMouse({
+    pista,
+    total,
+    alSoltar: irA,
+  });
+
   // El slide visible lo dice el desplazamiento real: también cuando se desliza con el dedo
   useEffect(() => {
     const elemento = pista.current;
@@ -128,8 +135,14 @@ export function SliderPortada({ slides }: { slides: SlidePortada[] }) {
         <ul
           ref={pista}
           aria-live={avanzando ? 'off' : 'polite'}
-          // overflow-y-hidden: la pista solo se desplaza de lado; la rueda del mouse pasa a la página
-          className="flex snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto overflow-y-hidden overscroll-x-contain [&::-webkit-scrollbar]:hidden"
+          {...manejadores}
+          // overflow-y-hidden: la pista solo se desplaza de lado; la rueda del mouse pasa a la página.
+          // Al arrastrar con el mouse se quita el imán para que la pista siga al cursor
+          className={cn(
+            'flex [scrollbar-width:none] overflow-x-auto overflow-y-hidden overscroll-x-contain select-none [&::-webkit-scrollbar]:hidden',
+            arrastrando ? 'cursor-grabbing snap-none' : 'snap-x snap-mandatory',
+            varios && !arrastrando && 'md:cursor-grab',
+          )}
         >
           {slides.map((slide, indice) => (
             <li
@@ -196,6 +209,7 @@ const ImagenSlide = ({
       // Las que no se ven no reciben el foco: el teclado usa las flechas y los puntos
       tabIndex={visible ? undefined : -1}
       aria-hidden={visible ? undefined : true}
+      draggable={false}
       className="group absolute inset-0 block outline-none focus-visible:ring-4 focus-visible:ring-marca-profundo focus-visible:ring-inset"
     >
       {/* El texto de la imagen (si lo tiene) no se puede leer: se anuncia el destino */}
@@ -206,6 +220,7 @@ const ImagenSlide = ({
         <img
           {...img}
           alt=""
+          draggable={false}
           srcSet={celular}
           className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.015] motion-reduce:transition-none"
         />

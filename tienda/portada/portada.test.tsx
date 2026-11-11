@@ -142,6 +142,46 @@ describe('SCRUM-157 · Portada del inicio', () => {
     ).toHaveAttribute('aria-current', 'true');
   });
 
+  it('SCRUM-157 FE · criterio 8: al arrastrar con el mouse pasa a la imagen siguiente y no abre su enlace', () => {
+    const { container } = renderizar(<SliderPortada slides={SLIDES} />);
+    const pista = container.querySelector('ul') as HTMLUListElement;
+    Object.defineProperty(pista, 'clientWidth', { value: 1000 });
+    const mouse = { pointerType: 'mouse', button: 0, pointerId: 1 };
+
+    fireEvent.pointerDown(pista, { ...mouse, clientX: 700 });
+    fireEvent.pointerMove(pista, { ...mouse, clientX: 500 });
+    expect(pista.scrollLeft).toBe(200);
+    fireEvent.pointerUp(pista, { ...mouse, clientX: 400 });
+
+    expect(desplazamientos.at(-1)).toBe(1000);
+    expect(
+      screen.getByRole('button', { name: 'Ir a la imagen 2 de 3' }),
+    ).toHaveAttribute('aria-current', 'true');
+    // El clic que sigue al arrastre no navega
+    const enlace = within(screen.getAllByRole('group')[0]).getByRole('link', {
+      hidden: true,
+    });
+    expect(fireEvent.click(enlace)).toBe(false);
+    // Un clic sin arrastre sí llega al enlace
+    expect(fireEvent.click(enlace)).toBe(true);
+  });
+
+  it('SCRUM-157 FE · criterio 8: un arrastre corto vuelve a la misma imagen', () => {
+    const { container } = renderizar(<SliderPortada slides={SLIDES} />);
+    const pista = container.querySelector('ul') as HTMLUListElement;
+    Object.defineProperty(pista, 'clientWidth', { value: 1000 });
+    const mouse = { pointerType: 'mouse', button: 0, pointerId: 1 };
+
+    fireEvent.pointerDown(pista, { ...mouse, clientX: 500 });
+    fireEvent.pointerMove(pista, { ...mouse, clientX: 450 });
+    fireEvent.pointerUp(pista, { ...mouse, clientX: 450 });
+
+    expect(desplazamientos.at(-1)).toBe(0);
+    expect(
+      screen.getByRole('button', { name: 'Ir a la imagen 1 de 3' }),
+    ).toHaveAttribute('aria-current', 'true');
+  });
+
   it('SCRUM-157 FE · criterio 8: con «reducir movimiento» no avanza sola', () => {
     vi.useFakeTimers();
     vi.stubGlobal('matchMedia', (consulta: string) => ({
