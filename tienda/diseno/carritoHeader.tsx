@@ -8,6 +8,7 @@ import { abrirPanelCarrito } from '@/tienda/carrito/estadoPanelCarrito';
 import { contarUnidades, useCarrito } from '@/tienda/carrito/consultasCarrito';
 import { textoUnidades } from '@/tienda/carrito/textos';
 import { RUTAS } from './enlaces';
+import { CLASE_ICONO_HEADER } from './estilosHeader';
 
 /**
  * Carrito del header (Figma › Componentes › Header 6:107) con el contador de unidades del
@@ -46,7 +47,7 @@ export const CarritoHeader = () => {
       aria-label={
         unidades > 0 ? `Carrito, ${textoUnidades(unidades)}` : 'Carrito'
       }
-      className="relative inline-flex size-10 items-center justify-center rounded-md text-texto-principal"
+      className={CLASE_ICONO_HEADER}
     >
       <ShoppingCart className="size-6" strokeWidth={1.75} aria-hidden />
       {unidades > 0 && (

@@ -78,8 +78,11 @@ Decididos el 12 de octubre para que el sitio se vea como tienda y no como landin
 
 - El inicio muestra productos: promociones arriba, «Más vendidos», «Novedades» y marcas. Sin hero
   con titular y dos botones, sin pasos explicativos ni fila de beneficios.
-- Header de tienda: buscador grande, cuenta, carrito y fila de categorías con acceso a «Precio
-  profesional». Sin franja de anuncio.
+- Header de tienda en una sola fila: logo, categorías (4 en línea, el resto en «Más», luego
+  «Packs» y «Marcas»), botón de buscar que abre el campo en la misma fila, cuenta (solo ícono) y
+  carrito. Bajo `lg`, las categorías van en el menú lateral. «Precio profesional» no va en el
+  header: queda en el footer y en el menú del celular (decisión del 11-11-2026, reemplaza al
+  buscador grande y la segunda fila de Figma › Header 6:32). Sin franja de anuncio.
 - Blue Express aparece solo donde se decide o consulta el envío (checkout, detalle de pedido);
   Mercado Pago solo en el botón de pagar y en el aviso de pago no aprobado.
 - «IVA incluido» en la ficha, el carrito y el checkout; no en cada tarjeta.
