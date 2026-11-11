@@ -6,7 +6,8 @@ Tienda · Celular, Panel · Escritorio, Panel · Celular y Correos. Las pantalla
 [pantallas.md](pantallas.md).
 
 Dirección visual «vitrina cálida»: un solo color de marca (turquesa) sobre fondo hueso cálido. El
-brillo (destellos turquesa) vive solo en el banner principal del inicio.
+brillo (destellos turquesa) vive solo en el banner del pack del inicio (cuando la portada no tiene
+imágenes).
 
 ## Tokens
 
@@ -76,8 +77,13 @@ Al construir uno, ponlo en `compartido/ui` (si es genérico) o en `tienda/`/`pan
 
 Decididos el 12 de octubre para que el sitio se vea como tienda y no como landing:
 
-- El inicio muestra productos: promociones arriba, «Más vendidos», «Novedades» y marcas. Sin hero
-  con titular y dos botones, sin pasos explicativos ni fila de beneficios.
+- El inicio muestra productos: la portada arriba, «Más vendidos», «Novedades» y marcas. Sin pasos
+  explicativos ni fila de beneficios. La **portada** (SCRUM-157, decisión del 11-11-2026, reemplaza
+  el «sin hero» del 12-10) es un slider de imágenes que la tienda edita en `/panel/portada`: solo
+  imágenes (escritorio 8:3, celular 4:5 opcional), orden y destino elegido de una lista. El texto
+  va dentro de la imagen; la página no superpone titulares ni botones. Avanza cada 6 s, se pausa
+  con el mouse, el foco o su botón, y respeta «reducir movimiento». Bajo ella van las tarjetas de
+  packs y precio profesional. Sin imágenes, el inicio vuelve al banner del pack vigente.
 - Header de tienda: buscador grande, cuenta, carrito y fila de categorías con acceso a «Precio
   profesional». Sin franja de anuncio.
 - Blue Express aparece solo donde se decide o consulta el envío (checkout, detalle de pedido);

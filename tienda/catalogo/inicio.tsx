@@ -5,14 +5,14 @@ import { leerCategorias } from './consultas';
 import { FilaProductos, MarcoFila } from './filaProductos';
 import { MarcasInicio, MarcasInicioEsqueleto } from './marcasInicio';
 import {
-  AvisoProfesionalCelular,
-  Promociones,
-  PromocionesEsqueleto,
-} from './promociones';
+  PortadaEsqueleto,
+  PortadaInicio,
+} from '@/tienda/portada/portadaInicio';
+import { AvisoProfesionalCelular } from './promociones';
 
 /**
- * Inicio de la tienda (SCRUM-106, Figma › 01 Inicio 2016:1184 y 2017:1191): promociones,
- * «Más vendidos», «Novedades» y marcas. Cada sección lee la API en su propio <Suspense>, así
+ * Inicio de la tienda (SCRUM-106, Figma › 01 Inicio 2016:1184 y 2017:1191): la portada editable
+ * (SCRUM-157, o el banner del pack si no tiene imágenes), «Más vendidos», «Novedades» y marcas. Cada sección lee la API en su propio <Suspense>, así
  * una lenta no frena a las demás.
  */
 export function Inicio() {
@@ -22,8 +22,8 @@ export function Inicio() {
       <Suspense fallback={<ChipsEsqueleto />}>
         <ChipsInicio />
       </Suspense>
-      <Suspense fallback={<PromocionesEsqueleto />}>
-        <Promociones />
+      <Suspense fallback={<PortadaEsqueleto />}>
+        <PortadaInicio />
       </Suspense>
       <Suspense
         fallback={

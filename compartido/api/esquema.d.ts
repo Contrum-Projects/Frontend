@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 102.
+ * Versión de la API: 0.1.0. Rutas: 109.
  */
 
 export interface paths {
@@ -2114,6 +2114,149 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/portada": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Slides de la portada del inicio (SCRUM-157)
+         * @description En su orden, solo los que llevan a un destino que cualquier visitante ve en la tienda (producto o pack de venta general y a la venta, marca activa, categoría existente o una página). Sin slides, lista vacía: la tienda muestra el banner del pack.
+         */
+        get: operations["PortadaTiendaController_listar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portada/slides": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar los slides de la portada (SCRUM-157)
+         * @description Todos, en su orden, con `disponible` en falso cuando el destino ya no está a la venta (la tienda no lo muestra).
+         */
+        get: operations["PortadaPanelController_listar"];
+        put?: never;
+        /**
+         * Agregar un slide a la portada (SCRUM-157)
+         * @description Imagen `escritorio` obligatoria y `celular` opcional (JPEG, PNG o WebP de hasta 4 MB cada una), con `tipoDestino` y `destino`. Queda al final. La portada tiene hasta 8 slides. Devuelve todos los slides.
+         */
+        post: operations["PortadaPanelController_crear"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portada/destinos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Opciones de destino de un slide (SCRUM-157)
+         * @description Hasta 20 destinos del tipo pedido que la tienda muestra a cualquier visitante, por nombre; `buscar` filtra por nombre. Con `tipo` = `pagina`, las páginas: catalogo, packs, precio-profesional.
+         */
+        get: operations["PortadaPanelController_destinos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portada/slides/orden": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Ordenar los slides de la portada (SCRUM-157)
+         * @description `orden` trae todos los slides, cada uno una vez.
+         */
+        put: operations["PortadaPanelController_ordenar"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portada/slides/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Eliminar un slide de la portada (SCRUM-157)
+         * @description Los demás se reordenan sin huecos. Devuelve los que quedan.
+         */
+        delete: operations["PortadaPanelController_eliminar"];
+        options?: never;
+        head?: never;
+        /** Cambiar a dónde lleva un slide (SCRUM-157) */
+        patch: operations["PortadaPanelController_cambiarDestino"];
+        trace?: never;
+    };
+    "/api/portada/slides/{id}/imagenes/escritorio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Reemplazar la imagen de escritorio de un slide (SCRUM-157) */
+        put: operations["PortadaPanelController_reemplazarEscritorio"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portada/slides/{id}/imagenes/celular": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Subir o reemplazar la imagen de celular de un slide (SCRUM-157) */
+        put: operations["PortadaPanelController_reemplazarCelular"];
+        post?: never;
+        /**
+         * Quitar la imagen de celular de un slide (SCRUM-157)
+         * @description El celular vuelve a mostrar la imagen de escritorio.
+         */
+        delete: operations["PortadaPanelController_quitarCelular"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4173,6 +4316,71 @@ export interface components {
              */
             cuerpo: string;
             oferta: components["schemas"]["OfertaCumpleanosDto"];
+        };
+        DestinoSlideDto: {
+            /** @enum {string} */
+            tipo: "producto" | "pack" | "categoria" | "marca" | "pagina";
+            /**
+             * @description Id del producto, pack, categoría o marca; con `tipo` = `pagina`, una de: catalogo, packs, precio-profesional.
+             * @example 12
+             */
+            destino: string;
+            /**
+             * @description Nombre del destino, para anunciar el enlace. En la tienda siempre viene; en el panel es `null` si el destino ya no existe.
+             * @example Pack reparación
+             */
+            nombre: string | null;
+        };
+        SlidePortadaDto: {
+            /** @example 3 */
+            id: number;
+            /** @example https://imagenes.cabelloperfecto.cl/portada/a1.webp */
+            imagenEscritorio: string;
+            /** @description Sin ella, el celular muestra la de escritorio. */
+            imagenCelular: string | null;
+            destino: components["schemas"]["DestinoSlideDto"];
+        };
+        SlidePortadaPanelDto: {
+            /** @example 3 */
+            id: number;
+            /** @example https://imagenes.cabelloperfecto.cl/portada/a1.webp */
+            imagenEscritorio: string;
+            /** @description Sin ella, el celular muestra la de escritorio. */
+            imagenCelular: string | null;
+            destino: components["schemas"]["DestinoSlideDto"];
+            /** @example 1 */
+            orden: number;
+            /** @description Falso si el destino ya no está a la venta o no existe: la tienda no muestra el slide. */
+            disponible: boolean;
+        };
+        OpcionDestinoDto: {
+            /** @example 12 */
+            destino: string;
+            /** @example Pack reparación */
+            nombre: string;
+        };
+        OrdenarSlidesDto: {
+            /**
+             * @description Ids de todos los slides, cada uno una vez, en el orden en que se mostrarán.
+             * @example [
+             *       3,
+             *       1,
+             *       2
+             *     ]
+             */
+            orden: number[];
+        };
+        DestinoPortadaDto: {
+            /**
+             * @example pack
+             * @enum {string}
+             */
+            tipoDestino: "producto" | "pack" | "categoria" | "marca" | "pagina";
+            /**
+             * @description Id del producto, pack, categoría o marca; o la clave de la página (`catalogo`, `packs`, `precio-profesional`). Las opciones salen de `GET /portada/destinos`.
+             * @example 12
+             */
+            destino: string;
         };
     };
     responses: never;
@@ -10040,6 +10248,482 @@ export interface operations {
             };
             /** @description Falta configurar el secreto del webhook. */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PortadaTiendaController_listar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlidePortadaDto"][];
+                };
+            };
+        };
+    };
+    PortadaPanelController_listar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlidePortadaPanelDto"][];
+                };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PortadaPanelController_crear: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    escritorio: string;
+                    /** Format: binary */
+                    celular?: string;
+                    /** @enum {string} */
+                    tipoDestino: "producto" | "pack" | "categoria" | "marca" | "pagina";
+                    destino: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlidePortadaPanelDto"][];
+                };
+            };
+            /** @description Falta la imagen de escritorio, una imagen no es JPEG, PNG ni WebP, o el destino no existe o no está a la venta. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La portada ya tiene 8 slides. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Una imagen supera los 4 MB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El almacenamiento de archivos no está configurado. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PortadaPanelController_destinos: {
+        parameters: {
+            query: {
+                tipo: "producto" | "pack" | "categoria" | "marca" | "pagina";
+                /** @description Parte del nombre. */
+                buscar?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpcionDestinoDto"][];
+                };
+            };
+            /** @description Tipo de destino inválido. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PortadaPanelController_ordenar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrdenarSlidesDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlidePortadaPanelDto"][];
+                };
+            };
+            /** @description El orden no trae exactamente los slides de la portada. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PortadaPanelController_eliminar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlidePortadaPanelDto"][];
+                };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El slide no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PortadaPanelController_cambiarDestino: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DestinoPortadaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlidePortadaPanelDto"][];
+                };
+            };
+            /** @description El destino no existe o no está a la venta. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El slide no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PortadaPanelController_reemplazarEscritorio: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    imagen: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlidePortadaPanelDto"][];
+                };
+            };
+            /** @description Sin imagen, o no es JPEG, PNG ni WebP. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El slide no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La imagen supera los 4 MB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PortadaPanelController_reemplazarCelular: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    imagen: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlidePortadaPanelDto"][];
+                };
+            };
+            /** @description Sin imagen, o no es JPEG, PNG ni WebP. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El slide no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La imagen supera los 4 MB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PortadaPanelController_quitarCelular: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlidePortadaPanelDto"][];
+                };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar campañas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El slide no existe. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

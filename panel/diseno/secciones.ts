@@ -2,6 +2,7 @@ import {
   BadgeCheck,
   Box,
   ChartNoAxesColumn,
+  GalleryHorizontalEnd,
   Gift,
   House,
   Mail,
@@ -81,6 +82,14 @@ export const SECCIONES: readonly SeccionPanel[] = [
     texto: 'Cupones',
     href: '/panel/cupones' as Route,
     icono: TicketPercent,
+    permiso: PERMISOS.CAMPANAS_GESTIONAR,
+    enLaBarra: false,
+  },
+  {
+    // Sin Figma (SCRUM-157): las imágenes de la portada del inicio, con el permiso de las campañas
+    texto: 'Portada',
+    href: '/panel/portada',
+    icono: GalleryHorizontalEnd,
     permiso: PERMISOS.CAMPANAS_GESTIONAR,
     enLaBarra: false,
   },

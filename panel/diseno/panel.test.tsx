@@ -96,6 +96,7 @@ describe('Menú del panel según el rol (SCRUM-99)', () => {
       'Verificaciones',
       'Campañas',
       'Cupones',
+      'Portada',
       'Reportes',
       'Personal',
     ]);
@@ -169,6 +170,7 @@ describe('Menú del panel según el rol (SCRUM-99)', () => {
       'Verificaciones',
       'Campañas',
       'Cupones',
+      'Portada',
       'Reportes',
       'Personal',
     ]);
