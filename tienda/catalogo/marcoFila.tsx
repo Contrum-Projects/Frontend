@@ -75,9 +75,9 @@ export function MarcoFila({
   return (
     <section
       aria-labelledby={`fila-${orden}`}
-      className="mx-auto max-w-[1440px] px-4 pt-8 md:px-16 md:pt-12"
+      className="mx-auto max-w-[1440px] px-4 pt-12 md:px-16 md:pt-16"
     >
-      <div className="mb-3 flex items-center justify-between md:mb-6">
+      <div className="mb-4 flex items-end justify-between gap-4 md:mb-6">
         <h2
           id={`fila-${orden}`}
           className="titulo-h3 text-texto-principal md:titulo-h2"
@@ -87,11 +87,11 @@ export function MarcoFila({
         <Link
           href={urlCatalogo({ orden })}
           aria-describedby={`fila-${orden}`}
-          className="flex min-h-10 items-center gap-1 rounded-md texto-etiqueta text-marca-profundo hover:underline"
+          className="group/ver flex h-10 shrink-0 items-center gap-1 rounded-full border-[1.5px] border-fondo-hueso-oscuro px-4 texto-etiqueta text-marca-profundo transition-colors hover:border-marca-profundo hover:bg-marca-acento-suave focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-profundo"
         >
           Ver todo
           <ArrowRight
-            className="hidden size-4 md:block"
+            className="size-4 transition-transform group-hover/ver:translate-x-0.5 motion-reduce:transition-none"
             strokeWidth={1.75}
             aria-hidden
           />

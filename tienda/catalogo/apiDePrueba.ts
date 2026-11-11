@@ -13,6 +13,7 @@ import type {
   PackTienda,
   ProductoTienda,
 } from '@/compartido/api/respuestas';
+import type { SlidePortada } from '@/tienda/portada/destinoPortada';
 
 export const categoria = (
   id: number,
@@ -63,6 +64,8 @@ interface Respuestas {
   packs?: PackTienda[] | { estado: number; cuerpo: unknown };
   /** Sin facetas, el backend responde 404 (como hoy, sin la API simulada). */
   facetas?: FacetasTienda;
+  /** Slides de la portada (SCRUM-157); sin ellos, lista vacía. */
+  portada?: SlidePortada[] | { estado: number; cuerpo: unknown };
 }
 
 const json = (cuerpo: unknown, status = 200) =>
@@ -75,6 +78,12 @@ export function simularTienda(respuestas: Respuestas) {
   const mock = vi.fn(async (entrada: Request | string | URL) => {
     const url = new URL(entrada instanceof Request ? entrada.url : entrada);
     switch (url.pathname) {
+      case '/api/portada': {
+        const portada = respuestas.portada ?? [];
+        return Array.isArray(portada)
+          ? json(portada)
+          : json(portada.cuerpo, portada.estado);
+      }
       case '/api/tienda/categorias':
         return json(respuestas.categorias ?? []);
       case '/api/tienda/marcas':

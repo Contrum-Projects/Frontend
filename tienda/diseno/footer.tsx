@@ -41,12 +41,7 @@ export function Footer() {
     <footer className="bg-marca-profundo text-texto-sobre-oscuro [&_a:focus-visible]:outline-marca-logo">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-8 px-6 pt-12 pb-8 md:gap-12 md:px-16 md:pt-16">
         <div className="flex flex-col gap-8 md:flex-row md:flex-wrap md:gap-12">
-          <div className="flex flex-col gap-4">
-            <Logo className="h-auto w-[148px] text-marca-logo md:w-[180px]" />
-            <p className="max-w-60 texto-pequeno">
-              Productos capilares para tu casa y para tu salón.
-            </p>
-          </div>
+          <Logo className="h-auto w-[148px] shrink-0 text-marca-logo md:w-[180px]" />
           <div className="grid grid-cols-2 gap-8 md:flex md:gap-12">
             {COLUMNAS.map((columna) => (
               <nav key={columna.titulo} aria-label={columna.titulo}>

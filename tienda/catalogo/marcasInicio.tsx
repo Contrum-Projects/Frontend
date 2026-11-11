@@ -3,7 +3,7 @@ import { CintaMarcas } from './cintaMarcas';
 import { leerMarcas } from './consultas';
 
 const CLASE_SECCION =
-  'mx-auto max-w-[1440px] px-4 pt-8 pb-12 md:px-16 md:pt-12 md:pb-16';
+  'mx-auto max-w-[1440px] px-4 pt-12 pb-16 md:px-16 md:pt-16 md:pb-16';
 
 /**
  * Marcas del inicio (Figma 2016:1594): todas las marcas de la API en una cinta infinita, y
@@ -17,7 +17,7 @@ export async function MarcasInicio() {
     <section
       id="marcas"
       aria-labelledby="titulo-marcas"
-      className={`${CLASE_SECCION} scroll-mt-4`}
+      className={`${CLASE_SECCION} scroll-mt-24`}
     >
       <CintaMarcas marcas={marcas} titulo="Marcas" />
     </section>
@@ -29,7 +29,7 @@ export const MarcasInicioEsqueleto = () => (
     <Skeleton className="mb-3 h-6 w-32 md:mb-6 md:h-8" />
     <div className="-mx-4 flex gap-4 overflow-hidden px-4 md:mx-0 md:px-0">
       {Array.from({ length: 8 }, (_, i) => (
-        <Skeleton key={i} className="h-24 w-44 shrink-0 rounded-lg" />
+        <Skeleton key={i} className="h-24 w-44 shrink-0 rounded-xl" />
       ))}
     </div>
   </div>

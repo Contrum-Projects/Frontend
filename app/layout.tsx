@@ -8,8 +8,7 @@ export const metadata: Metadata = {
     default: 'Cabello Perfecto',
     template: '%s · Cabello Perfecto',
   },
-  description:
-    'Productos capilares para el cuidado en casa y precio profesional para peluqueros verificados.',
+  description: 'Tienda online de Cabello Perfecto.',
   ...(process.env.NEXT_PUBLIC_URL_SITIO && {
     metadataBase: new URL(process.env.NEXT_PUBLIC_URL_SITIO),
   }),

@@ -80,7 +80,7 @@ const ListaMarcas = ({
           <Link
             href={urlCatalogo({ marca: marca.id })}
             tabIndex={repetida ? -1 : undefined}
-            className="flex h-24 items-center justify-center rounded-lg border bg-fondo-superficie px-4 text-center titulo-h3 text-texto-secundario transition-colors hover:border-marca-profundo hover:text-marca-profundo"
+            className="flex h-24 items-center justify-center rounded-xl border bg-fondo-superficie px-4 text-center titulo-h3 text-texto-secundario shadow-tarjeta transition-[color,border-color,box-shadow] hover:border-marca-acento-suave hover:text-marca-profundo hover:shadow-tarjeta-elevada"
           >
             {marca.nombre}
           </Link>

@@ -58,7 +58,7 @@ export function FilaHeader({
     <div className="relative mx-auto flex h-16 max-w-[1440px] items-center gap-2 px-4 lg:h-[72px] lg:gap-6 lg:px-8 xl:px-16">
       <div className="lg:hidden">{menuCelular}</div>
       <Link href={RUTAS.inicio} className="shrink-0 rounded-md text-marca-logo">
-        <Logo className="h-auto w-[92px] lg:w-[118px]" />
+        <Logo className="h-auto w-[92px] lg:w-[118px] lg:p-4" />
       </Link>
       <div className="flex min-w-0 flex-1 items-center gap-1">
         {/* En `lg` el campo se ubica en esta zona; en celular, sobre toda la fila */}

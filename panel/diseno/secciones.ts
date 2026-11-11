@@ -3,11 +3,13 @@ import {
   Box,
   Contact,
   ChartNoAxesColumn,
+  GalleryHorizontalEnd,
   Gift,
   House,
   Mail,
   ReceiptText,
   Tag,
+  Tags,
   TicketPercent,
   UsersRound,
   type LucideIcon,
@@ -21,10 +23,21 @@ import {
   type Rol,
 } from '@/compartido/sesion/roles';
 
+/** Grupos del menú del panel, en su orden (SCRUM-157, decisión del 11-11-2026). */
+export const GRUPOS_PANEL = [
+  'Ventas',
+  'Catálogo',
+  'Marketing',
+  'Administración',
+] as const;
+export type GrupoPanel = (typeof GRUPOS_PANEL)[number];
+
 export interface SeccionPanel {
   texto: string;
   href: Route;
   icono: LucideIcon;
+  /** Sin grupo: va arriba, suelta (Inicio). */
+  grupo?: GrupoPanel;
   /** Sin permiso: la ve todo el personal. */
   permiso?: Permiso;
   /** `false`: no entra en la navegación inferior de celular (Figma no la dibuja ahí), va en «Más». */
@@ -32,8 +45,10 @@ export interface SeccionPanel {
 }
 
 /**
- * Secciones del menú del panel en el orden de Figma (Panel/Menú lateral 2027:781). Cada una
- * pide el permiso que el backend exige en sus endpoints (SCRUM-25).
+ * Secciones del menú del panel, agrupadas por área (SCRUM-157): Ventas, Catálogo, Marketing y
+ * Administración; Inicio va arriba, sin grupo. Cada una pide el permiso que el backend exige en
+ * sus endpoints (SCRUM-25). La barra del celular sigue con Inicio, Pedidos, Productos e
+ * Inventario (Figma), por eso las demás llevan `enLaBarra: false`.
  *
  * Varias rutas todavía no tienen página: llevan `as Route` (ver `tienda/diseno/enlaces.ts`).
  */
@@ -43,19 +58,49 @@ export const SECCIONES: readonly SeccionPanel[] = [
     texto: 'Pedidos',
     href: '/panel/pedidos',
     icono: ReceiptText,
+    grupo: 'Ventas',
     permiso: PERMISOS.PEDIDOS_GESTIONAR,
+  },
+  {
+    // Se agregó con SCRUM-155. Clientes y profesionales los gestiona solo el administrador, con
+    // el permiso del personal (SCRUM-154)
+    texto: 'Clientes',
+    href: '/panel/clientes',
+    icono: Contact,
+    grupo: 'Ventas',
+    permiso: PERMISOS.PERSONAL_GESTIONAR,
+    enLaBarra: false,
+  },
+  {
+    texto: 'Verificaciones',
+    href: '/panel/verificaciones',
+    icono: BadgeCheck,
+    grupo: 'Ventas',
+    permiso: PERMISOS.VERIFICACION_GESTIONAR,
+    enLaBarra: false,
   },
   {
     texto: 'Productos',
     href: '/panel/productos',
     icono: Tag,
+    grupo: 'Catálogo',
     permiso: PERMISOS.CATALOGO_GESTIONAR,
   },
   {
-    // No está en el menú de Figma: se agregó con SCRUM-105 para gestionar los packs aparte
+    // Se agregó con SCRUM-105 para gestionar los packs aparte
     texto: 'Packs',
     href: '/panel/packs',
     icono: Gift,
+    grupo: 'Catálogo',
+    permiso: PERMISOS.CATALOGO_GESTIONAR,
+    enLaBarra: false,
+  },
+  {
+    // Antes solo se abría desde Productos (Figma P3b 2039:1311); con los grupos tiene su lugar
+    texto: 'Marcas y categorías',
+    href: '/panel/marcas-y-categorias',
+    icono: Tags,
+    grupo: 'Catálogo',
     permiso: PERMISOS.CATALOGO_GESTIONAR,
     enLaBarra: false,
   },
@@ -63,25 +108,32 @@ export const SECCIONES: readonly SeccionPanel[] = [
     texto: 'Inventario',
     href: '/panel/inventario',
     icono: Box,
+    grupo: 'Catálogo',
     permiso: PERMISOS.INVENTARIO_CONSULTAR,
-  },
-  {
-    texto: 'Verificaciones',
-    href: '/panel/verificaciones',
-    icono: BadgeCheck,
-    permiso: PERMISOS.VERIFICACION_GESTIONAR,
   },
   {
     texto: 'Campañas',
     href: '/panel/campanas',
     icono: Mail,
+    grupo: 'Marketing',
     permiso: PERMISOS.CAMPANAS_GESTIONAR,
+    enLaBarra: false,
   },
   {
-    // No está en el menú de Figma: se agregó con SCRUM-150, con el permiso de las campañas
+    // Se agregó con SCRUM-150, con el permiso de las campañas
     texto: 'Cupones',
     href: '/panel/cupones' as Route,
     icono: TicketPercent,
+    grupo: 'Marketing',
+    permiso: PERMISOS.CAMPANAS_GESTIONAR,
+    enLaBarra: false,
+  },
+  {
+    // SCRUM-157: las imágenes de la portada del inicio, con el permiso de las campañas
+    texto: 'Portada',
+    href: '/panel/portada',
+    icono: GalleryHorizontalEnd,
+    grupo: 'Marketing',
     permiso: PERMISOS.CAMPANAS_GESTIONAR,
     enLaBarra: false,
   },
@@ -89,34 +141,43 @@ export const SECCIONES: readonly SeccionPanel[] = [
     texto: 'Reportes',
     href: '/panel/reportes',
     icono: ChartNoAxesColumn,
+    grupo: 'Administración',
     permiso: PERMISOS.REPORTES_VER,
-  },
-  {
-    // No está en el menú de Figma: se agregó con SCRUM-155. Clientes y profesionales los
-    // gestiona solo el administrador, con el permiso del personal (SCRUM-154)
-    texto: 'Clientes',
-    href: '/panel/clientes',
-    icono: Contact,
-    permiso: PERMISOS.PERSONAL_GESTIONAR,
     enLaBarra: false,
   },
   {
     texto: 'Personal',
     href: '/panel/personal',
     icono: UsersRound,
+    grupo: 'Administración',
     permiso: PERMISOS.PERSONAL_GESTIONAR,
+    enLaBarra: false,
   },
 ];
 
+/** Un grupo del menú con sus secciones; `grupo: null` son las sueltas de arriba (Inicio). */
+export interface BloqueMenu {
+  grupo: GrupoPanel | null;
+  secciones: SeccionPanel[];
+}
+
+/** Reparte las secciones en bloques por grupo, en el orden de GRUPOS_PANEL; sin vacíos. */
+export const agruparSecciones = (
+  secciones: readonly SeccionPanel[],
+): BloqueMenu[] =>
+  [null, ...GRUPOS_PANEL]
+    .map((grupo) => ({
+      grupo,
+      secciones: secciones.filter(
+        (seccion) => (seccion.grupo ?? null) === grupo,
+      ),
+    }))
+    .filter((bloque) => bloque.secciones.length > 0);
+
 /**
- * Páginas que piden un permiso distinto al de su sección (docs/pantallas.md). Las del catálogo
- * que no cuelgan de /panel/productos también van aquí.
+ * Páginas que piden un permiso distinto al de su sección (docs/pantallas.md).
  */
 const PERMISOS_DE_RUTA: readonly { prefijo: string; permiso: Permiso }[] = [
-  {
-    prefijo: '/panel/marcas-y-categorias',
-    permiso: PERMISOS.CATALOGO_GESTIONAR,
-  },
   {
     prefijo: '/panel/inventario/proveedores',
     permiso: PERMISOS.PROVEEDORES_GESTIONAR,
@@ -147,12 +208,10 @@ export const seccionesDelRol = (rol: Rol | undefined): SeccionPanel[] =>
     : [];
 
 /**
- * Páginas que no cuelgan de la ruta de su sección pero el menú las marca dentro de ella: Figma
- * marca «Productos» en Marcas y categorías (P3b 2039:1311), que se abre desde Productos.
+ * Páginas que no cuelgan de la ruta de su sección pero el menú las marca dentro de ella. Hoy
+ * ninguna: «Marcas y categorías» tiene su propia sección desde SCRUM-157.
  */
-const SECCION_DE_PAGINA: readonly { prefijo: string; seccion: Route }[] = [
-  { prefijo: '/panel/marcas-y-categorias', seccion: '/panel/productos' },
-];
+const SECCION_DE_PAGINA: readonly { prefijo: string; seccion: Route }[] = [];
 
 /** La sección a la que pertenece la ruta, para marcarla en el menú. Inicio solo en /panel. */
 export const seccionDeRuta = (ruta: string): SeccionPanel | undefined => {

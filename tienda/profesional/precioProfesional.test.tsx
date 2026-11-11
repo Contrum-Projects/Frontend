@@ -180,7 +180,10 @@ describe('SCRUM-109 · Precio profesional en la ficha', () => {
       await screen.findByText('Precio profesional · cuenta verificada'),
     ).toBeInTheDocument();
     expect(precioFicha('c/u · IVA incluido')).toHaveTextContent('$8.490');
-    expect(screen.queryByText('$12.990')).not.toBeInTheDocument();
+    // El precio normal se ve, pero tachado, como una oferta (SCRUM-157)
+    expect(screen.getByText('$12.990').closest('s')).toHaveTextContent(
+      'Precio normal: $12.990',
+    );
     // Los formatos también con el mayorista
     expect(screen.getByRole('radio', { name: '1 L, $19.490' })).toBeVisible();
     // Sin mínimo de unidades (SCRUM-146): la cantidad empieza en 1, como para todos
@@ -285,7 +288,7 @@ describe('SCRUM-109 · Precio profesional en la ficha', () => {
     expect(
       screen.getByText('Precio profesional · cuenta verificada'),
     ).toBeInTheDocument();
-    expect(screen.queryByText('$24.990')).not.toBeInTheDocument();
+    expect(screen.getByText('$24.990').closest('s')).toBeInTheDocument();
   });
 });
 

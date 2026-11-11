@@ -48,17 +48,29 @@ export const TituloFicha = ({
 
 /**
  * Precio con IVA que entrega el backend; «IVA incluido» solo en ficha, carrito y checkout. El
- * profesional ve «c/u» porque compra desde 3 unidades (Figma 2007:1767).
+ * profesional ve «c/u» porque compra desde 3 unidades (Figma 2007:1767). Con `antes`, el precio
+ * normal va tachado delante, como una oferta (SCRUM-157); el tachado no se lee en voz alta, por
+ * eso los dos precios llevan su nombre oculto.
  */
 export const PrecioFicha = ({
   precio,
   porUnidad = false,
+  antes = null,
 }: {
   precio: number;
   porUnidad?: boolean;
+  /** Precio normal que el profesional ve tachado (`precioNormalTachado`). */
+  antes?: number | null;
 }) => (
   <p className="flex flex-wrap items-baseline gap-x-3">
+    {antes !== null && (
+      <s className="texto-cuerpo text-texto-secundario tabular-nums md:titulo-h3">
+        <span className="sr-only">Precio normal: </span>
+        {formatearPesos(antes)}
+      </s>
+    )}
     <span className="texto-precio-ficha-celular text-marca-profundo md:texto-precio-ficha">
+      {antes !== null && <span className="sr-only">Precio profesional: </span>}
       {formatearPesos(precio)}
     </span>
     <span className="texto-pequeno text-texto-secundario">

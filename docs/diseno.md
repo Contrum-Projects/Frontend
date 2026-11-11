@@ -6,7 +6,8 @@ Tienda · Celular, Panel · Escritorio, Panel · Celular y Correos. Las pantalla
 [pantallas.md](pantallas.md).
 
 Dirección visual «vitrina cálida»: un solo color de marca (turquesa) sobre fondo hueso cálido. El
-brillo (destellos turquesa) vive solo en el banner principal del inicio.
+brillo (destellos turquesa) vive solo en el banner del pack del inicio (cuando la portada no tiene
+imágenes).
 
 ## Tokens
 
@@ -76,16 +77,24 @@ Al construir uno, ponlo en `compartido/ui` (si es genérico) o en `tienda/`/`pan
 
 Decididos el 12 de octubre para que el sitio se vea como tienda y no como landing:
 
-- El inicio muestra productos: promociones arriba, «Más vendidos», «Novedades» y marcas. Sin hero
-  con titular y dos botones, sin pasos explicativos ni fila de beneficios.
+- El inicio muestra productos: la portada arriba, «Más vendidos», «Novedades» y marcas. Sin pasos
+  explicativos ni fila de beneficios. La **portada** (SCRUM-157, decisión del 11-11-2026, reemplaza
+  el «sin hero» del 12-10) es un slider de imágenes que la tienda edita en `/panel/portada`: solo
+  imágenes (escritorio 12:5 a todo el ancho; celular 4:5 opcional: sin ella, la de escritorio se ve completa, nunca recortada), orden y destino elegido de una lista. El texto
+  va dentro de la imagen; la página no superpone titulares ni botones. Avanza cada 6 s, se pausa
+  con el mouse o el foco, y respeta «reducir movimiento». Sin imágenes, el inicio vuelve al banner del pack vigente.
 - Header de tienda en una sola fila: logo, categorías (4 en línea, el resto en «Más», luego
   «Packs» y «Marcas»), botón de buscar que abre el campo en la misma fila, cuenta (solo ícono) y
   carrito. Bajo `lg`, las categorías van en el menú lateral. «Precio profesional» no va en el
   header: queda en el footer y en el menú del celular (decisión del 11-11-2026, reemplaza al
   buscador grande y la segunda fila de Figma › Header 6:32). Sin franja de anuncio.
+- Tarjeta de producto (SCRUM-157): foto vertical 4:5 y, debajo, sobre fondo de superficie, marca,
+  nombre, precio y «Ver producto»; toda la tarjeta lleva a la ficha.
 - Blue Express aparece solo donde se decide o consulta el envío (checkout, detalle de pedido);
   Mercado Pago solo en el botón de pagar y en el aviso de pago no aprobado.
 - «IVA incluido» en la ficha, el carrito y el checkout; no en cada tarjeta.
+- El profesional ve el precio normal tachado junto al suyo, en tarjetas y fichas, como una oferta
+  (SCRUM-157). Los exclusivos no tienen precio normal: no se tacha nada.
 - Sin sobretítulos decorativos en mayúsculas; la marca sobre el nombre del producto sí.
 - Documento tributario: sin selector boleta/factura. Por defecto, comprobante electrónico; la
   factura se pide con el interruptor «Necesito factura» y usa los datos de facturación de la cuenta.
@@ -100,8 +109,10 @@ Decididos el 12 de octubre para que el sitio se vea como tienda y no como landin
 
 Funciona en computador y en celular (RNF-25: 360 px sin desplazamiento horizontal).
 
-- **Escritorio:** menú lateral oscuro (Inicio, Pedidos, Productos, Inventario, Verificaciones,
-  Campañas, Reportes, Personal); tablas; vista dividida lista + detalle en pedidos, verificaciones y
+- **Escritorio:** menú lateral oscuro con Inicio arriba y las secciones agrupadas por área
+  (SCRUM-157): **Ventas** (Pedidos, Clientes, Verificaciones), **Catálogo** (Productos, Packs, Marcas
+  y categorías, Inventario), **Marketing** (Campañas, Cupones, Portada) y **Administración**
+  (Reportes, Personal). La hoja «Más» del celular usa los mismos grupos; tablas; vista dividida lista + detalle en pedidos, verificaciones y
   facturas; panel lateral (`Sheet`) para registrar salidas y crear cuentas de personal; ventana de
   confirmación (`AlertDialog`) para enviar campañas.
 - **Celular:** barra superior con logo y avatar; navegación inferior con Inicio, Pedidos,
