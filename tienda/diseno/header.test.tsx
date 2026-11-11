@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { act } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -36,19 +37,56 @@ afterEach(() => {
 });
 
 describe('SCRUM-106 · Header de la tienda', () => {
-  it('E2-H1 FE · header: el buscador envía la búsqueda a /buscar con el campo q', () => {
+  it('E2-H1 FE · header: el botón «Buscar» abre el buscador, que envía a /buscar con el campo q', async () => {
+    act(() => olvidarSesion());
+    const persona = userEvent.setup();
+    mostrarHeader();
+
+    expect(screen.queryByRole('search')).not.toBeInTheDocument();
+    await persona.click(screen.getByRole('button', { name: 'Buscar' }));
+
+    expect(screen.getByRole('search')).toHaveAttribute('action', '/buscar');
+    const campo = screen.getByRole('searchbox', { name: 'Buscar' });
+    expect(campo).toHaveAttribute('name', 'q');
+    expect(campo).toHaveAttribute(
+      'placeholder',
+      'Busca por producto, marca o categoría',
+    );
+    expect(campo).toHaveFocus();
+  });
+
+  it('E2-H1 FE · header: el buscador se cierra con Esc y devuelve el foco al botón', async () => {
+    act(() => olvidarSesion());
+    const persona = userEvent.setup();
+    mostrarHeader();
+
+    await persona.click(screen.getByRole('button', { name: 'Buscar' }));
+    await persona.keyboard('{Escape}');
+
+    expect(screen.queryByRole('search')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Buscar' })).toHaveFocus();
+  });
+
+  it('E2-H1 FE · header: el buscador se cierra con la X', async () => {
+    act(() => olvidarSesion());
+    const persona = userEvent.setup();
+    mostrarHeader();
+
+    await persona.click(screen.getByRole('button', { name: 'Buscar' }));
+    await persona.click(
+      screen.getByRole('button', { name: 'Cerrar búsqueda' }),
+    );
+
+    expect(screen.queryByRole('search')).not.toBeInTheDocument();
+  });
+
+  it('E2-H1 FE · header: «Precio profesional» no va en la barra (queda en el footer y el menú)', () => {
     act(() => olvidarSesion());
     mostrarHeader();
 
-    const buscadores = screen.getAllByRole('search');
-    expect(buscadores).toHaveLength(2); // escritorio y celular
-    for (const buscador of buscadores) {
-      expect(buscador).toHaveAttribute('action', '/buscar');
-    }
     expect(
-      screen.getByPlaceholderText('Busca por producto, marca o categoría'),
-    ).toHaveAttribute('name', 'q');
-    expect(screen.getAllByLabelText('Buscar')).toHaveLength(2);
+      screen.queryByRole('link', { name: 'Precio profesional' }),
+    ).not.toBeInTheDocument();
   });
 
   it('E2-H1 FE · header: sin sesión ofrece «Ingresar» y el carrito', () => {

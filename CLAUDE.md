@@ -127,7 +127,7 @@ delgadas: importan componentes de `tienda/` o `panel/`.
 
 ## Flujo de trabajo (Scrumban)
 
-- Tablero: `docs/historias/README.md`, con las 53 historias en el orden en que se toman (ninguna
+- Tablero: `docs/historias/README.md`, con las 54 historias en el orden en que se toman (ninguna
   antes de otra que necesita). Estados: Por hacer → En curso → En revisión → Hecha. Una historia
   a la vez. `/historia` la pasa a En curso, `/pr` a En revisión; Hecha cuando el PR se integró y
   la pantalla se probó con el backend real (sin rutas simuladas).

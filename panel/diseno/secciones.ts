@@ -1,6 +1,7 @@
 import {
   BadgeCheck,
   Box,
+  Contact,
   ChartNoAxesColumn,
   GalleryHorizontalEnd,
   Gift,
@@ -98,6 +99,15 @@ export const SECCIONES: readonly SeccionPanel[] = [
     href: '/panel/reportes',
     icono: ChartNoAxesColumn,
     permiso: PERMISOS.REPORTES_VER,
+  },
+  {
+    // No está en el menú de Figma: se agregó con SCRUM-155. Clientes y profesionales los
+    // gestiona solo el administrador, con el permiso del personal (SCRUM-154)
+    texto: 'Clientes',
+    href: '/panel/clientes',
+    icono: Contact,
+    permiso: PERMISOS.PERSONAL_GESTIONAR,
+    enLaBarra: false,
   },
   {
     texto: 'Personal',

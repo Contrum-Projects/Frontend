@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 109.
+ * Versión de la API: 0.1.0. Rutas: 113.
  */
 
 export interface paths {
@@ -383,6 +383,86 @@ export interface paths {
          * @description Un administrador pasa a vendedor o bodeguero; un profesional, a cliente (con motivo, que se le envía por correo). Rige de inmediato: cierra todas las sesiones de la cuenta. Los pedidos ya creados conservan sus montos.
          */
         patch: operations["CambioRolController_cambiar"];
+        trace?: never;
+    };
+    "/api/clientes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar clientes y profesionales (E13-H4)
+         * @description Paginado, más recientes primero. Busca en el nombre, el apellido, el correo o el RUT y filtra por rol y estado; `conteos` son los números de los filtros con la búsqueda aplicada.
+         */
+        get: operations["ClientesController_listar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/clientes/{codigoPublico}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ver una cuenta de cliente o profesional (E13-H4)
+         * @description Sus datos, el perfil profesional, la solicitud de verificación más reciente, cuántos pedidos creó y su historial de rol.
+         */
+        get: operations["ClientesController_detalle"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/clientes/{codigoPublico}/desactivar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Desactivar una cuenta de cliente o profesional (E13-H4)
+         * @description Cierra todas sus sesiones y le quita el acceso de inmediato. Pedidos, carrito, verificación y suscripciones no cambian. Desactivar una cuenta ya desactivada no hace nada.
+         */
+        post: operations["ClientesController_desactivar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/clientes/{codigoPublico}/reactivar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reactivar una cuenta de cliente o profesional (E13-H4)
+         * @description Vuelve a iniciar sesión con su contraseña de siempre. Reactivar una cuenta activa no hace nada.
+         */
+        post: operations["ClientesController_reactivar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/inventario/proveedores": {
@@ -2432,6 +2512,118 @@ export interface components {
              * @example Dejó de ejercer como peluquera según nos informó.
              */
             motivo?: string | null;
+        };
+        ClienteListadoDto: {
+            /** Format: uuid */
+            codigoPublico: string;
+            /** @example Andrea */
+            nombre: string;
+            /** @example Soto */
+            apellido: string;
+            /** @example andrea@correo.cl */
+            email: string;
+            /** @example 12345678-5 */
+            rut: string | null;
+            /** @enum {string} */
+            rol: "cliente" | "profesional";
+            activo: boolean;
+            /** Format: date-time */
+            fechaRegistro: string;
+            /** @description Si confirmó su correo. */
+            correoConfirmado: boolean;
+        };
+        ConteosClientesDto: {
+            /** @example 120 */
+            todos: number;
+            /** @example 98 */
+            clientes: number;
+            /** @example 22 */
+            profesionales: number;
+            /** @example 3 */
+            desactivados: number;
+        };
+        ListadoClientesDto: {
+            items: components["schemas"]["ClienteListadoDto"][];
+            /** @example 120 */
+            total: number;
+            /** @example 1 */
+            pagina: number;
+            /** @example 20 */
+            limite: number;
+            /** @description Cuentas de cada filtro con la búsqueda aplicada, sin el filtro de rol ni de estado. */
+            conteos: components["schemas"]["ConteosClientesDto"];
+        };
+        PerfilProfesionalClienteDto: {
+            /** @example 8 */
+            anosExperiencia: number;
+            /** @example salon */
+            modalidad: string;
+            /**
+             * @example [
+             *       "color",
+             *       "corte"
+             *     ]
+             */
+            especialidades: string[];
+            nombreLugarTrabajo: string | null;
+            redSocial: string | null;
+            /** @example Providencia */
+            comuna: string | null;
+        };
+        VerificacionClienteDto: {
+            /** @enum {string} */
+            estado: "pendiente" | "revision_manual" | "aprobada" | "rechazada";
+            /** Format: date-time */
+            fechaSolicitud: string;
+            /** Format: date-time */
+            fechaResolucion: string | null;
+        };
+        CambioRolClienteDto: {
+            /** @example profesional */
+            rolAnterior: string;
+            /** @example cliente */
+            rolNuevo: string;
+            motivo: string | null;
+            /** Format: date-time */
+            fechaCambio: string;
+            /**
+             * @description Nombre y apellido de quien hizo el cambio.
+             * @example Javiera Muñoz
+             */
+            responsable: string;
+        };
+        ClienteDetalleDto: {
+            /** Format: uuid */
+            codigoPublico: string;
+            /** @example Andrea */
+            nombre: string;
+            /** @example Soto */
+            apellido: string;
+            /** @example andrea@correo.cl */
+            email: string;
+            /** @example 12345678-5 */
+            rut: string | null;
+            /** @enum {string} */
+            rol: "cliente" | "profesional";
+            activo: boolean;
+            /** Format: date-time */
+            fechaRegistro: string;
+            /** @description Si confirmó su correo. */
+            correoConfirmado: boolean;
+            /** @example +56912345678 */
+            telefono: string | null;
+            /** @description Si acepta los correos de ofertas. */
+            aceptaMarketingEmail: boolean;
+            perfilProfesional: components["schemas"]["PerfilProfesionalClienteDto"] | null;
+            /** @description Su solicitud de verificación más reciente. El detalle está en `GET /api/verificaciones/{codigoPublico}` con el mismo código. */
+            verificacion: components["schemas"]["VerificacionClienteDto"] | null;
+            /**
+             * @description Pedidos creados, en cualquier estado.
+             * @example 4
+             */
+            pedidos: number;
+            /** @description Cambios de rol, del más reciente al más antiguo. */
+            historialRol: components["schemas"]["CambioRolClienteDto"][];
         };
         CrearProveedorDto: {
             /**
@@ -5423,6 +5615,201 @@ export interface operations {
             };
             /** @description Cuenta desactivada, cambio que no baja el rol o último administrador activo. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ClientesController_listar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+                /** @description Palabras contenidas en el nombre, el apellido o el correo, sin distinguir mayúsculas; o un RUT, con o sin puntos y guion. */
+                buscar?: string;
+                /** @description Solo las cuentas de este rol. */
+                rol?: "cliente" | "profesional";
+                /** @description Con `true`, solo las activas; con `false`, solo las desactivadas. Sin él, todas. */
+                activo?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListadoClientesDto"];
+                };
+            };
+            /** @description Filtros inválidos. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Solo el administrador. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ClientesController_detalle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID de la cuenta. */
+                codigoPublico: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClienteDetalleDto"];
+                };
+            };
+            /** @description El código no es válido. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Solo el administrador. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No existe o es una cuenta del personal. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ClientesController_desactivar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codigoPublico: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cuenta desactivada. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El código no es válido. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Solo el administrador. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No existe o es una cuenta del personal. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ClientesController_reactivar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codigoPublico: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cuenta reactivada. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El código no es válido. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Solo el administrador. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No existe o es una cuenta del personal. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

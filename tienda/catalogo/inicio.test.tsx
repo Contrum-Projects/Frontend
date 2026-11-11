@@ -149,6 +149,27 @@ describe('SCRUM-106 · Inicio', () => {
     expect(screen.getByRole('button', { name: 'Marcas' })).toBeInTheDocument();
   });
 
+  it('E2-H1 FE · header: desde la quinta categoría, las demás van en «Más»', async () => {
+    simularTienda({
+      categorias: [
+        categoria(1, 'Shampoo'),
+        categoria(2, 'Acondicionador'),
+        categoria(3, 'Coloración'),
+        categoria(4, 'Peinado'),
+        categoria(5, 'Herramientas'),
+      ],
+      marcas: [],
+    });
+
+    render(await NavegacionCategorias());
+
+    expect(screen.getByRole('link', { name: 'Peinado' })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: 'Herramientas' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Más' })).toBeInTheDocument();
+  });
+
   it('E2-H1 FE · header: si la API no responde, queda navegable con «Packs»', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('sin red')));
 
