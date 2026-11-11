@@ -9,6 +9,7 @@ import { formatearPesos } from '@/compartido/formato/moneda';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { urlProducto } from '@/tienda/diseno/enlaces';
 import { InsigniaExclusivo } from '@/tienda/profesional/insignias';
+import { precioNormalTachado } from '@/tienda/profesional/precio';
 
 /** Ancho de la foto según dónde va la tarjeta, para que next/image baje el tamaño justo. */
 export const TAMANOS_FOTO = {
@@ -82,7 +83,10 @@ export const TarjetaProducto = ({
             </Link>
           </h3>
           {'precioMayorista' in producto ? (
-            <PrecioProfesional precio={producto.precioMayorista} />
+            <PrecioProfesional
+              precio={producto.precioMayorista}
+              antes={precioNormalTachado(producto)}
+            />
           ) : (
             <p className="mt-1 texto-cuerpo-fuerte text-marca-profundo tabular-nums">
               {formatearPesos(producto.precio)}
@@ -110,9 +114,16 @@ export const TarjetaProducto = ({
 
 /**
  * Precio mayorista con IVA (Figma 5:127): en celular dice solo «Profesional». Sin mínimo de
- * unidades (SCRUM-146).
+ * unidades (SCRUM-146). Con `antes`, el precio normal va tachado al lado, como una oferta
+ * (SCRUM-157); los dos llevan su nombre oculto porque el tachado no se lee en voz alta.
  */
-const PrecioProfesional = ({ precio }: { precio: number }) => (
+const PrecioProfesional = ({
+  precio,
+  antes,
+}: {
+  precio: number;
+  antes: number | null;
+}) => (
   <div className="mt-1 flex min-w-0 flex-col">
     <p className="flex items-center gap-1 texto-leyenda text-marca-profundo">
       <BadgeCheck
@@ -123,8 +134,19 @@ const PrecioProfesional = ({ precio }: { precio: number }) => (
       <span className="md:hidden">Profesional</span>
       <span className="hidden md:inline">Precio profesional</span>
     </p>
-    <p className="texto-cuerpo-fuerte text-marca-profundo tabular-nums">
-      {formatearPesos(precio)}
+    <p className="flex flex-wrap items-baseline gap-x-2">
+      <span className="texto-cuerpo-fuerte text-marca-profundo tabular-nums">
+        {antes !== null && (
+          <span className="sr-only">Precio profesional: </span>
+        )}
+        {formatearPesos(precio)}
+      </span>
+      {antes !== null && (
+        <s className="texto-leyenda text-texto-secundario tabular-nums">
+          <span className="sr-only">Precio normal: </span>
+          {formatearPesos(antes)}
+        </s>
+      )}
     </p>
   </div>
 );

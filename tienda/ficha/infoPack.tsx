@@ -6,7 +6,10 @@ import { formatearDiaMes } from '@/compartido/formato/fecha';
 import { Migas } from '@/tienda/catalogo/migas';
 import { RUTAS, urlPack } from '@/tienda/diseno/enlaces';
 import { InsigniaPrecioProfesional } from '@/tienda/profesional/insignias';
-import { precioVisible } from '@/tienda/profesional/precio';
+import {
+  precioNormalTachado,
+  precioVisible,
+} from '@/tienda/profesional/precio';
 import { Compra } from './compra';
 import { EstadoDisponibilidad } from './disponibilidad';
 import { Galeria } from './galeria';
@@ -48,7 +51,10 @@ export const InfoPack = ({
     <div className="flex flex-col items-start gap-4">
       {'exclusivo' in pack && <InsigniaPrecioProfesional />}
       <div className="flex flex-col gap-1">
-        <PrecioFicha precio={precioVisible(pack)} />
+        <PrecioFicha
+          precio={precioVisible(pack)}
+          antes={precioNormalTachado(pack)}
+        />
         {pack.vigenteHasta && (
           <p className="texto-pequeno text-texto-secundario">
             Hasta el {formatearDiaMes(pack.vigenteHasta)}

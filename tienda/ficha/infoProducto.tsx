@@ -9,7 +9,10 @@ import { Migas } from '@/tienda/catalogo/migas';
 import { RUTAS, urlCatalogo, urlProducto } from '@/tienda/diseno/enlaces';
 import { AvisoPeluquero } from '@/tienda/profesional/avisoPeluquero';
 import { InsigniaPrecioProfesional } from '@/tienda/profesional/insignias';
-import { precioVisible } from '@/tienda/profesional/precio';
+import {
+  precioNormalTachado,
+  precioVisible,
+} from '@/tienda/profesional/precio';
 import { Compra } from './compra';
 import { EstadoDisponibilidad } from './disponibilidad';
 import { Galeria } from './galeria';
@@ -73,7 +76,11 @@ export function InfoProducto({ producto }: InfoProductoProps) {
       {profesional ? (
         <div className="flex flex-col items-start gap-4">
           <InsigniaPrecioProfesional />
-          <PrecioFicha precio={precioVisible(elegido)} porUnidad />
+          <PrecioFicha
+            precio={precioVisible(elegido)}
+            antes={precioNormalTachado(elegido)}
+            porUnidad
+          />
         </div>
       ) : (
         <PrecioFicha precio={precioVisible(elegido)} />

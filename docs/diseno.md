@@ -93,6 +93,8 @@ Decididos el 12 de octubre para que el sitio se vea como tienda y no como landin
 - Blue Express aparece solo donde se decide o consulta el envío (checkout, detalle de pedido);
   Mercado Pago solo en el botón de pagar y en el aviso de pago no aprobado.
 - «IVA incluido» en la ficha, el carrito y el checkout; no en cada tarjeta.
+- El profesional ve el precio normal tachado junto al suyo, en tarjetas y fichas, como una oferta
+  (SCRUM-157). Los exclusivos no tienen precio normal: no se tacha nada.
 - Sin sobretítulos decorativos en mayúsculas; la marca sobre el nombre del producto sí.
 - Documento tributario: sin selector boleta/factura. Por defecto, comprobante electrónico; la
   factura se pide con el interruptor «Necesito factura» y usa los datos de facturación de la cuenta.
