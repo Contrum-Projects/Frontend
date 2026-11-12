@@ -6,12 +6,14 @@ import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Button } from '@/compartido/ui/button';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { ArbolCategorias } from './arbolCategorias';
+import { BotonBorrar } from './botonBorrar';
 import { useCategorias, useMarcas } from './consultasCatalogo';
 import { PanelCategoria, type EdicionCategoria } from './formularioCategoria';
 import { NuevaMarca } from './formularioMarca';
 
 /**
- * «Marcas y categorías» (Figma P3b 2039:1311, E3-H4): el personal ordena el catálogo. En
+ * «Marcas y categorías» (Figma P3b 2039:1311, E3-H4): el personal ordena el catálogo y borra
+ * las marcas y categorías que ya no se usan (SCRUM-158). En
  * escritorio, las categorías a la izquierda y las marcas en una columna de 420 px; en celular
  * (sin diseño en Figma), una tarjeta debajo de la otra.
  */
@@ -124,9 +126,12 @@ const Marcas = () => {
       {consulta.data.map((marca) => (
         <li
           key={marca.id}
-          className="flex min-h-12 items-center border-t px-3 py-3 texto-etiqueta break-words text-texto-principal"
+          className="flex min-h-12 items-center gap-2 border-t py-1 pr-2 pl-3"
         >
-          {marca.nombre}
+          <span className="min-w-0 flex-1 texto-etiqueta break-words text-texto-principal">
+            {marca.nombre}
+          </span>
+          <BotonBorrar que="marca" id={marca.id} nombre={marca.nombre} />
         </li>
       ))}
     </ul>

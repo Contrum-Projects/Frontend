@@ -5,11 +5,12 @@ import { useState } from 'react';
 import type { CategoriaTienda } from '@/compartido/api/respuestas';
 import { cn } from '@/compartido/lib/utils';
 import { Button } from '@/compartido/ui/button';
+import { BotonBorrar } from './botonBorrar';
 
 /**
  * Árbol de categorías (Figma P3b 2039:1386, E3-H4 criterio 2): cada categoría con sus
  * subcategorías debajo, que se pueden plegar. Todas parten desplegadas, así una subcategoría
- * recién creada se ve bajo su categoría.
+ * recién creada se ve bajo su categoría. Cada fila se puede editar o borrar (SCRUM-158).
  */
 export const ArbolCategorias = ({
   arbol,
@@ -107,6 +108,11 @@ const NodoCategoria = ({
         >
           <Pencil aria-hidden />
         </Button>
+        <BotonBorrar
+          que="categoria"
+          id={categoria.id}
+          nombre={categoria.nombre}
+        />
       </div>
       {tieneHijas && (
         // Siempre montada, así `aria-controls` apunta a algo aunque esté plegada
