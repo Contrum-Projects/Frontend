@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 114.
+ * Versión de la API: 0.1.0. Rutas: 115.
  */
 
 export interface paths {
@@ -1841,6 +1841,26 @@ export interface paths {
          * @description Cantidad de pedidos pagados y sus montos (neto, IVA y total, con el despacho incluido) entre las dos fechas, ambas incluidas y en hora de Chile, separados en minorista y mayorista según el precio que se aplicó al comprar, más el total. Los pedidos pendientes de pago y los cancelados no cuentan. Sin pedidos, todo en cero.
          */
         get: operations["ReporteVentasController_ventas"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reportes/ventas/exportar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Exportar las ventas pedido a pedido en CSV (E14-H5, SCRUM-159)
+         * @description Los mismos pedidos que suma `GET /api/reportes/ventas` para el período, uno por fila y del más antiguo al más reciente: código del pedido, fecha y hora de Chile, estado, tipo de cliente, tipo de entrega, documento solicitado, descuento, neto, IVA y total en pesos. Sin datos personales del comprador. CSV para Excel en Chile: UTF-8 con BOM, separador `;`. Sin pedidos, solo los encabezados.
+         */
+        get: operations["ReporteVentasController_exportar"];
         put?: never;
         post?: never;
         delete?: never;
@@ -9867,6 +9887,48 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description `desde`, `hasta` y, para `minorista`, `mayorista` y `total`: `pedidos`, `montoNeto`, `montoIva` y `montoTotal` en pesos. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Fechas inválidas, la fecha hasta anterior a la desde o un período de más de 366 días. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de ver los reportes. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ReporteVentasController_exportar: {
+        parameters: {
+            query: {
+                desde: string;
+                hasta: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description El archivo `ventas-<desde>-<hasta>.csv` como descarga. */
             200: {
                 headers: {
                     [name: string]: unknown;
