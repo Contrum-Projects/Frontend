@@ -361,6 +361,10 @@ describe('Panel de verificaciones (SCRUM-135)', () => {
         'sin_inicio_actividades',
         'El SII no muestra inicio de actividades para este RUT.',
       ],
+      [
+        'nombre_no_coincide',
+        'El SII muestra el giro de peluquería, pero el nombre del contribuyente no coincide con el de la cuenta. Revisa los documentos.',
+      ],
       ['no_disponible', 'No se pudo consultar al SII. Revisa los documentos.'],
       [null, 'Esta solicitud no se consultó al SII.'],
     ] as const)(

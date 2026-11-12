@@ -191,6 +191,27 @@ describe('SCRUM-97 · Mis datos', () => {
     );
   });
 
+  it('SCRUM-164 · nombre bloqueado por la verificación: muestra el mensaje del backend y conserva lo escrito', async () => {
+    const mensaje =
+      'Tienes una verificación profesional en curso. Podrás cambiar tu nombre cuando se resuelva.';
+    conDatos(() => responder({ statusCode: 403, message: mensaje }, 403));
+    mostrarMisDatos();
+    const tarjeta = await tarjetaDatos();
+    const usuario = userEvent.setup();
+
+    const nombre = within(tarjeta).getByLabelText(/^Nombre/);
+    await usuario.clear(nombre);
+    await usuario.type(nombre, 'Ana');
+    await usuario.click(
+      within(tarjeta).getByRole('button', { name: 'Guardar cambios' }),
+    );
+
+    expect(await within(tarjeta).findByRole('alert')).toHaveTextContent(
+      mensaje,
+    );
+    expect(nombre).toHaveValue('Ana');
+  });
+
   it('E1-H5 FE · editar datos: un error del servidor se muestra sin detalles técnicos', async () => {
     conDatos(() =>
       responder(

@@ -15,6 +15,8 @@ export const AVISO_MOTIVO: Record<
   sin_inicio_actividades:
     'El SII no muestra inicio de actividades para este RUT.',
   otro_giro: 'El SII no muestra el giro de peluquería (960200) para este RUT.',
+  nombre_no_coincide:
+    'El SII muestra el giro de peluquería, pero el nombre del contribuyente no coincide con el de la cuenta. Revisa los documentos.',
   no_disponible: 'No se pudo consultar al SII. Revisa los documentos.',
   sin_consulta: 'Esta solicitud no se consultó al SII.',
 };
@@ -23,6 +25,7 @@ export const AVISO_MOTIVO: Record<
 export const MOTIVO_CORTO: Record<MotivoRevisionVerificacion, string> = {
   sin_inicio_actividades: 'Sin inicio de actividades',
   otro_giro: 'Otro giro',
+  nombre_no_coincide: 'Nombre no coincide',
   no_disponible: 'SII no disponible',
 };
 
