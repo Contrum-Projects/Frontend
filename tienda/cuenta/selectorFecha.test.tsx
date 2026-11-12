@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
@@ -43,15 +43,19 @@ describe('SelectorFecha con hora', () => {
     render(<Prueba alCambiar={alCambiar} horaInicial="23:59" />);
 
     await usuario.click(screen.getByRole('button', { name: /dd\/mm\/aaaa/ }));
-    const hora = screen.getByLabelText('Hora');
-    expect(hora).toBeDisabled();
+    expect(screen.getByRole('combobox', { name: 'Hora' })).toBeDisabled();
 
     await usuario.click(
       screen.getByRole('button', { name: /20 de noviembre/i }),
     );
     expect(alCambiar).toHaveBeenLastCalledWith('2026-11-20T23:59');
 
-    fireEvent.change(hora, { target: { value: '09:15' } });
+    await usuario.click(screen.getByRole('combobox', { name: 'Hora' }));
+    await usuario.click(screen.getByRole('option', { name: '09' }));
+    expect(alCambiar).toHaveBeenLastCalledWith('2026-11-20T09:59');
+
+    await usuario.click(screen.getByRole('combobox', { name: 'Minutos' }));
+    await usuario.click(screen.getByRole('option', { name: '15' }));
     expect(alCambiar).toHaveBeenLastCalledWith('2026-11-20T09:15');
   });
 });

@@ -5,13 +5,13 @@ import { useState, type Ref } from 'react';
 import { cn } from '@/compartido/lib/utils';
 import { Button } from '@/compartido/ui/button';
 import { Calendar } from '@/compartido/ui/calendar';
-import { Input } from '@/compartido/ui/input';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/compartido/ui/popover';
 import type { PropsControl } from './campoFormulario';
+import { SelectorHora } from './selectorHora';
 
 /** «1990-05-21» (o «1990-05-21T18:30») → fecha local (sin hora), o `undefined` si viene vacío. */
 export const aFecha = (valor: string) => {
@@ -34,7 +34,7 @@ const paraMostrar = (valor: string) => {
 
 /**
  * Date picker de shadcn (Popover + Calendar). Sin `conHora`, una fecha sin hora (AAAA-MM-DD);
- * con `conHora`, fecha y hora local (AAAA-MM-DDTHH:mm, como `datetime-local`) y un campo de hora
+ * con `conHora`, fecha y hora local (AAAA-MM-DDTHH:mm, como `datetime-local`) y `SelectorHora`
  * bajo el calendario. El botón tiene la caja de <Input>; el calendario abre con mes y año en
  * listas, para llegar rápido a una fecha antigua como la de nacimiento.
  */
@@ -114,26 +114,14 @@ export const SelectorFecha = ({
           onSelect={elegirDia}
         />
         {conHora && (
-          <div className="flex items-center gap-3 border-t p-3">
-            <label
-              htmlFor={`${control.id}-hora`}
-              className="texto-etiqueta text-texto-principal"
-            >
-              Hora
-            </label>
-            <Input
-              id={`${control.id}-hora`}
-              type="time"
-              value={hora}
-              disabled={!seleccionada}
-              onChange={(evento) =>
-                seleccionada &&
-                evento.target.value &&
-                alCambiar(`${aTexto(seleccionada)}T${evento.target.value}`)
-              }
-              className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
-            />
-          </div>
+          <SelectorHora
+            id={`${control.id}-hora`}
+            valor={hora}
+            deshabilitado={!seleccionada}
+            alCambiar={(nueva) =>
+              seleccionada && alCambiar(`${aTexto(seleccionada)}T${nueva}`)
+            }
+          />
         )}
         {valor && (
           <div className="border-t p-2">
