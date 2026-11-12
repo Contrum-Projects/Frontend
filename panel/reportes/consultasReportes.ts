@@ -1,8 +1,8 @@
 'use client';
 
-import { useQueries, useQuery } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery } from '@tanstack/react-query';
 import { api } from '@/compartido/api/cliente';
-import { exigir } from '@/compartido/api/errores';
+import { errorDeApi, exigir } from '@/compartido/api/errores';
 import type {
   FormatoBajoMinimo,
   ReporteCarritos,
@@ -10,6 +10,7 @@ import type {
   ReporteVentas,
 } from '@/compartido/api/respuestas';
 import { conErrorDeApi } from '@/tienda/cuenta/consultasCuenta';
+import { guardarArchivo } from '@/tienda/pedidos/consultasPedidos';
 import type { MesDelPeriodo } from './periodos';
 
 export const CLAVE_REPORTES = ['panel', 'reportes'] as const;
@@ -42,6 +43,27 @@ export const useVentasDelPeriodo = (fechas: Fechas) =>
  */
 export const useVentasPorMes = (meses: MesDelPeriodo[]) =>
   useQueries({ queries: meses.map(consultaVentas) });
+
+/**
+ * E14-H5 (SCRUM-160) · Descarga en CSV las ventas del período pedido a pedido (SCRUM-159). Va por
+ * `api`, con el token y por el proxy, no con un enlace directo: el backend pide la sesión. El
+ * nombre lo arma el frontend con las mismas fechas que pidió.
+ */
+export const useExportarVentas = ({ desde, hasta }: Fechas) =>
+  useMutation({
+    mutationFn: () =>
+      conErrorDeApi(async () => {
+        const archivo = exigir<Blob>(
+          await api.GET('/api/reportes/ventas/exportar', {
+            params: { query: { desde, hasta } },
+            parseAs: 'blob',
+          }),
+        );
+        // Solo se guarda un CSV: otra cosa es una respuesta inesperada
+        if (!archivo.type.startsWith('text/csv')) throw errorDeApi(undefined);
+        guardarArchivo(archivo, `ventas-${desde}-${hasta}.csv`);
+      }),
+  });
 
 /** Indicadores OE1 a OE3 del período (E14-H1 criterios 1 y 2). */
 export const useObjetivosDelPeriodo = ({ desde, hasta }: Fechas) =>

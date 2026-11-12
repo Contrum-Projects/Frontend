@@ -3,6 +3,7 @@
 import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { useVentasDelPeriodo, useVentasPorMes } from './consultasReportes';
+import { ExportarVentas } from './exportarVentas';
 import {
   GraficoVentas,
   LeyendaVentas,
@@ -54,7 +55,10 @@ export const VentasDelPeriodo = ({ rango }: { rango: RangoDelPeriodo }) => {
             Ventas por mes
             <span className="max-lg:hidden"> y tipo de cliente</span>
           </h2>
-          <LeyendaVentas />
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-6">
+            <LeyendaVentas />
+            <ExportarVentas rango={rango} />
+          </div>
         </div>
         <GraficoVentas meses={meses} />
         {/* Celular (Figma 2042:1010): el total bajo el gráfico, sin la tarjeta de resumen */}
@@ -75,9 +79,13 @@ const EsqueletoVentas = () => (
   <div aria-hidden className="flex flex-col gap-4 lg:flex-row">
     <div className={`${TARJETA} lg:flex-1`}>
       {/* Título y leyenda: en el celular, uno bajo el otro */}
-      <div className="flex flex-col gap-3 lg:flex-row lg:justify-between">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <Skeleton className="h-6 w-56 max-w-full" />
-        <Skeleton className="h-4 w-40" />
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-6">
+          <Skeleton className="h-4 w-40" />
+          {/* El botón «Exportar CSV»: mismo alto que el Button mediano */}
+          <Skeleton className="h-9.5 w-36" />
+        </div>
       </div>
       {/* Mismo alto que el gráfico, con la fila de los meses */}
       <Skeleton className="h-46 w-full lg:h-62" />
