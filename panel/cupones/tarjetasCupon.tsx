@@ -13,6 +13,7 @@ import { NativeSelect } from '@/compartido/ui/native-select';
 import { Switch } from '@/compartido/ui/switch';
 import { useCampanas } from '@/panel/campanas/consultasCampanas';
 import { CampoFormulario } from '@/tienda/cuenta/campoFormulario';
+import { SelectorFecha } from '@/tienda/cuenta/selectorFecha';
 import { CampoEntero, Tarjeta } from './camposCupon';
 import type { FormularioCupon } from './esquemaCupon';
 
@@ -135,7 +136,8 @@ export const TarjetaDescuento = (props: PropsTarjeta) => {
 
 /** Vigencia, usos, compra mínima, precio profesional y si está activo. */
 export const TarjetaReglas = (props: PropsTarjeta) => {
-  const { id, control, register, errors } = props;
+  const { id, control, errors } = props;
+  const anio = new Date().getFullYear();
   return (
     <Tarjeta titulo="Reglas">
       <div className="grid gap-4 sm:grid-cols-2">
@@ -144,11 +146,22 @@ export const TarjetaReglas = (props: PropsTarjeta) => {
           etiqueta="Desde (opcional)"
           error={errors.fechaInicio?.message}
         >
-          {(control) => (
-            <Input
-              {...control}
-              {...register('fechaInicio')}
-              type="datetime-local"
+          {(propsControl) => (
+            <Controller
+              control={control}
+              name="fechaInicio"
+              render={({ field }) => (
+                <SelectorFecha
+                  ref={field.ref}
+                  valor={field.value}
+                  alCambiar={field.onChange}
+                  desde={new Date(anio - 1, 0)}
+                  hasta={new Date(anio + 5, 11, 31)}
+                  mesInicial={new Date()}
+                  conHora
+                  control={propsControl}
+                />
+              )}
             />
           )}
         </CampoFormulario>
@@ -157,11 +170,23 @@ export const TarjetaReglas = (props: PropsTarjeta) => {
           etiqueta="Hasta (opcional)"
           error={errors.fechaFin?.message}
         >
-          {(control) => (
-            <Input
-              {...control}
-              {...register('fechaFin')}
-              type="datetime-local"
+          {(propsControl) => (
+            <Controller
+              control={control}
+              name="fechaFin"
+              render={({ field }) => (
+                <SelectorFecha
+                  ref={field.ref}
+                  valor={field.value}
+                  alCambiar={field.onChange}
+                  desde={new Date(anio - 1, 0)}
+                  hasta={new Date(anio + 5, 11, 31)}
+                  mesInicial={new Date()}
+                  conHora
+                  horaInicial="23:59"
+                  control={propsControl}
+                />
+              )}
             />
           )}
         </CampoFormulario>
