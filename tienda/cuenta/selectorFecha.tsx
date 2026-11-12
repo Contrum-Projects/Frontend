@@ -5,6 +5,7 @@ import { useState, type Ref } from 'react';
 import { cn } from '@/compartido/lib/utils';
 import { Button } from '@/compartido/ui/button';
 import { Calendar } from '@/compartido/ui/calendar';
+import { Input } from '@/compartido/ui/input';
 import {
   Popover,
   PopoverContent,
@@ -12,9 +13,9 @@ import {
 } from '@/compartido/ui/popover';
 import type { PropsControl } from './campoFormulario';
 
-/** «1990-05-21» → fecha local (sin hora), o `undefined` si viene vacío. */
+/** «1990-05-21» (o «1990-05-21T18:30») → fecha local (sin hora), o `undefined` si viene vacío. */
 export const aFecha = (valor: string) => {
-  const [anio, mes, dia] = valor.split('-').map(Number);
+  const [anio, mes, dia] = valor.slice(0, 10).split('-').map(Number);
   return valor ? new Date(anio!, mes! - 1, dia) : undefined;
 };
 
@@ -24,13 +25,18 @@ const dosCifras = (numero: number) => String(numero).padStart(2, '0');
 export const aTexto = (fecha: Date) =>
   `${fecha.getFullYear()}-${dosCifras(fecha.getMonth() + 1)}-${dosCifras(fecha.getDate())}`;
 
-/** «1990-05-21» → «21/05/1990», como lo escribe una persona en Chile. */
-const paraMostrar = (valor: string) => valor.split('-').reverse().join('/');
+/** «1990-05-21» → «21/05/1990»; «2026-11-12T18:30» → «12/11/2026 18:30», como en Chile. */
+const paraMostrar = (valor: string) => {
+  const [dia, hora] = valor.split('T');
+  const fecha = dia!.split('-').reverse().join('/');
+  return hora ? `${fecha} ${hora}` : fecha;
+};
 
 /**
- * Date picker de shadcn (Popover + Calendar) para una fecha sin hora (AAAA-MM-DD). El botón
- * tiene la caja de <Input>; el calendario abre con mes y año en listas, para llegar rápido a
- * una fecha antigua como la de nacimiento.
+ * Date picker de shadcn (Popover + Calendar). Sin `conHora`, una fecha sin hora (AAAA-MM-DD);
+ * con `conHora`, fecha y hora local (AAAA-MM-DDTHH:mm, como `datetime-local`) y un campo de hora
+ * bajo el calendario. El botón tiene la caja de <Input>; el calendario abre con mes y año en
+ * listas, para llegar rápido a una fecha antigua como la de nacimiento.
  */
 export const SelectorFecha = ({
   valor,
@@ -38,6 +44,8 @@ export const SelectorFecha = ({
   desde,
   hasta,
   mesInicial,
+  conHora = false,
+  horaInicial = '00:00',
   control,
   ref,
 }: {
@@ -51,10 +59,25 @@ export const SelectorFecha = ({
   hasta: Date;
   /** Mes que muestra el calendario sin fecha elegida; si falta, el de `hasta`. */
   mesInicial?: Date;
+  /** Pide también la hora y entrega AAAA-MM-DDTHH:mm. */
+  conHora?: boolean;
+  /** Con `conHora`: la hora que toma un día recién elegido (HH:mm), p. ej. «23:59» para un fin. */
+  horaInicial?: string;
   control: PropsControl;
 }) => {
   const [abierto, setAbierto] = useState(false);
   const seleccionada = aFecha(valor);
+  const hora = valor.split('T')[1] ?? '';
+
+  const elegirDia = (fecha: Date | undefined) => {
+    if (!fecha) return alCambiar('');
+    if (!conHora) {
+      alCambiar(aTexto(fecha));
+      return setAbierto(false);
+    }
+    // Se queda abierto para ajustar la hora
+    alCambiar(`${aTexto(fecha)}T${hora || horaInicial}`);
+  };
 
   return (
     <Popover open={abierto} onOpenChange={setAbierto}>
@@ -68,7 +91,11 @@ export const SelectorFecha = ({
             !valor && 'text-muted-foreground',
           )}
         >
-          {valor ? paraMostrar(valor) : 'dd/mm/aaaa'}
+          {valor
+            ? paraMostrar(valor)
+            : conHora
+              ? 'dd/mm/aaaa hh:mm'
+              : 'dd/mm/aaaa'}
           <CalendarIcon
             aria-hidden
             className="size-5 shrink-0 stroke-[1.75] text-texto-secundario"
@@ -84,11 +111,30 @@ export const SelectorFecha = ({
           startMonth={desde}
           endMonth={hasta}
           disabled={{ after: hasta }}
-          onSelect={(fecha) => {
-            alCambiar(fecha ? aTexto(fecha) : '');
-            setAbierto(false);
-          }}
+          onSelect={elegirDia}
         />
+        {conHora && (
+          <div className="flex items-center gap-3 border-t p-3">
+            <label
+              htmlFor={`${control.id}-hora`}
+              className="texto-etiqueta text-texto-principal"
+            >
+              Hora
+            </label>
+            <Input
+              id={`${control.id}-hora`}
+              type="time"
+              value={hora}
+              disabled={!seleccionada}
+              onChange={(evento) =>
+                seleccionada &&
+                evento.target.value &&
+                alCambiar(`${aTexto(seleccionada)}T${evento.target.value}`)
+              }
+              className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
+            />
+          </div>
+        )}
         {valor && (
           <div className="border-t p-2">
             <Button

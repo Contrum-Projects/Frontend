@@ -72,7 +72,7 @@ export const CUPON_VACIO: FormularioCupon = {
 
 const dosDigitos = (valor: number) => String(valor).padStart(2, '0');
 
-/** Una fecha del backend como la muestra `<input type="datetime-local">`, en la hora local. */
+/** Una fecha del backend como la usa `SelectorFecha` con `conHora` (AAAA-MM-DDTHH:mm), en la hora local. */
 export const aFechaLocal = (fecha: string | null): string => {
   if (!fecha) return '';
   const d = new Date(fecha);
