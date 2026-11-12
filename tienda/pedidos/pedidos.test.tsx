@@ -546,7 +546,8 @@ describe('Documento del pedido (SCRUM-128)', () => {
     simularBackend({
       [PEDIDO]: () => responder(conFactura('disponible')),
       [DOCUMENTO]: () =>
-        new Response(new Blob(['%PDF-1.7'], { type: 'application/pdf' }), {
+        // Cuerpo en texto: el Blob de jsdom no lo lee el Response de Node 22 (SCRUM-161)
+        new Response('%PDF-1.7', {
           status: 200,
           headers: {
             'Content-Type': 'application/pdf',

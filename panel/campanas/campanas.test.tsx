@@ -20,6 +20,10 @@ import { PantallaCampanaNueva, PantallaEditarCampana } from './pantallaCampana';
 import { PantallaCampanas } from './pantallaCampanas';
 import { FILTROS_VACIOS } from './esquemaCampana';
 
+// Redactar y confirmar escriben mucho con userEvent: solas tardan ~1 s, pero con toda la suite en
+// el CI pasan de los 5 s por defecto (SCRUM-161)
+vi.setConfig({ testTimeout: 15_000 });
+
 // Cliente igual al de la app, con URL absoluta y el fetch simulado de cada prueba
 vi.mock('@/compartido/api/cliente', async (original) => {
   const { middlewareDeSesion } =

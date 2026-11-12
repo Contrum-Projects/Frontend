@@ -405,7 +405,8 @@ describe('Facturas por emitir (SCRUM-127)', () => {
     const { pedidas } = simularBackend({
       'GET /api/gestion/facturas/FACTPOREMI01': () => Response.json(EMITIDA),
       'GET /api/pedidos/FACTPOREMI01/factura': () =>
-        new Response(new Blob(['%PDF-1.4'], { type: 'application/pdf' }), {
+        // Cuerpo en texto: el Blob de jsdom no lo lee el Response de Node 22 (SCRUM-161)
+        new Response('%PDF-1.4', {
           headers: {
             'content-type': 'application/pdf',
             'content-disposition': 'attachment; filename="factura-4521.pdf"',
