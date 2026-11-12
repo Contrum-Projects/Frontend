@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 113.
+ * Versión de la API: 0.1.0. Rutas: 114.
  */
 
 export interface paths {
@@ -697,6 +697,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/catalogo/marcas/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Borrar una marca que ya no se usa (SCRUM-158)
+         * @description Solo si ningún producto, cupón ni imagen de la portada la usa; si no, 409 con dónde se usa.
+         */
+        delete: operations["MarcasController_eliminar"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/catalogo/categorias": {
         parameters: {
             query?: never;
@@ -731,7 +751,11 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Borrar una categoría que ya no se usa (SCRUM-158)
+         * @description Solo si no tiene productos, subcategorías, cupones ni imágenes de la portada; si no, 409 con dónde se usa.
+         */
+        delete: operations["CategoriasController_eliminar"];
         options?: never;
         head?: never;
         /**
@@ -6431,6 +6455,54 @@ export interface operations {
             };
         };
     };
+    MarcasController_eliminar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Marca borrada. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar el catálogo. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La marca no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La usan productos, cupones o imágenes de la portada. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     CategoriasController_listar: {
         parameters: {
             query?: never;
@@ -6506,6 +6578,54 @@ export interface operations {
             };
             /** @description La categoría padre no existe. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CategoriasController_eliminar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Categoría borrada. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar el catálogo. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La categoría no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La usan productos, subcategorías, cupones o imágenes de la portada. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

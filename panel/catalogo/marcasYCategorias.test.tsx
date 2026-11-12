@@ -61,7 +61,10 @@ const simularBackend = (rutas: Record<string, Manejador> = {}) => {
   const enviados: unknown[] = [];
   const fetch = vi.fn(async (peticion: Request) => {
     const clave = `${peticion.method} ${new URL(peticion.url).pathname}`;
-    if (peticion.method !== 'GET') enviados.push(await peticion.clone().json());
+    // Un DELETE no trae cuerpo (SCRUM-158)
+    if (peticion.method !== 'GET' && peticion.method !== 'DELETE') {
+      enviados.push(await peticion.clone().json());
+    }
     if (clave === 'GET /api/catalogo/marcas')
       return Response.json(estado.marcas);
     if (clave === 'GET /api/catalogo/categorias')
@@ -405,5 +408,86 @@ describe('Marcas y categorías (SCRUM-103)', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'La categoría no existe.',
     );
+  });
+
+  describe('borrar (SCRUM-158)', () => {
+    it('SCRUM-158 FE · criterios 1 y 4: borra una marca después de confirmar y desaparece de la lista', async () => {
+      const usuario = userEvent.setup();
+      const { estado } = simularBackend({
+        'DELETE /api/catalogo/marcas/2': () => {
+          estado.marcas = estado.marcas.filter((marca) => marca.id !== 2);
+          return new Response(null, { status: 204 });
+        },
+      });
+      mostrarPantalla();
+      await screen.findByText('Wella');
+
+      await usuario.click(screen.getByRole('button', { name: 'Borrar Wella' }));
+      const confirmar = await screen.findByRole('alertdialog', {
+        name: '¿Borrar la marca «Wella»?',
+      });
+      await usuario.click(
+        within(confirmar).getByRole('button', { name: 'Borrar' }),
+      );
+
+      await waitFor(() =>
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument(),
+      );
+      await waitFor(() =>
+        expect(
+          within(listaMarcas()).queryByText('Wella'),
+        ).not.toBeInTheDocument(),
+      );
+    });
+
+    it('SCRUM-158 FE · criterio 3: si se usa, muestra dónde en la misma ventana y no la borra', async () => {
+      const usuario = userEvent.setup();
+      simularBackend({
+        'DELETE /api/catalogo/categorias/1': () =>
+          error(
+            409,
+            'No se puede borrar: la usan 4 productos y 1 subcategoría. Cámbialos a otra categoría antes de borrarla.',
+          ),
+      });
+      mostrarPantalla();
+      await screen.findByText('Coloración');
+
+      await usuario.click(
+        screen.getByRole('button', { name: 'Borrar Coloración' }),
+      );
+      const confirmar = await screen.findByRole('alertdialog');
+      await usuario.click(
+        within(confirmar).getByRole('button', { name: 'Borrar' }),
+      );
+
+      expect(
+        await within(confirmar).findByText(
+          'No se puede borrar: la usan 4 productos y 1 subcategoría. Cámbialos a otra categoría antes de borrarla.',
+        ),
+      ).toBeInTheDocument();
+      expect(
+        within(confirmar).queryByRole('button', { name: 'Borrar' }),
+      ).not.toBeInTheDocument();
+      // La ventana sigue abierta (el resto de la pantalla queda inerte mientras tanto)
+      expect(confirmar).toBeInTheDocument();
+    });
+
+    it('SCRUM-158 FE · criterio 1: cancelar no borra nada', async () => {
+      const usuario = userEvent.setup();
+      const { fetch } = simularBackend();
+      mostrarPantalla();
+      await screen.findByText('Wella');
+
+      await usuario.click(screen.getByRole('button', { name: 'Borrar Wella' }));
+      await usuario.click(
+        within(await screen.findByRole('alertdialog')).getByRole('button', {
+          name: 'Cancelar',
+        }),
+      );
+
+      expect(
+        fetch.mock.calls.some(([peticion]) => peticion.method === 'DELETE'),
+      ).toBe(false);
+    });
   });
 });
