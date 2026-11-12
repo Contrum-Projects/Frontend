@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { politicaDeContenido } from './compartido/config/politicaContenido';
 
 /**
  * Dominio público de las imágenes del catálogo (Cloudflare R2, el R2_URL_PUBLICA del backend).
@@ -7,6 +8,12 @@ import type { NextConfig } from 'next';
 const urlImagenes = process.env.URL_IMAGENES
   ? new URL(process.env.URL_IMAGENES)
   : null;
+
+/** Se fija al compilar, como las imágenes (SCRUM-165). */
+const politica = politicaDeContenido({
+  desarrollo: process.env.NODE_ENV === 'development',
+  origenImagenes: urlImagenes?.origin ?? null,
+});
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -37,6 +44,7 @@ const nextConfig: NextConfig = {
       {
         source: '/:ruta*',
         headers: [
+          { key: 'Content-Security-Policy', value: politica },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
