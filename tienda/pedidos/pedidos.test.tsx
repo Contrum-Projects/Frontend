@@ -546,7 +546,8 @@ describe('Documento del pedido (SCRUM-128)', () => {
     simularBackend({
       [PEDIDO]: () => responder(conFactura('disponible')),
       [DOCUMENTO]: () =>
-        new Response(new Blob(['%PDF-1.7'], { type: 'application/pdf' }), {
+        // Cuerpo en texto: el Blob de jsdom no lo lee el Response de Node 22 (SCRUM-161)
+        new Response('%PDF-1.7', {
           status: 200,
           headers: {
             'Content-Type': 'application/pdf',
@@ -566,7 +567,10 @@ describe('Documento del pedido (SCRUM-128)', () => {
     const enlace = pulsar.mock.contexts[0] as HTMLAnchorElement;
     expect(enlace.download).toBe('factura-4521.pdf');
     expect(enlace.href).toBe('blob:tienda.test/factura');
-    expect(crearUrl).toHaveBeenCalledWith(expect.any(Blob));
+    // El archivo es el Blob de Node, no el de jsdom: se revisa su contenido, no su clase (SCRUM-161)
+    const [archivo] = crearUrl.mock.calls[0] as unknown as [Blob];
+    expect(archivo.type).toBe('application/pdf');
+    expect(archivo.size).toBe('%PDF-1.7'.length);
     // La descarga lleva el token: pasa por el cliente de la API
     const peticion = vi
       .mocked(fetch)
