@@ -960,7 +960,10 @@ export interface PerfilProfesionalCuenta {
  * RESULTADOS_CONSULTA_SII sin `aprobado`). `null` si no se consultó.
  */
 export type MotivoRevisionVerificacion =
-  'sin_inicio_actividades' | 'otro_giro' | 'no_disponible';
+  | 'sin_inicio_actividades'
+  | 'otro_giro'
+  | 'nombre_no_coincide'
+  | 'no_disponible';
 
 /**
  * Una solicitud en revisión manual en el panel: GET /api/verificaciones/revision-manual (E10-H7).
