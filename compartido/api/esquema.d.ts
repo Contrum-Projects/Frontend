@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 115.
+ * Versión de la API: 0.1.0. Rutas: 119.
  */
 
 export interface paths {
@@ -651,6 +651,87 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/inventario/bodegas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar las bodegas con sus ubicaciones (SCRUM-151)
+         * @description Todas, también las desactivadas, por nombre; cada una con sus ubicaciones por código y las unidades que guarda.
+         */
+        get: operations["BodegasController_listar"];
+        put?: never;
+        /** Crear una bodega (SCRUM-151) */
+        post: operations["BodegasController_crear"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inventario/bodegas/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Editar o desactivar una bodega (SCRUM-151)
+         * @description Con stock en alguna de sus ubicaciones no se desactiva (409).
+         */
+        patch: operations["BodegasController_actualizar"];
+        trace?: never;
+    };
+    "/api/inventario/bodegas/{id}/ubicaciones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Agregar una ubicación a la bodega (SCRUM-151)
+         * @description Devuelve la bodega con sus ubicaciones.
+         */
+        post: operations["BodegasController_crearUbicacion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/inventario/bodegas/{id}/ubicaciones/{ubicacionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Editar o desactivar una ubicación (SCRUM-151)
+         * @description Con stock no se desactiva (409). Devuelve la bodega con sus ubicaciones.
+         */
+        patch: operations["BodegasController_actualizarUbicacion"];
         trace?: never;
     };
     "/api/inventario/movimientos": {
@@ -2979,6 +3060,111 @@ export interface components {
             codigo: string;
             bodega: components["schemas"]["BodegaDeUbicacionDto"];
         };
+        LugarDto: {
+            /** @example 13101 */
+            codigoCut: string;
+            /** @example Santiago */
+            nombre: string;
+        };
+        UbicacionPanelDto: {
+            /** @example 4 */
+            id: number;
+            /** @example A-01 */
+            codigo: string;
+            zona: string | null;
+            pasillo: string | null;
+            estante: string | null;
+            nivel: string | null;
+            activa: boolean;
+            /**
+             * @description Unidades guardadas, de todos los formatos.
+             * @example 12
+             */
+            stock: number;
+        };
+        BodegaPanelDto: {
+            /** @example 2 */
+            id: number;
+            /** @example Bodega central */
+            nombre: string;
+            /** @example Av. Matta 1234 */
+            direccion: string;
+            /** @enum {string} */
+            tipo: "bodega" | "tienda";
+            abasteceVentaOnline: boolean;
+            activa: boolean;
+            comuna: components["schemas"]["LugarDto"];
+            region: components["schemas"]["LugarDto"];
+            /**
+             * @description Unidades en todas sus ubicaciones.
+             * @example 40
+             */
+            stock: number;
+            /** @description Por código. */
+            ubicaciones: components["schemas"]["UbicacionPanelDto"][];
+        };
+        CrearBodegaDto: {
+            /** @example Bodega central */
+            nombre: string;
+            /** @example Av. Matta 1234 */
+            direccion: string;
+            /**
+             * @description Código CUT de la comuna.
+             * @example 13101
+             */
+            comuna: string;
+            /**
+             * @example bodega
+             * @enum {string}
+             */
+            tipo: "bodega" | "tienda";
+            /** @description Si su stock cuenta para la venta online (por omisión, sí). */
+            abasteceVentaOnline?: boolean;
+        };
+        ActualizarBodegaDto: {
+            /** @example Bodega central */
+            nombre?: string;
+            /** @example Av. Matta 1234 */
+            direccion?: string;
+            /**
+             * @description Código CUT de la comuna.
+             * @example 13101
+             */
+            comuna?: string;
+            /**
+             * @example bodega
+             * @enum {string}
+             */
+            tipo?: "bodega" | "tienda";
+            /** @description Si su stock cuenta para la venta online (por omisión, sí). */
+            abasteceVentaOnline?: boolean;
+            /** @description Desactivarla exige que ninguna de sus ubicaciones tenga stock. */
+            activa?: boolean;
+        };
+        CrearUbicacionDto: {
+            /**
+             * @description Se guarda en mayúsculas; único dentro de la bodega.
+             * @example A-01
+             */
+            codigo: string;
+            zona?: string | null;
+            pasillo?: string | null;
+            estante?: string | null;
+            nivel?: string | null;
+        };
+        ActualizarUbicacionDto: {
+            /**
+             * @description Se guarda en mayúsculas; único dentro de la bodega.
+             * @example A-01
+             */
+            codigo?: string;
+            zona?: string | null;
+            pasillo?: string | null;
+            estante?: string | null;
+            nivel?: string | null;
+            /** @description Desactivarla exige que no tenga stock. */
+            activa?: boolean;
+        };
         FormatoDelMovimientoDto: {
             /** @example 21 */
             id: number;
@@ -3063,7 +3249,7 @@ export interface components {
         CrearProductoDto: {
             /** @example Shampoo reparador */
             nombre: string;
-            /** @example Repara el cabello dañado por procesos químicos. */
+            /** @example Repara el cabello dañado por procesos químicos y le devuelve su brillo natural. */
             descripcion: string;
             /** @description Solo si la descripción partió de una sugerencia de la IA. Igual a la sugerida: origen «ia»; cambiada: «ia_editada». Sin este campo, al crear el origen es «manual». */
             sugerencia?: components["schemas"]["SugerenciaUsadaDto"];
@@ -6329,6 +6515,250 @@ export interface operations {
             };
             /** @description El rol no tiene el permiso de consultar inventario. */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BodegasController_listar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BodegaPanelDto"][];
+                };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar bodegas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BodegasController_crear: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrearBodegaDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BodegaPanelDto"];
+                };
+            };
+            /** @description Datos inválidos o comuna que no existe. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar bodegas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BodegasController_actualizar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActualizarBodegaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BodegaPanelDto"];
+                };
+            };
+            /** @description Datos inválidos o comuna que no existe. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar bodegas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La bodega no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Tiene stock y se pidió desactivarla. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BodegasController_crearUbicacion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CrearUbicacionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BodegaPanelDto"];
+                };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar bodegas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La bodega no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La bodega ya tiene ese código. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BodegasController_actualizarUbicacion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                ubicacionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActualizarUbicacionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BodegaPanelDto"];
+                };
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar bodegas. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La ubicación no es de esa bodega. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Código repetido en la bodega, o tiene stock y se pidió desactivarla. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
