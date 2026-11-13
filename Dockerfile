@@ -26,6 +26,8 @@ WORKDIR /app
 RUN addgroup -S app && adduser -S app -G app
 COPY --from=compilacion --chown=app:app /app/.next/standalone ./
 COPY --from=compilacion --chown=app:app /app/.next/static ./.next/static
+# standalone no incluye public/: sin esto, los archivos de public/tienda responden 404
+COPY --from=compilacion --chown=app:app /app/public ./public
 USER app
 EXPOSE 3001
 # API_URL se entrega al ejecutar (docker run -e / docker compose)
