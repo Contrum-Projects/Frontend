@@ -45,6 +45,7 @@ const CENTRAL: BodegaPanel = {
   tipo: 'bodega',
   abasteceVentaOnline: true,
   activa: true,
+  esDespacho: false,
   comuna: { codigoCut: '13120', nombre: 'Ñuñoa' },
   region: { codigoCut: '13', nombre: 'Metropolitana de Santiago' },
   stock: 40,
@@ -242,6 +243,25 @@ describe('Bodegas y ubicaciones (SCRUM-151)', () => {
       mensaje.id,
     );
     expect(within(formulario).getByLabelText(/Código/)).toHaveValue('a-01');
+  });
+
+  it('SCRUM-153 · CA1 «Usar para los despachos» marca la bodega de despacho', async () => {
+    const usuario = userEvent.setup();
+    const escrituras = simularBackend({
+      [`GET ${RUTA}`]: () => responder([CENTRAL]),
+      [`PATCH ${RUTA}/2`]: () => responder({ ...CENTRAL, esDespacho: true }),
+    });
+    mostrar();
+
+    await usuario.click(
+      await screen.findByRole('button', { name: /Usar para los despachos/ }),
+    );
+
+    await waitFor(() =>
+      expect(
+        escrituras.find((e) => e.peticion === `PATCH ${RUTA}/2`)?.cuerpo,
+      ).toEqual({ esDespacho: true }),
+    );
   });
 
   it('SCRUM-151 · solo el administrador abre Bodegas; el bodeguero no ve la pestaña', () => {

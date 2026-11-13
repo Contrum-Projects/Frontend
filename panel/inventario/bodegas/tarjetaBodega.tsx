@@ -1,6 +1,6 @@
 'use client';
 
-import { Pencil, Plus } from 'lucide-react';
+import { Pencil, Plus, Truck } from 'lucide-react';
 import type { BodegaPanel, UbicacionPanel } from '@/compartido/api/respuestas';
 import { formatearNumero } from '@/compartido/formato/numero';
 import { cn } from '@/compartido/lib/utils';
@@ -52,6 +52,12 @@ export const TarjetaBodega = ({
             <Badge className="bg-fondo-hueso-oscuro px-2.5 py-1 texto-leyenda text-texto-principal">
               {textoTipo(bodega.tipo)}
             </Badge>
+            {bodega.esDespacho && (
+              <Badge className="bg-marca-acento-suave px-2.5 py-1 texto-leyenda text-marca-profundo">
+                <Truck aria-hidden strokeWidth={1.75} className="size-3.5" />
+                De despacho
+              </Badge>
+            )}
             {!bodega.activa && (
               <Badge className="bg-estado-aviso-fondo px-2.5 py-1 texto-leyenda text-estado-aviso-texto">
                 Desactivada
@@ -90,6 +96,24 @@ export const TarjetaBodega = ({
         </div>
       </div>
 
+      {/* SCRUM-153: origen de la cotización y de las OT; marcar otra le quita la marca a esta */}
+      {bodega.activa && !bodega.esDespacho && (
+        <Button
+          variant="link"
+          className="w-fit"
+          disabled={guardarBodega.isPending}
+          onClick={() =>
+            guardarBodega.mutate(
+              { id: bodega.id, datos: { esDespacho: true } },
+              { onError: avisarError },
+            )
+          }
+        >
+          <Truck aria-hidden />
+          Usar para los despachos
+          <span className="sr-only"> desde {bodega.nombre}</span>
+        </Button>
+      )}
       <ListaUbicaciones bodega={bodega} alEditar={alEditarUbicacion} />
       <Button variant="link" className="w-fit" onClick={alAgregarUbicacion}>
         <Plus aria-hidden />

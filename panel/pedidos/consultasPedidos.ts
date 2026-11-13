@@ -7,7 +7,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { api } from '@/compartido/api/cliente';
-import { ErrorDeApi, exigir } from '@/compartido/api/errores';
+import { ErrorDeApi, errorDeApi, exigir } from '@/compartido/api/errores';
 import type { components, paths } from '@/compartido/api/esquema';
 import type {
   DetallePedidoGestion,
@@ -16,7 +16,11 @@ import type {
   PedidoConNuevoEstado,
 } from '@/compartido/api/respuestas';
 import { conErrorDeApi } from '@/tienda/cuenta/consultasCuenta';
-import { esCodigoPedido } from '@/tienda/pedidos/consultasPedidos';
+import {
+  esCodigoPedido,
+  guardarArchivo,
+  nombreDeArchivo,
+} from '@/tienda/pedidos/consultasPedidos';
 
 /** Todo lo de pedidos del panel: un cambio de estado invalida la lista y el detalle. */
 export const CLAVE_PEDIDOS_PANEL = ['panel', 'pedidos'] as const;
@@ -136,3 +140,30 @@ export const useCancelarPedido = (codigoPedido: string) => {
       clienteConsultas.invalidateQueries({ queryKey: CLAVE_PEDIDOS_PANEL }),
   });
 };
+
+/** Tipos que puede tener la etiqueta de Chilexpress (el backend la detecta por sus primeros bytes). */
+const TIPOS_ETIQUETA = ['application/pdf', 'image/png', 'image/jpeg'];
+
+/**
+ * SCRUM-153 · Descarga la etiqueta de la OT creada al despachar, para imprimirla. Va por `api`,
+ * con el token: es un archivo del panel.
+ */
+export const useDescargarEtiqueta = (codigoPedido: string) =>
+  useMutation({
+    mutationFn: () =>
+      conErrorDeApi(async () => {
+        const resultado = await api.GET(
+          '/api/gestion/pedidos/{codigoPedido}/etiqueta',
+          { params: { path: { codigoPedido } }, parseAs: 'blob' },
+        );
+        const archivo = exigir<Blob>(resultado);
+        if (!TIPOS_ETIQUETA.includes(archivo.type)) throw errorDeApi(undefined);
+        guardarArchivo(
+          archivo,
+          nombreDeArchivo(
+            resultado.response.headers.get('content-disposition'),
+            `etiqueta-${codigoPedido}.pdf`,
+          ),
+        );
+      }),
+  });

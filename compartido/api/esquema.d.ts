@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 119.
+ * Versión de la API: 0.1.0. Rutas: 120.
  */
 
 export interface paths {
@@ -1790,6 +1790,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/gestion/pedidos/{codigoPedido}/etiqueta": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Descargar la etiqueta de la OT de Chilexpress (SCRUM-153)
+         * @description La etiqueta que entregó Chilexpress al crear la OT al despachar, para imprimirla. Su tipo depende de lo que entrega Chilexpress (PDF o imagen).
+         */
+        get: operations["GestionPedidosController_etiqueta"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/gestion/facturas": {
         parameters: {
             query?: never;
@@ -3093,6 +3113,8 @@ export interface components {
             tipo: "bodega" | "tienda";
             abasteceVentaOnline: boolean;
             activa: boolean;
+            /** @description Desde aquí salen los despachos: origen de la cotización y de las OT (SCRUM-153). */
+            esDespacho: boolean;
             comuna: components["schemas"]["LugarDto"];
             region: components["schemas"]["LugarDto"];
             /**
@@ -3140,6 +3162,8 @@ export interface components {
             abasteceVentaOnline?: boolean;
             /** @description Desactivarla exige que ninguna de sus ubicaciones tenga stock. */
             activa?: boolean;
+            /** @description Marcarla como la bodega de despacho (SCRUM-153): origen de la cotización y de las OT. Solo una lo es; marcar otra le quita la marca a la anterior. Debe estar activa. */
+            esDespacho?: boolean;
         };
         CrearUbicacionDto: {
             /**
@@ -4073,6 +4097,8 @@ export interface components {
             sentido: "avance" | "retroceso";
             /** @description Al despachar se pide la OT de Chilexpress (E7-H3). */
             pideCodigoSeguimiento: boolean;
+            /** @description Al despachar sin escribir el número, la OT se crea sola en Chilexpress; el número escrito queda como respaldo (SCRUM-153). */
+            creaOt: boolean;
             /** @description Se avisa al cliente por correo. */
             avisaAlCliente: boolean;
             /** @description Volver a un estado anterior exige un comentario. */
@@ -4112,6 +4138,8 @@ export interface components {
             cambiosPermitidos: components["schemas"]["CambioPermitidoDto"][];
             /** @description Solo un pedido pendiente de pago (E8-H3). */
             sePuedeCancelar: boolean;
+            /** @description La OT se creó por la API y su etiqueta se descarga en `GET /:codigoPedido/etiqueta` (SCRUM-153). */
+            tieneEtiqueta: boolean;
         };
         FacturaGestionDto: {
             /** @example AB12CD34EF56 */
@@ -10003,6 +10031,47 @@ export interface operations {
                 content?: never;
             };
             /** @description El pedido no existe. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GestionPedidosController_etiqueta: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codigoPedido: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description La etiqueta, como descarga. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Falta iniciar sesión. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El rol no tiene el permiso de gestionar pedidos. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El pedido no existe o su OT no se creó por la API. */
             404: {
                 headers: {
                     [name: string]: unknown;

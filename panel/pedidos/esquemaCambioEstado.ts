@@ -38,6 +38,8 @@ export const crearEsquemaCambioEstado = (cambios: readonly CambioPermitido[]) =>
       }
       if (!cambio.pideCodigoSeguimiento) return;
       const codigo = datos.codigoSeguimiento;
+      // SCRUM-153: si la OT se crea sola, el número escrito es solo el respaldo
+      if (!codigo && cambio.creaOt) return;
       const mensaje = !codigo
         ? 'El código de seguimiento es obligatorio al despachar el pedido.'
         : !/^[1-9]\d*$/.test(codigo)
@@ -75,7 +77,7 @@ export const cuerpoCambioEstado = (
 ): CuerpoCambioEstado => ({
   estado: datos.estado as CuerpoCambioEstado['estado'],
   ...(datos.comentario ? { comentario: datos.comentario } : {}),
-  ...(cambio?.pideCodigoSeguimiento
+  ...(cambio?.pideCodigoSeguimiento && datos.codigoSeguimiento
     ? { codigoSeguimiento: datos.codigoSeguimiento }
     : {}),
 });
