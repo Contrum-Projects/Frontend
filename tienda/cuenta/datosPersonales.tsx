@@ -151,6 +151,7 @@ function FormularioDatosPersonales({ datos }: { datos: Datos }) {
       )}
       <CamposDatos
         email={datos.email}
+        fechaGuardada={datos.fechaNacimiento}
         register={register}
         control={control}
         errors={errors}

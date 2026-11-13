@@ -6,6 +6,7 @@ import {
   type FieldErrors,
   type UseFormRegister,
 } from 'react-hook-form';
+import { formatearDia } from '@/compartido/formato/fecha';
 import { Input } from '@/compartido/ui/input';
 import { CampoFormulario } from './campoFormulario';
 import type { FormularioDatos } from './esquemaDatos';
@@ -18,11 +19,17 @@ const PRIMER_ANIO = 1920;
 /** Campos de «Datos personales» (Figma 2034:2343): tres filas, en una columna en celular. */
 export const CamposDatos = ({
   email,
+  fechaGuardada,
   register,
   control,
   errors,
 }: {
   email: string;
+  /**
+   * La fecha de nacimiento ya guardada (AAAA-MM-DD): se indica una sola vez y después solo se
+   * muestra (SCRUM-152). `null`: aún no la indica y puede agregarla.
+   */
+  fechaGuardada: string | null;
   register: UseFormRegister<FormularioDatos>;
   control: Control<FormularioDatos>;
   errors: FieldErrors<FormularioDatos>;
@@ -103,22 +110,46 @@ export const CamposDatos = ({
         etiqueta="Fecha de nacimiento"
         error={errors.fechaNacimiento?.message}
       >
-        {(props) => (
-          <Controller
-            name="fechaNacimiento"
-            control={control}
-            render={({ field }) => (
-              <SelectorFecha
-                ref={field.ref}
-                valor={field.value}
-                alCambiar={field.onChange}
-                desde={new Date(PRIMER_ANIO, 0)}
-                hasta={new Date()}
-                control={props}
+        {(props) =>
+          fechaGuardada ? (
+            <div className="flex flex-col gap-1">
+              <Input
+                {...props}
+                aria-describedby={[
+                  props['aria-describedby'],
+                  'datos-fecha-ayuda',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                value={formatearDia(fechaGuardada)}
+                readOnly
+                className="bg-fondo-hueso"
               />
-            )}
-          />
-        )}
+              <p
+                id="datos-fecha-ayuda"
+                className="texto-leyenda text-texto-secundario"
+              >
+                Ya está registrada y no se puede cambiar. Si hay un error,
+                escríbenos para corregirla.
+              </p>
+            </div>
+          ) : (
+            <Controller
+              name="fechaNacimiento"
+              control={control}
+              render={({ field }) => (
+                <SelectorFecha
+                  ref={field.ref}
+                  valor={field.value}
+                  alCambiar={field.onChange}
+                  desde={new Date(PRIMER_ANIO, 0)}
+                  hasta={new Date()}
+                  control={props}
+                />
+              )}
+            />
+          )
+        }
       </CampoFormulario>
       <CampoFormulario
         id="datos-genero"
