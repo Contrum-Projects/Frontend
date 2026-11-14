@@ -699,7 +699,8 @@ describe('Panel de pedidos · cambio de estado (SCRUM-130)', () => {
           cambiosPermitidos: [],
         }),
       'GET /api/gestion/pedidos/PAGADODESP01/etiqueta': () =>
-        new Response(new Blob(['%PDF-1.4'], { type: 'application/pdf' }), {
+        // Cuerpo en texto: el Blob de jsdom no lo lee el Response de Node 22 (SCRUM-161)
+        new Response('%PDF-1.4', {
           headers: {
             'content-type': 'application/pdf',
             'content-disposition':
