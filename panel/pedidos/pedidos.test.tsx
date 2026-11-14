@@ -688,6 +688,92 @@ describe('Panel de pedidos · cambio de estado (SCRUM-130)', () => {
     );
   });
 
+  describe('teléfono de contacto al despachar (SCRUM-167)', () => {
+    const despachoConOt = (datos: Partial<DetallePedidoGestion> = {}) => ({
+      ...DETALLE,
+      estado: 'en_preparacion',
+      cambiosPermitidos: [
+        cambio('despachado', {
+          pideCodigoSeguimiento: true,
+          creaOt: true,
+          avisaAlCliente: true,
+        }),
+      ],
+      ...datos,
+    });
+    const SIN_CLIENTE_TELEFONO = {
+      cliente: { ...DETALLE.cliente, telefono: null },
+    };
+
+    it('SCRUM-167 FE · CA7 sin teléfono en el despacho ni en la cuenta pide escribirlo y lo envía al crear la OT', async () => {
+      const { pedidas } = simularBackend({
+        'GET /api/gestion/pedidos/PAGADODESP01': () =>
+          Response.json(despachoConOt(SIN_CLIENTE_TELEFONO)),
+        'POST /api/pedidos/PAGADODESP01/estado': () =>
+          Response.json({
+            codigoPublico: 'PAGADODESP01',
+            estado: 'despachado',
+          }),
+      });
+      const usuario = userEvent.setup();
+      mostrarDetalle();
+
+      const telefono = await screen.findByLabelText('Teléfono de quien recibe');
+      expect(telefono).toHaveAccessibleDescription(
+        /Chilexpress lo pide para crear la OT/,
+      );
+      await usuario.type(telefono, ' +56933333333 ');
+      await usuario.click(
+        screen.getByRole('button', { name: 'Guardar y avisar al cliente' }),
+      );
+
+      await waitFor(async () =>
+        expect(await cuerposEnviados(pedidas)).toEqual([
+          { estado: 'despachado', telefonoContacto: '+56933333333' },
+        ]),
+      );
+    });
+
+    it('SCRUM-167 FE · CA7 con el teléfono en el despacho o en la cuenta no lo pide', async () => {
+      simularBackend({
+        'GET /api/gestion/pedidos/PAGADODESP01': () =>
+          Response.json(despachoConOt()),
+      });
+      mostrarDetalle();
+
+      expect(
+        await screen.findByLabelText('Código de seguimiento (opcional)'),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByLabelText('Teléfono de quien recibe'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('SCRUM-167 FE · CA6 sin teléfono y sin escribirlo, muestra el respaldo que responde el backend', async () => {
+      const respaldo =
+        'Chilexpress pide el teléfono del destinatario y el pedido no lo tiene. Puedes crear la OT en el portal de Chilexpress y escribir su número al despachar.';
+      simularBackend({
+        'GET /api/gestion/pedidos/PAGADODESP01': () =>
+          Response.json(despachoConOt(SIN_CLIENTE_TELEFONO)),
+        'POST /api/pedidos/PAGADODESP01/estado': () =>
+          Response.json(
+            { statusCode: 409, message: respaldo, error: 'Conflict' },
+            { status: 409 },
+          ),
+      });
+      const usuario = userEvent.setup();
+      mostrarDetalle();
+
+      await usuario.click(
+        await screen.findByRole('button', {
+          name: 'Guardar y avisar al cliente',
+        }),
+      );
+
+      expect(await screen.findByText(respaldo)).toBeInTheDocument();
+    });
+  });
+
   it('SCRUM-153 · CA4 con la OT creada por la API, «Imprimir etiqueta» la descarga', async () => {
     const { pedidas } = simularBackend({
       'GET /api/gestion/pedidos/PAGADODESP01': () =>

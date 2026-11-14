@@ -1,10 +1,14 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { ErrorDeApi } from '@/compartido/api/errores';
 import type { DireccionCuenta } from '@/compartido/api/respuestas';
 import { useCuentaCompradora } from '@/tienda/carrito/consultasCarrito';
-import { useDirecciones } from '@/tienda/cuenta/consultasCuenta';
+import {
+  consultaMisDatos,
+  useDirecciones,
+} from '@/tienda/cuenta/consultasCuenta';
 import {
   useCotizacionDespacho,
   type EleccionEntrega,
@@ -26,10 +30,14 @@ const SIN_COTIZACION = [409, 503];
 export const useEntrega = (codigoCupon: string | null = null) => {
   const [tipo, setTipo] = useState<TipoEntrega>('retiro');
   const [idElegida, setIdElegida] = useState<number | null>(null);
-  // El personal de tienda no compra: no se le piden direcciones
-  const direcciones = useDirecciones({
-    activa: useCuentaCompradora() !== '',
-  });
+  // SCRUM-167 · `null` mientras no lo cambia: se muestra el de la cuenta
+  const [telefonoEscrito, setTelefonoEscrito] = useState<string | null>(null);
+  // El personal de tienda no compra: no se le piden direcciones ni sus datos
+  const compradora = useCuentaCompradora() !== '';
+  const direcciones = useDirecciones({ activa: compradora });
+  const misDatos = useQuery({ ...consultaMisDatos, enabled: compradora });
+  const telefono = telefonoEscrito ?? misDatos.data?.telefono ?? '';
+  const telefonoContacto = telefono.trim();
   const lista = direcciones.data ?? [];
   const direccion: DireccionCuenta | null =
     lista.find((d) => d.id === idElegida) ??
@@ -45,7 +53,12 @@ export const useEntrega = (codigoCupon: string | null = null) => {
   const eleccion: EleccionEntrega | null = !conDespacho
     ? { tipoEntrega: 'retiro' }
     : direccion
-      ? { tipoEntrega: 'despacho', direccionId: direccion.id }
+      ? {
+          tipoEntrega: 'despacho',
+          direccionId: direccion.id,
+          // Vacío no se envía: el backend usa el de la cuenta o pide escribirlo
+          ...(telefonoContacto && { telefonoContacto }),
+        }
       : null;
 
   return {
@@ -54,6 +67,9 @@ export const useEntrega = (codigoCupon: string | null = null) => {
     direcciones,
     direccion,
     elegirDireccion: setIdElegida,
+    /** El teléfono de quien recibe el despacho (SCRUM-167): el de la cuenta hasta que lo cambia. */
+    telefono,
+    cambiarTelefono: setTelefonoEscrito,
     cotizacion,
     /** El despacho no se pudo cotizar y el backend ofrece el retiro en tienda (E7-H2). */
     ofreceRetiro:

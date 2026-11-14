@@ -138,7 +138,7 @@ export interface paths {
         head?: never;
         /**
          * Editar mis datos personales (E1-H5)
-         * @description Guarda solo los datos enviados; null o texto vacío borra un dato opcional. El correo no se edita.
+         * @description Guarda solo los datos enviados; null o texto vacío borra un dato opcional. El correo no se edita. La fecha de nacimiento se indica una sola vez (SCRUM-152): ya guardada, no se cambia ni se borra.
          */
         patch: operations["MiCuentaController_actualizar"];
         trace?: never;
@@ -1405,7 +1405,7 @@ export interface paths {
         };
         /**
          * Listar las solicitudes en revisión manual (E10-H7)
-         * @description Las solicitudes que esperan al personal, de la más antigua a la más reciente, con el nombre y el RUT de quien solicitó, la fecha de la solicitud y el motivo de la revisión (`sin_inicio_actividades`, `otro_giro` o `no_disponible`). Paginado con `pagina` y `limite`. `codigoPublicoCuenta` abre el detalle y sirve para aprobar o rechazar.
+         * @description Las solicitudes que esperan al personal, de la más antigua a la más reciente, con el nombre y el RUT de quien solicitó, la fecha de la solicitud y el motivo de la revisión (`sin_inicio_actividades`, `otro_giro`, `nombre_no_coincide` o `no_disponible`). Paginado con `pagina` y `limite`. `codigoPublicoCuenta` abre el detalle y sirve para aprobar o rechazar.
          */
         get: operations["ConsultaVerificacionController_listar"];
         put?: never;
@@ -2539,6 +2539,7 @@ export interface components {
             rut?: Record<string, never> | null;
             /**
              * Format: date
+             * @description Se indica una sola vez (SCRUM-152): con la fecha ya guardada, cambiarla o borrarla responde 409.
              * @example 1990-05-21
              */
             fechaNacimiento?: Record<string, never> | null;
@@ -3706,6 +3707,11 @@ export interface components {
              * @example 990000000001
              */
             codigoSeguimiento?: string;
+            /**
+             * @description Teléfono de quien recibe, para el pedido que no lo tiene (SCRUM-167). Solo al pasar a despachado: se usa para crear la OT y queda guardado en el envío.
+             * @example +56912345678
+             */
+            telefonoContacto?: string;
         };
         ElegidoCuponDto: {
             /** @example 12 */
@@ -3943,6 +3949,11 @@ export interface components {
              * @example LOREAL20
              */
             codigoCupon?: string | null;
+            /**
+             * @description Teléfono de quien recibe el despacho (SCRUM-167); solo con despacho. Sin él se usa el de la cuenta, y si la cuenta tampoco tiene, el pedido no se crea. No cambia el teléfono de la cuenta.
+             * @example +56912345678
+             */
+            telefonoContacto?: string | null;
         };
         CancelarPedidoDto: {
             /**
@@ -5142,7 +5153,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description El RUT está en otra cuenta. */
+            /** @description El RUT está en otra cuenta, o se intentó cambiar la fecha de nacimiento ya guardada. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -9468,7 +9479,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Estado inválido, comentario demasiado largo, falta el comentario al volver a un estado anterior, o el código de seguimiento falta al despachar, es inválido o se envía en otro cambio. */
+            /** @description Estado inválido, comentario demasiado largo, falta el comentario al volver a un estado anterior, o el código de seguimiento falta al despachar, es inválido o se envía en otro cambio, o el teléfono de contacto se envía en otro cambio (SCRUM-167). */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -9797,7 +9808,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Datos del pedido inválidos, o factura sin indicar cuáles datos de facturación usar. */
+            /** @description Datos del pedido inválidos, factura sin indicar cuáles datos de facturación usar, o despacho sin teléfono de contacto en el pedido ni en la cuenta (SCRUM-167). */
             400: {
                 headers: {
                     [name: string]: unknown;

@@ -6,6 +6,8 @@ import type { CuerpoCambioEstado } from './consultasPedidos';
 const MAXIMO_COMENTARIO = 500;
 /** `MAXIMO_CODIGO_SEGUIMIENTO` del mismo DTO. */
 const MAXIMO_CODIGO = 15;
+/** `MAXIMO_TELEFONO_CONTACTO` de `crear-pedido.dto.ts` del backend (SCRUM-167). */
+const MAXIMO_TELEFONO = 20;
 
 /**
  * «Cambiar estado» (E8-H2, criterio 2). Repite las reglas de `CambiarEstadoPedidoDto` y de
@@ -24,6 +26,13 @@ export const crearEsquemaCambioEstado = (cambios: readonly CambioPermitido[]) =>
           `El comentario no puede superar los ${MAXIMO_COMENTARIO} caracteres.`,
         ),
       codigoSeguimiento: z.string().trim(),
+      telefonoContacto: z
+        .string()
+        .trim()
+        .max(
+          MAXIMO_TELEFONO,
+          `El teléfono de contacto no puede superar los ${MAXIMO_TELEFONO} caracteres.`,
+        ),
     })
     .superRefine((datos, contexto) => {
       const cambio = cambios.find(({ estado }) => estado === datos.estado);
@@ -68,9 +77,13 @@ export const cambioInicial = (
   estado: cambios.find(({ sentido }) => sentido === 'avance')?.estado ?? '',
   comentario: '',
   codigoSeguimiento: '',
+  telefonoContacto: '',
 });
 
-/** El comentario vacío no se envía, y el código solo si el cambio lo pide. */
+/**
+ * El comentario vacío no se envía; el código y el teléfono de contacto (SCRUM-167), solo si el
+ * cambio es el despacho, que pide el código.
+ */
 export const cuerpoCambioEstado = (
   datos: FormularioCambioEstado,
   cambio: CambioPermitido | undefined,
@@ -79,6 +92,9 @@ export const cuerpoCambioEstado = (
   ...(datos.comentario ? { comentario: datos.comentario } : {}),
   ...(cambio?.pideCodigoSeguimiento && datos.codigoSeguimiento
     ? { codigoSeguimiento: datos.codigoSeguimiento }
+    : {}),
+  ...(cambio?.pideCodigoSeguimiento && datos.telefonoContacto
+    ? { telefonoContacto: datos.telefonoContacto }
     : {}),
 });
 
@@ -91,4 +107,5 @@ export const CAMPOS_CAMBIO_ESTADO: Partial<Record<string, CampoCambioEstado>> =
     estado: 'estado',
     comentario: 'comentario',
     codigoSeguimiento: 'codigoSeguimiento',
+    telefonoContacto: 'telefonoContacto',
   };

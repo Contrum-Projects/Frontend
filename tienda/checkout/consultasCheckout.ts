@@ -17,9 +17,13 @@ import { CLAVES_CUENTA, conErrorDeApi } from '@/tienda/cuenta/consultasCuenta';
 import { pedirCobro } from '@/tienda/pago/cobro';
 import { irAUrlExterna } from './navegacion';
 
-/** Cómo recibe el pedido: retiro, o despacho a una dirección de su cuenta (E7-H1). */
+/**
+ * Cómo recibe el pedido: retiro, o despacho a una dirección de su cuenta (E7-H1), con el
+ * teléfono de quien recibe si lo escribió (SCRUM-167; sin él el backend usa el de la cuenta).
+ */
 export type EleccionEntrega =
-  { tipoEntrega: 'retiro' } | { tipoEntrega: 'despacho'; direccionId: number };
+  | { tipoEntrega: 'retiro' }
+  | { tipoEntrega: 'despacho'; direccionId: number; telefonoContacto?: string };
 
 /** El documento: el comprobante de pago, o factura con datos de la cuenta (E9-H1). */
 export type EleccionDocumento =

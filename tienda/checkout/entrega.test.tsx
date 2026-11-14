@@ -12,7 +12,7 @@ import {
   guardarSesion,
   reiniciarParaPruebas,
 } from '@/compartido/sesion/almacen';
-import { responder } from '@/tienda/cuenta/cuentaDePrueba';
+import { DATOS, responder } from '@/tienda/cuenta/cuentaDePrueba';
 import { PantallaCheckout } from './pantallaCheckout';
 
 // El cliente con una base absoluta, para que `fetch` reciba un Request (como en checkout.test)
@@ -133,10 +133,17 @@ COTIZACIONES['12'] = { costo: 4290, total: 30270 };
 const simularBackend = ({
   direcciones = DIRECCIONES,
   cotizar = cotizacionDe,
+  datos,
+  crearPedido = () => responder(PEDIDO, 201),
 }: {
   direcciones?: DireccionCuenta[];
   cotizar?: (direccionId: string) => Response | Promise<Response>;
+  /** Los datos de la cuenta (`GET /api/cuentas/yo`); sin ellos responde 404. */
+  datos?: typeof DATOS;
+  /** La respuesta a `POST /api/pedidos`, según el intento (desde 1). */
+  crearPedido?: (intento: number) => Response;
 } = {}) => {
+  let intentos = 0;
   const cotizadas: string[] = [];
   const escrituras: { ruta: string; cuerpo: unknown }[] = [];
   let lista = direcciones;
@@ -165,7 +172,11 @@ const simularBackend = ({
         cotizadas.push(id);
         return cotizar(id);
       }
-      if (ruta === 'POST /api/pedidos') return responder(PEDIDO, 201);
+      if (ruta === 'GET /api/cuentas/yo' && datos) return responder(datos);
+      if (ruta === 'POST /api/pedidos') {
+        intentos += 1;
+        return crearPedido(intentos);
+      }
       if (ruta === `POST /api/pedidos/${PEDIDO.codigoPublico}/pago`) {
         return responder({
           urlPago: 'https://www.mercadopago.cl/checkout/v1/redirect?pref_id=1',
@@ -538,5 +549,96 @@ describe('Cotización del despacho y dirección (SCRUM-123)', () => {
     expect(await screen.findByText('Irarrázaval 3200')).toBeInTheDocument();
     expect(await within(resumen()).findByText('$30.270')).toBeInTheDocument();
     expect(cotizadas).toEqual(['7', '12']);
+  });
+});
+
+const MENSAJE_SIN_TELEFONO =
+  'El teléfono de contacto es obligatorio para el despacho a domicilio.';
+
+describe('Teléfono de contacto del despacho (SCRUM-167)', () => {
+  const campoTelefono = () =>
+    screen.findByRole('textbox', { name: /teléfono de contacto/i });
+
+  it('SCRUM-167 FE · CA4 con despacho muestra el teléfono de la cuenta y lo envía con el pedido', async () => {
+    const { escrituras } = simularBackend({
+      datos: { ...DATOS, telefono: '+56912345678' },
+    });
+    mostrar();
+
+    await elegirDespacho();
+    expect(await campoTelefono()).toHaveValue('+56912345678');
+    expect(await within(resumen()).findByText('$29.970')).toBeInTheDocument();
+
+    expect(await pedidoEnviado(escrituras)).toMatchObject({
+      tipoEntrega: 'despacho',
+      direccionId: 7,
+      telefonoContacto: '+56912345678',
+    });
+  });
+
+  it('SCRUM-167 FE · CA4 el teléfono escrito viaja con el pedido; con retiro no se pide', async () => {
+    const { escrituras } = simularBackend({
+      datos: { ...DATOS, telefono: null },
+    });
+    mostrar();
+
+    // Con retiro no hay campo
+    await screen.findByRole('radio', { name: /retiro en tienda/i });
+    expect(
+      screen.queryByRole('textbox', { name: /teléfono de contacto/i }),
+    ).not.toBeInTheDocument();
+
+    await elegirDespacho();
+    const campo = await campoTelefono();
+    expect(campo).toHaveValue('');
+    await userEvent.type(campo, ' +56 9 8765 4321 ');
+    expect(await within(resumen()).findByText('$29.970')).toBeInTheDocument();
+
+    expect(await pedidoEnviado(escrituras)).toMatchObject({
+      telefonoContacto: '+56 9 8765 4321',
+    });
+  });
+
+  it('SCRUM-167 FE · CA4 sin teléfono el backend responde 400: el error queda junto al campo, con el foco, y se reintenta sin perder lo escrito', async () => {
+    const { escrituras } = simularBackend({
+      datos: { ...DATOS, telefono: null },
+      crearPedido: (intento) =>
+        intento === 1
+          ? responder(
+              {
+                statusCode: 400,
+                message: MENSAJE_SIN_TELEFONO,
+                error: 'Bad Request',
+                errores: [
+                  { campo: 'telefonoContacto', mensaje: MENSAJE_SIN_TELEFONO },
+                ],
+              },
+              400,
+            )
+          : responder(PEDIDO, 201),
+    });
+    mostrar();
+
+    await elegirDespacho();
+    expect(await within(resumen()).findByText('$29.970')).toBeInTheDocument();
+    await userEvent.click(await botonPagar());
+
+    const campo = await campoTelefono();
+    expect(await screen.findByText(MENSAJE_SIN_TELEFONO)).toBeInTheDocument();
+    expect(campo).toHaveAttribute('aria-invalid', 'true');
+    expect(campo).toHaveAccessibleDescription(
+      expect.stringContaining(MENSAJE_SIN_TELEFONO),
+    );
+    await waitFor(() => expect(campo).toHaveFocus());
+    // Solo junto al campo: no se repite como aviso general
+    expect(screen.getAllByText(MENSAJE_SIN_TELEFONO)).toHaveLength(1);
+
+    await userEvent.type(campo, '+56987654321');
+    await userEvent.click(await botonPagar());
+    await waitFor(() => expect(escrituras.length).toBeGreaterThan(1));
+    expect(escrituras[1]?.cuerpo).toMatchObject({
+      telefonoContacto: '+56987654321',
+    });
+    expect(campo).toHaveValue('+56987654321');
   });
 });

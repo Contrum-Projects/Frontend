@@ -124,6 +124,11 @@ const Detalle = ({ pedido }: { pedido: DetallePedidoGestion }) => {
               key={pedido.estado}
               codigoPedido={pedido.codigoPublico}
               cambios={pedido.cambiosPermitidos}
+              sinTelefono={
+                pedido.envio !== null &&
+                !pedido.envio.telefonoContacto &&
+                !pedido.cliente.telefono
+              }
             />
           </div>
         )}
