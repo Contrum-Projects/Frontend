@@ -20,6 +20,7 @@ import { PasosCheckout } from './pasosCheckout';
 import { ResumenCheckout } from './resumenCheckout';
 import { SeccionEntrega } from './seccionEntrega';
 import { SeccionDocumento } from './seccionDocumento';
+import { errorDelTelefono } from './telefonoDespacho';
 import { useDocumento } from './useDocumento';
 import { useEntrega, type Entrega } from './useEntrega';
 
@@ -72,7 +73,11 @@ function Checkout() {
 
   const carrito =
     confirmar.pedidoCreado && confirmado ? confirmado : consulta.data;
-  const error = <ErrorConfirmacion error={confirmar.error} />;
+  // SCRUM-167 · El rechazo por el teléfono va junto a su campo, no como aviso general
+  const errorTelefono = errorDelTelefono(confirmar.error);
+  const error = errorTelefono ? null : (
+    <ErrorConfirmacion error={confirmar.error} />
+  );
   if (carrito.items.length === 0) {
     return (
       <DisenoCheckout>
@@ -100,7 +105,7 @@ function Checkout() {
     <DisenoCheckout conPasos>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:items-start lg:gap-12">
         <div className="flex flex-col gap-8 md:gap-12">
-          <SeccionEntrega entrega={entrega} />
+          <SeccionEntrega entrega={entrega} errorTelefono={errorTelefono} />
           <SeccionDocumento documento={documento} />
         </div>
         <div className="flex flex-col gap-4">

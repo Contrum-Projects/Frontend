@@ -47,10 +47,16 @@ const textoCambio = ({ estado, sentido }: CambioPermitido) =>
 export function FormularioEstado({
   codigoPedido,
   cambios,
+  sinTelefono = false,
 }: {
   codigoPedido: string;
   /** No vacío: sin cambios el formulario no se muestra. */
   cambios: CambioPermitido[];
+  /**
+   * SCRUM-167 · El despacho no tiene teléfono de contacto ni la cuenta uno propio: al crear la OT
+   * se pide escribirlo, porque Chilexpress lo exige.
+   */
+  sinTelefono?: boolean;
 }) {
   const idTitulo = useId();
   const [aviso, setAviso] = useState<string | null>(null);
@@ -70,6 +76,10 @@ export function FormularioEstado({
   const estado = useWatch({ control, name: 'estado' });
   const cambio = cambios.find((opcion) => opcion.estado === estado);
   const comentarioObligatorio = cambio?.pideComentario ?? false;
+  const pideTelefono =
+    sinTelefono &&
+    (cambio?.pideCodigoSeguimiento ?? false) &&
+    (cambio?.creaOt ?? false);
 
   const mostrarError = (fallo: ErrorDeApi) => {
     // 400 y 409 traen mensajes para la persona; el resto, el genérico de su estado
@@ -209,6 +219,40 @@ export function FormularioEstado({
                     si ya la creaste en su portal.
                   </p>
                 )}
+              </div>
+            )}
+          </CampoFormulario>
+        )}
+        {pideTelefono && (
+          <CampoFormulario
+            id={`${idTitulo}-telefono`}
+            etiqueta="Teléfono de quien recibe"
+            error={errors.telefonoContacto?.message}
+          >
+            {(propsControl) => (
+              <div className="flex flex-col gap-1">
+                <Input
+                  {...propsControl}
+                  aria-describedby={
+                    [
+                      propsControl['aria-describedby'],
+                      `${idTitulo}-telefono-ayuda`,
+                    ]
+                      .filter(Boolean)
+                      .join(' ') || undefined
+                  }
+                  {...register('telefonoContacto')}
+                  type="tel"
+                  autoComplete="off"
+                  placeholder="+56 9"
+                />
+                <p
+                  id={`${idTitulo}-telefono-ayuda`}
+                  className="texto-leyenda text-texto-secundario"
+                >
+                  El pedido no tiene teléfono y Chilexpress lo pide para crear
+                  la OT. Queda guardado en el despacho.
+                </p>
               </div>
             )}
           </CampoFormulario>

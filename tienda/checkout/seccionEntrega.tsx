@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/compartido/ui/radio-group';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { DireccionDespacho } from './direccionDespacho';
 import { SeccionCheckout } from './seccionesCheckout';
+import { TelefonoDespacho } from './telefonoDespacho';
 import type { Entrega, TipoEntrega } from './useEntrega';
 
 /**
@@ -20,7 +21,14 @@ import type { Entrega, TipoEntrega } from './useEntrega';
  * otro grupo de radios dentro de un `radiogroup`, el contenedor es un `group`: las flechas siguen
  * pasando de una opción a la otra.
  */
-export const SeccionEntrega = ({ entrega }: { entrega: Entrega }) => {
+export const SeccionEntrega = ({
+  entrega,
+  errorTelefono = null,
+}: {
+  entrega: Entrega;
+  /** El rechazo del backend para el teléfono de contacto (SCRUM-167). */
+  errorTelefono?: string | null;
+}) => {
   const conDespacho = entrega.tipo === 'despacho';
   const { cotizacion } = entrega;
   const radioRetiro = useRef<HTMLButtonElement>(null);
@@ -43,6 +51,9 @@ export const SeccionEntrega = ({ entrega }: { entrega: Entrega }) => {
             costo={conDespacho && <CostoDespacho entrega={entrega} />}
           />
           {conDespacho && <DireccionDespacho entrega={entrega} />}
+          {conDespacho && entrega.direccion && (
+            <TelefonoDespacho entrega={entrega} error={errorTelefono} />
+          )}
           {conDespacho && cotizacion.isError && (
             <Alert variant="aviso" className="md:ml-16 md:w-auto">
               <AlertDescription className="flex flex-col items-start gap-3">

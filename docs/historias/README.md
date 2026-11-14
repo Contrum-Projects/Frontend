@@ -12,7 +12,7 @@ en orden: ninguna aparece antes de otra que necesita.
 `esquema.d.ts`), Parcial, Revisar (puede que exista; confirmar) o No (usar la API simulada).
 La columna API es del 26-10-2026; `/historia` la vuelve a comprobar antes de empezar.
 
-Total: 56 historias, 190 puntos (SCRUM-160 y SCRUM-164 aún sin estimar).
+Total: 57 historias, 190 puntos (SCRUM-160, SCRUM-164 y SCRUM-167 aún sin estimar).
 
 | #   | Historia                                                                                 | Pts | Estado      | API     | Backend   | Necesita antes       |
 | --- | ---------------------------------------------------------------------------------------- | --- | ----------- | ------- | --------- | -------------------- |
@@ -72,6 +72,7 @@ Total: 56 historias, 190 puntos (SCRUM-160 y SCRUM-164 aún sin estimar).
 | 54  | [SCRUM-155](SCRUM-155.md) · E13-H4 · Pantalla Clientes del panel                         | 5   | En revisión | Sí      | SCRUM-154 | SCRUM-99             |
 | 55  | [SCRUM-160](SCRUM-160.md) · E14-H5 · Botón «Exportar CSV» en el reporte de ventas        | -   | En revisión | Sí      | SCRUM-159 | SCRUM-143            |
 | 56  | [SCRUM-164](SCRUM-164.md) · Panel: motivo «el nombre no calza con el SII»                | -   | En curso    | Sí      | SCRUM-163 | SCRUM-135            |
+| 57  | [SCRUM-167](SCRUM-167.md) · Teléfono de contacto para despachar con Chilexpress          | -   | En revisión | Sí      | SCRUM-167 | SCRUM-122, SCRUM-130 |
 
 ## Pendientes que bloquean historias
 
