@@ -27,3 +27,8 @@ Estado al 14-11-2026 (`pnpm api:tipos` contra la rama `SCRUM-167-telefono-despac
 **Sí**. No hay rutas nuevas: `CrearPedidoDto` y `CambiarEstadoPedidoDto` agregan `telefonoContacto`
 (opcional, hasta 20). Sin teléfono, `POST /api/pedidos` con despacho responde 400 con
 `errores[].campo = 'telefonoContacto'`.
+
+## Notas de trabajo
+
+- 14-11-2026: rama `SCRUM-167-telefono-despacho`. PR del backend:
+  https://github.com/Contrum-Projects/Backend/pull/87 (se integra primero).
