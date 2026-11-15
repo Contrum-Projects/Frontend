@@ -128,8 +128,10 @@ Funciona en computador y en celular (RNF-25: 360 px sin desplazamiento horizonta
 - Segmentos de campañas y la oferta del saludo de cumpleaños. Las modalidades y especialidades del
   perfil profesional usan la propuesta del 4-11-2026 (`tienda/profesional/opcionesPerfil.ts`),
   aún por validar con la clienta.
-- Textos de términos y condiciones y política de privacidad, y los datos de contacto (correo,
-  teléfono, dirección y horario de retiro): sin ellos `/terminos-y-condiciones`,
-  `/politica-de-privacidad` y `/contacto` no existen. Las páginas de precio profesional y de ayuda
+- Términos y condiciones y política de privacidad: `/terminos-y-condiciones` y
+  `/politica-de-privacidad` muestran un **borrador** (15-11-2026, `tienda/informacion/legales.tsx`)
+  con aviso visible, pendiente de que la clienta entregue los datos entre corchetes y de revisión
+  legal. Los datos de contacto (correo, teléfono, dirección y horario de retiro) siguen sin
+  definir: sin ellos `/contacto` no existe. Las páginas de precio profesional y de ayuda
   (SCRUM-150) solo dicen lo que está en las reglas del backend.
 - Ícono del sitio: monograma «CP» en turquesa sobre `marca-profundo`, cuadrado (`app/icon.svg`), hecho por el equipo en Illustrator (27-10-2026).

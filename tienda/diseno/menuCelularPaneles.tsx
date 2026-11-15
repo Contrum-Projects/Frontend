@@ -4,7 +4,7 @@ import { ArrowRight, BadgeCheck, ChevronLeft, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import type { ComponentProps, ReactNode } from 'react';
 import type { CategoriaTienda } from '@/compartido/api/respuestas';
-import { ROLES } from '@/compartido/sesion/roles';
+import { ROLES, esPersonal } from '@/compartido/sesion/roles';
 import { useSesion } from '@/compartido/sesion/sesion';
 import { Skeleton } from '@/compartido/ui/skeleton';
 import { useCerrarSesion } from '@/tienda/cuenta/useCerrarSesion';
@@ -170,36 +170,47 @@ function CuentaMenu({ alElegir }: { alElegir: () => void }) {
         <span className="texto-cuerpo-fuerte text-texto-principal">
           Hola, {usuario.nombre}
         </span>
-        <span className="flex flex-wrap items-center gap-x-1 texto-pequeno text-texto-secundario">
+        {esPersonal(usuario.rol) ? (
+          // El personal no tiene «Mi cuenta» de comprador: su acceso es el panel
           <Link
-            href={RUTAS.misPedidos}
+            href={RUTAS.panel}
             onClick={alElegir}
-            className="inline-flex min-h-10 items-center rounded-md hover:underline"
+            className="inline-flex min-h-10 items-center rounded-md texto-pequeno text-texto-secundario hover:underline"
           >
-            Mis pedidos
+            Ir al panel
           </Link>
-          <span aria-hidden>·</span>
-          <Link
-            href={RUTAS.misDatos}
-            onClick={alElegir}
-            className="inline-flex min-h-10 items-center rounded-md hover:underline"
-          >
-            Mis datos
-          </Link>
-          {usuario.rol === ROLES.PROFESIONAL && (
-            // El separador va con su enlace: al pasar de línea no queda suelto
-            <span className="flex items-center gap-1 whitespace-nowrap">
-              <span aria-hidden>·</span>
-              <Link
-                href={RUTAS.perfilProfesional}
-                onClick={alElegir}
-                className="inline-flex min-h-10 items-center rounded-md hover:underline"
-              >
-                Perfil profesional
-              </Link>
-            </span>
-          )}
-        </span>
+        ) : (
+          <span className="flex flex-wrap items-center gap-x-1 texto-pequeno text-texto-secundario">
+            <Link
+              href={RUTAS.misPedidos}
+              onClick={alElegir}
+              className="inline-flex min-h-10 items-center rounded-md hover:underline"
+            >
+              Mis pedidos
+            </Link>
+            <span aria-hidden>·</span>
+            <Link
+              href={RUTAS.misDatos}
+              onClick={alElegir}
+              className="inline-flex min-h-10 items-center rounded-md hover:underline"
+            >
+              Mis datos
+            </Link>
+            {usuario.rol === ROLES.PROFESIONAL && (
+              // El separador va con su enlace: al pasar de línea no queda suelto
+              <span className="flex items-center gap-1 whitespace-nowrap">
+                <span aria-hidden>·</span>
+                <Link
+                  href={RUTAS.perfilProfesional}
+                  onClick={alElegir}
+                  className="inline-flex min-h-10 items-center rounded-md hover:underline"
+                >
+                  Perfil profesional
+                </Link>
+              </span>
+            )}
+          </span>
+        )}
       </div>
     </div>
   );

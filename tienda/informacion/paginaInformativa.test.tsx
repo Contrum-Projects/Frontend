@@ -5,6 +5,11 @@ import {
   DESPACHO_Y_RETIRO,
   PRECIO_PROFESIONAL,
 } from './contenidos';
+import {
+  AVISO_BORRADOR,
+  POLITICA_DE_PRIVACIDAD,
+  TERMINOS_Y_CONDICIONES,
+} from './legales';
 import { PaginaInformativa } from './paginaInformativa';
 
 const migas = [
@@ -18,6 +23,8 @@ describe('Páginas informativas de la tienda', () => {
       PRECIO_PROFESIONAL,
       DESPACHO_Y_RETIRO,
       COMPROBANTE_Y_FACTURA,
+      TERMINOS_Y_CONDICIONES,
+      POLITICA_DE_PRIVACIDAD,
     ]) {
       const { unmount } = render(
         <PaginaInformativa {...contenido} migas={migas} />,
@@ -52,5 +59,36 @@ describe('Páginas informativas de la tienda', () => {
     render(<PaginaInformativa {...DESPACHO_Y_RETIRO} migas={migas} />);
 
     expect(screen.getByText('Actual')).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('legales · términos y privacidad muestran el aviso de borrador y el correo de contacto', () => {
+    for (const contenido of [TERMINOS_Y_CONDICIONES, POLITICA_DE_PRIVACIDAD]) {
+      const { unmount } = render(
+        <PaginaInformativa
+          {...contenido}
+          aviso={AVISO_BORRADOR}
+          migas={migas}
+        />,
+      );
+      expect(screen.getByRole('note')).toHaveTextContent(
+        /Borrador en revisión/,
+      );
+      expect(
+        screen.getAllByRole('link', { name: 'contacto@cabelloperfecto.cl' })[0],
+      ).toHaveAttribute('href', 'mailto:contacto@cabelloperfecto.cl');
+      unmount();
+    }
+  });
+
+  it('legales · la política de privacidad explica cómo ejercer los derechos (Ley 21.719)', () => {
+    render(<PaginaInformativa {...POLITICA_DE_PRIVACIDAD} migas={migas} />);
+
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Tus derechos' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/30 días corridos/)).toBeInTheDocument();
+    expect(
+      screen.getAllByText(/Agencia de Protección de Datos Personales/).length,
+    ).toBeGreaterThan(0);
   });
 });
