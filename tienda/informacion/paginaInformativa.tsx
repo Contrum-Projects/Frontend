@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { ComponentProps, ReactNode } from 'react';
+import { Alert, AlertDescription } from '@/compartido/ui/alert';
 import { Button } from '@/compartido/ui/button';
 import { type Miga, Migas } from '@/tienda/catalogo/migas';
 
@@ -19,6 +20,8 @@ interface PaginaInformativaProps {
   bajada: string;
   migas: Miga[];
   secciones: SeccionInformativa[];
+  /** Aviso bajo el título (p. ej., que el texto es un borrador). */
+  aviso?: string;
   /** Lo que la persona puede hacer al terminar de leer (la primera es la principal). */
   acciones?: AccionInformativa[];
 }
@@ -33,6 +36,7 @@ export function PaginaInformativa({
   bajada,
   migas,
   secciones,
+  aviso,
   acciones = [],
 }: PaginaInformativaProps) {
   return (
@@ -44,6 +48,13 @@ export function PaginaInformativa({
             {titulo}
           </h1>
           <p className="texto-cuerpo text-texto-secundario">{bajada}</p>
+          {aviso && (
+            <Alert variant="aviso" role="note">
+              <AlertDescription className="texto-pequeno">
+                {aviso}
+              </AlertDescription>
+            </Alert>
+          )}
         </header>
         {secciones.map((seccion) => (
           <section key={seccion.titulo} className="flex flex-col gap-3">

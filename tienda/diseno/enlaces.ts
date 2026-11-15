@@ -29,13 +29,14 @@ export const RUTAS = {
   // Listado de packs (sin historia ni Figma, SCRUM-150: sigue el catálogo)
   packs: '/packs' as Route,
   // Precio profesional y ayuda: páginas con el contenido de las reglas del backend (SCRUM-150).
-  // Contacto, términos y privacidad siguen sin página: falta su contenido (docs/diseno.md)
+  // Términos y privacidad: borrador para la clienta, pendiente de revisión legal (docs/diseno.md).
+  // Contacto sigue sin página: faltan sus datos
   precioProfesional: '/precio-profesional' as Route,
   despacho: '/ayuda/despacho-y-retiro' as Route,
   comprobantes: '/ayuda/comprobante-y-factura' as Route,
   contacto: '/contacto' as Route,
-  terminos: '/terminos-y-condiciones' as Route,
-  privacidad: '/politica-de-privacidad' as Route,
+  terminos: '/terminos-y-condiciones',
+  privacidad: '/politica-de-privacidad',
 } as const;
 
 /**

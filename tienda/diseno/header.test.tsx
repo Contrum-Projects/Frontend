@@ -135,4 +135,31 @@ describe('SCRUM-106 · Header de la tienda', () => {
     ).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Carrito' })).toBeInTheDocument();
   });
+
+  it.each(['vendedor', 'bodeguero', 'administrador'] as const)(
+    'Acceso al panel · header: una cuenta %s ve «Panel» y no «Mi cuenta» de comprador',
+    (rol) => {
+      act(() =>
+        guardarSesion({
+          tokenAcceso: 't',
+          expiraEn: 900,
+          usuario: {
+            codigoPublico: 'p-1',
+            nombre: 'Paula',
+            apellido: 'Soto',
+            rol,
+          },
+        }),
+      );
+      mostrarHeader();
+
+      expect(screen.getByRole('link', { name: 'Panel' })).toHaveAttribute(
+        'href',
+        '/panel',
+      );
+      expect(
+        screen.queryByRole('link', { name: 'Paula' }),
+      ).not.toBeInTheDocument();
+    },
+  );
 });
