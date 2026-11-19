@@ -3,41 +3,65 @@ import type {
   CodigoObjetivo,
   IndicadorObjetivo,
 } from '@/compartido/api/respuestas';
+import { formatearPesos } from '@/compartido/formato/moneda';
 import {
   formatearNumero,
   formatearPorcentaje,
 } from '@/compartido/formato/numero';
 import { cn } from '@/compartido/lib/utils';
 
+/**
+ * Cómo se lee el porcentaje que entrega el backend: `crecimiento` (OE1) es cuánto subió frente al
+ * período anterior; `reduccion` (OE2) es cuánto bajó, y se muestra con signo menos. Sin
+ * `variacion`, es una proporción (OE3).
+ */
+type Variacion = 'crecimiento' | 'reduccion';
+
 interface TextosObjetivo {
   titulo: string;
   /** En el celular, si el título no cabe junto al valor (Figma 2042:1058). */
   tituloCorto?: string;
-  detalle: (cumplen: string, total: string) => string;
+  variacion?: Variacion;
+  /** `cumplidos` y `total` como los define el backend para cada objetivo. */
+  detalle: (cumplidos: number, total: number) => string;
   sinRegistros: string;
 }
 
-/** Textos de Figma P6 (2041:1309). Las cifras vienen del backend. */
+const quiebres = (cantidad: number) =>
+  `${formatearNumero(cantidad)} ${cantidad === 1 ? 'quiebre' : 'quiebres'}`;
+
+/** Objetivos específicos (decisión del 18-11-2026). Las cifras vienen del backend. */
 const TEXTOS: Record<CodigoObjetivo, TextosObjetivo> = {
   OE1: {
-    titulo: 'Peluqueros que compran',
-    detalle: (cumplen, total) =>
-      `${cumplen} de ${total} cuentas verificadas en el período compraron a precio mayorista`,
-    sinRegistros: 'No hay cuentas verificadas en el período.',
+    titulo: 'Facturación digital',
+    variacion: 'crecimiento',
+    detalle: (cumplidos, total) =>
+      `${formatearPesos(cumplidos)} vendidos en línea, contra ${formatearPesos(total)} en el período anterior`,
+    sinRegistros: 'No hay ventas en el período anterior para comparar.',
   },
   OE2: {
-    titulo: 'Verificaciones en 48 horas',
-    tituloCorto: 'Verificaciones en 48 h',
-    detalle: (cumplen, total) =>
-      `${cumplen} de ${total} solicitudes resueltas dentro de 48 horas`,
-    sinRegistros: 'No hay solicitudes presentadas en el período.',
+    titulo: 'Quiebres de stock',
+    variacion: 'reduccion',
+    detalle: (cumplidos, total) =>
+      `${quiebres(cumplidos)} de stock en el período, contra ${formatearNumero(total)} en el anterior`,
+    sinRegistros:
+      'No hubo quiebres de stock en el período anterior para comparar.',
   },
   OE3: {
-    titulo: 'Descripciones con IA',
-    detalle: (cumplen, total) =>
-      `${cumplen} de ${total} productos nuevos usan la descripción de IA o IA editada`,
-    sinRegistros: 'No hay productos nuevos en el período.',
+    titulo: 'Alcance territorial',
+    detalle: (cumplidos, total) =>
+      `${formatearNumero(cumplidos)} de ${formatearNumero(total)} pedidos se despacharon fuera de Talcahuano y comunas aledañas`,
+    sinRegistros: 'No hay pedidos pagados en el período.',
   },
+};
+
+/** «+25%» y «−90%» en las variaciones; la proporción, sin signo. */
+const valorConSigno = (variacion: Variacion | undefined, valor: number) => {
+  if (!variacion) return formatearPorcentaje(valor);
+  // En la reducción, el backend entrega cuánto bajó: se muestra como un cambio negativo
+  const cambio = variacion === 'reduccion' ? -valor : valor;
+  if (cambio === 0) return formatearPorcentaje(0);
+  return `${cambio > 0 ? '+' : '−'}${formatearPorcentaje(Math.abs(cambio))}`;
 };
 
 /** Solo para dibujar la barra: el porcentaje lo calcula el backend. */
@@ -97,11 +121,11 @@ export const TarjetaObjetivo = ({
             </span>
           ) : (
             <span className="texto-cuerpo-fuerte text-texto-principal tabular-nums lg:titulo-h1">
-              {formatearPorcentaje(porcentaje)}
+              {valorConSigno(textos.variacion, porcentaje)}
             </span>
           )}
           <span className="texto-leyenda text-texto-secundario lg:texto-pequeno lg:tracking-normal">
-            meta {formatearPorcentaje(meta)}
+            meta {valorConSigno(textos.variacion, meta)}
           </span>
         </p>
       </div>
@@ -116,7 +140,7 @@ export const TarjetaObjetivo = ({
               'aria-valuemin': 0,
               'aria-valuemax': 100,
               'aria-valuenow': porcentaje,
-              'aria-valuetext': `${formatearPorcentaje(porcentaje)}, meta ${formatearPorcentaje(meta)}`,
+              'aria-valuetext': `${valorConSigno(textos.variacion, porcentaje)}, meta ${valorConSigno(textos.variacion, meta)}`,
             })}
         className="relative my-1 h-1.5 w-full rounded-full bg-fondo-hueso-oscuro lg:h-2"
       >
@@ -136,9 +160,7 @@ export const TarjetaObjetivo = ({
       <Estado estado={estado} />
 
       <p className="texto-leyenda text-texto-secundario max-lg:hidden">
-        {sinDatos
-          ? textos.sinRegistros
-          : textos.detalle(formatearNumero(cumplidos), formatearNumero(total))}
+        {sinDatos ? textos.sinRegistros : textos.detalle(cumplidos, total)}
       </p>
     </li>
   );
