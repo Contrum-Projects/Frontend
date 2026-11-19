@@ -11,7 +11,7 @@ Como un Administrador, necesito ver los indicadores de los objetivos en el panel
 
 ## Criterios de aceptación
 
-1. **Indicadores.** El administrador abre «Reportes». Cuando carga. Ve OE1, OE2 y OE3 con valor, meta (30 %, 70 % y 80 %), barra de avance y estado.
+1. **Indicadores.** El administrador abre «Reportes». Cuando carga. Ve OE1, OE2 y OE3 con valor, meta (+20 %, −80 % y 30 %; antes 30 %, 70 % y 80 %), barra de avance y estado.
 2. **Período.** El administrador cambia el filtro de período. Cuando aplica. Los indicadores se actualizan.
 3. **Sin datos.** No hay registros en el período. Cuando se muestra. La pantalla lo indica en vez de un valor.
 
@@ -83,3 +83,12 @@ GET /api/reportes/objetivos?desde=AAAA-MM-DD&hasta=AAAA-MM-DD     (permiso repor
 **PR:** https://github.com/Contrum-Projects/Frontend/pull/66 (En revisión, 05-11-2026).
 
 **06-11-2026 (SCRUM-150):** la pantalla usa `GET /api/reportes/indicadores` (la ruta real), con `indicadores`, `cumplidos` y el `estado` frente a la meta que ahora calcula el backend; se borró la ruta simulada. Los textos de OE1 y OE2 siguen la definición del backend: «N de M cuentas verificadas en el período compraron a precio mayorista», «No hay cuentas verificadas en el período.» y «No hay solicitudes presentadas en el período.» (revisar contra Figma). Falta probar con el backend real.
+
+**18-11-2026 (nuevos objetivos):** cambian los objetivos específicos del proyecto (backend
+SCRUM-74, decisión del 18-11-2026 en `docs/reglas-de-negocio.md`). **OE1 Facturación digital**
+(meta +20 %): crecimiento de lo vendido en línea frente al período anterior de igual largo;
+`cumplidos` y `total` son los pesos del período y del anterior. **OE2 Quiebres de stock** (meta
+−80 %): cuánto bajaron los quiebres de stock frente al período anterior; la pantalla lo muestra con
+signo menos («−90%»). **OE3 Alcance territorial** (meta 30 %): pedidos pagados despachados fuera de
+Talcahuano y comunas aledañas. La forma de la respuesta no cambia; solo los textos de
+`tarjetaObjetivo.tsx` (revisar contra Figma, que aún tiene los objetivos anteriores).

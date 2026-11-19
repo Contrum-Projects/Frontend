@@ -146,15 +146,15 @@ const objetivo = (
 
 /** El backend calcula porcentaje y estado; aquí, valores fijos. */
 const OBJETIVOS_SEIS_MESES = [
-  objetivo('OE1', 30, 24, 41, 171, 'bajo-la-meta'),
-  objetivo('OE2', 70, 78, 112, 144, 'sobre-la-meta'),
-  objetivo('OE3', 80, 85, 34, 40, 'sobre-la-meta'),
+  objetivo('OE1', 20, 12, 1_120_000, 1_000_000, 'bajo-la-meta'),
+  objetivo('OE2', 80, 90, 1, 10, 'sobre-la-meta'),
+  objetivo('OE3', 30, 42, 34, 81, 'sobre-la-meta'),
 ];
 
 const OBJETIVOS_ESTE_MES = [
-  objetivo('OE1', 30, 33, 10, 30, 'sobre-la-meta'),
-  objetivo('OE2', 70, 60, 12, 20, 'bajo-la-meta'),
-  objetivo('OE3', 80, 90, 9, 10, 'sobre-la-meta'),
+  objetivo('OE1', 20, 25, 250_000, 200_000, 'sobre-la-meta'),
+  objetivo('OE2', 80, 60, 2, 5, 'bajo-la-meta'),
+  objetivo('OE3', 30, 20, 2, 10, 'bajo-la-meta'),
 ];
 
 const objetivosConDatos: Responder = (desde, hasta) =>
@@ -486,34 +486,37 @@ describe('Reporte de objetivos (SCRUM-142)', () => {
     simularBackend();
     mostrar();
 
-    const oe1 = await tarjetaObjetivo('OE1 · Peluqueros que compran');
-    expect(oe1.getByText('24%')).toBeInTheDocument();
-    expect(oe1.getByText('meta 30%')).toBeInTheDocument();
+    const oe1 = await tarjetaObjetivo('OE1 · Facturación digital');
+    expect(oe1.getByText('+12%')).toBeInTheDocument();
+    expect(oe1.getByText('meta +20%')).toBeInTheDocument();
     const barra = oe1.getByRole('meter', { name: 'Avance de OE1' });
-    expect(barra).toHaveAttribute('aria-valuenow', '24');
-    expect(barra).toHaveAttribute('aria-valuetext', '24%, meta 30%');
+    expect(barra).toHaveAttribute('aria-valuenow', '12');
+    expect(barra).toHaveAttribute('aria-valuetext', '+12%, meta +20%');
     expect(oe1.getByText('Bajo la meta')).toBeInTheDocument();
     expect(
       oe1.getByText(
-        '41 de 171 cuentas verificadas en el período compraron a precio mayorista',
+        '$1.120.000 vendidos en línea, contra $1.000.000 en el período anterior',
       ),
     ).toBeInTheDocument();
 
-    const oe2 = await tarjetaObjetivo('OE2 · Verificaciones en 48 horas');
-    expect(oe2.getByText('78%')).toBeInTheDocument();
-    expect(oe2.getByText('meta 70%')).toBeInTheDocument();
+    const oe2 = await tarjetaObjetivo('OE2 · Quiebres de stock');
+    // OE2 mide cuánto bajaron los quiebres: se muestra con signo menos
+    expect(oe2.getByText('−90%')).toBeInTheDocument();
+    expect(oe2.getByText('meta −80%')).toBeInTheDocument();
     expect(oe2.getByText('Sobre la meta')).toBeInTheDocument();
     expect(
-      oe2.getByText('112 de 144 solicitudes resueltas dentro de 48 horas'),
+      oe2.getByText(
+        '1 quiebre de stock en el período, contra 10 en el anterior',
+      ),
     ).toBeInTheDocument();
 
-    const oe3 = await tarjetaObjetivo('OE3 · Descripciones con IA');
-    expect(oe3.getByText('85%')).toBeInTheDocument();
-    expect(oe3.getByText('meta 80%')).toBeInTheDocument();
+    const oe3 = await tarjetaObjetivo('OE3 · Alcance territorial');
+    expect(oe3.getByText('42%')).toBeInTheDocument();
+    expect(oe3.getByText('meta 30%')).toBeInTheDocument();
     expect(oe3.getByText('Sobre la meta')).toBeInTheDocument();
     expect(
       oe3.getByText(
-        '34 de 40 productos nuevos usan la descripción de IA o IA editada',
+        '34 de 81 pedidos se despacharon fuera de Talcahuano y comunas aledañas',
       ),
     ).toBeInTheDocument();
   });
@@ -522,11 +525,11 @@ describe('Reporte de objetivos (SCRUM-142)', () => {
     // 50 supera la meta, pero el frontend no compara: muestra el estado recibido (RNF-03)
     simularBackend(
       conDatos,
-      responderObjetivos([objetivo('OE1', 30, 50, 5, 10, 'bajo-la-meta')]),
+      responderObjetivos([objetivo('OE1', 20, 50, 15, 10, 'bajo-la-meta')]),
     );
     mostrar();
 
-    const oe1 = await tarjetaObjetivo('OE1 · Peluqueros que compran');
+    const oe1 = await tarjetaObjetivo('OE1 · Facturación digital');
     expect(oe1.getByText('Bajo la meta')).toBeInTheDocument();
   });
 
@@ -535,18 +538,18 @@ describe('Reporte de objetivos (SCRUM-142)', () => {
     const { objetivosPedidos } = simularBackend();
     mostrar();
 
-    const oe1 = await tarjetaObjetivo('OE1 · Peluqueros que compran');
-    expect(oe1.getByText('24%')).toBeInTheDocument();
+    const oe1 = await tarjetaObjetivo('OE1 · Facturación digital');
+    expect(oe1.getByText('+12%')).toBeInTheDocument();
     expect(objetivosPedidos).toEqual(['2026-04-01|2026-09-15']);
 
     await usuario.click(screen.getByRole('radio', { name: 'Este mes' }));
 
-    expect(await screen.findByText('33%')).toBeInTheDocument();
+    expect(await screen.findByText('+25%')).toBeInTheDocument();
     expect(objetivosPedidos).toContain('2026-09-01|2026-09-15');
-    const actualizado = await tarjetaObjetivo('OE1 · Peluqueros que compran');
+    const actualizado = await tarjetaObjetivo('OE1 · Facturación digital');
     expect(actualizado.getByText('Sobre la meta')).toBeInTheDocument();
-    const oe2 = await tarjetaObjetivo('OE2 · Verificaciones en 48 horas');
-    expect(oe2.getByText('60%')).toBeInTheDocument();
+    const oe2 = await tarjetaObjetivo('OE2 · Quiebres de stock');
+    expect(oe2.getByText('−60%')).toBeInTheDocument();
     expect(oe2.getByText('Bajo la meta')).toBeInTheDocument();
   });
 
@@ -554,27 +557,27 @@ describe('Reporte de objetivos (SCRUM-142)', () => {
     simularBackend(
       conDatos,
       responderObjetivos([
-        objetivo('OE1', 30, null, 0, 0, 'sin-datos'),
-        objetivo('OE2', 70, null, 0, 0, 'sin-datos'),
-        objetivo('OE3', 80, null, 0, 0, 'sin-datos'),
+        objetivo('OE1', 20, null, 0, 0, 'sin-datos'),
+        objetivo('OE2', 80, null, 0, 0, 'sin-datos'),
+        objetivo('OE3', 30, null, 0, 0, 'sin-datos'),
       ]),
     );
     mostrar();
 
-    const oe1 = await tarjetaObjetivo('OE1 · Peluqueros que compran');
+    const oe1 = await tarjetaObjetivo('OE1 · Facturación digital');
     expect(oe1.getByText('Sin datos en el período')).toBeInTheDocument();
-    expect(oe1.queryByText(/^\d+%$/)).not.toBeInTheDocument();
-    expect(oe1.getByText('meta 30%')).toBeInTheDocument();
+    expect(oe1.queryByText(/^[+−]?\d+%$/)).not.toBeInTheDocument();
+    expect(oe1.getByText('meta +20%')).toBeInTheDocument();
     expect(oe1.queryByText(/la meta$/)).not.toBeInTheDocument();
     expect(
-      oe1.getByText('No hay cuentas verificadas en el período.'),
+      oe1.getByText('No hay ventas en el período anterior para comparar.'),
     ).toBeInTheDocument();
     // Sin valor no hay avance que medir: la barra vacía solo se ve
     expect(oe1.queryByRole('meter')).not.toBeInTheDocument();
 
-    const oe3 = await tarjetaObjetivo('OE3 · Descripciones con IA');
+    const oe3 = await tarjetaObjetivo('OE3 · Alcance territorial');
     expect(
-      oe3.getByText('No hay productos nuevos en el período.'),
+      oe3.getByText('No hay pedidos pagados en el período.'),
     ).toBeInTheDocument();
   });
 
