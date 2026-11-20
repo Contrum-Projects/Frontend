@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 120.
+ * Versión de la API: 0.1.0. Rutas: 121.
  */
 
 export interface paths {
@@ -1979,7 +1979,7 @@ export interface paths {
         };
         /**
          * Indicadores de los objetivos del proyecto (E14-H1)
-         * @description Entre las dos fechas, ambas incluidas y en hora de Chile, cada objetivo con su porcentaje y su meta. **OE1** (meta 30 %): de las cuentas verificadas como profesionales en el período, cuántas compraron (pedido pagado) desde su aprobación. **OE2** (meta 70 %): de las solicitudes de verificación presentadas en el período, cuántas se resolvieron en 48 horas o menos; las que siguen sin resolver y aún están dentro de las 48 horas no cuentan. **OE3** (meta 80 %): de los productos creados en el período, cuántos tienen la descripción de la IA, aceptada o corregida. Sin datos, `porcentaje` es `null` y `sinDatos` es `true`.
+         * @description Entre las dos fechas, ambas incluidas y en hora de Chile, cada objetivo con su porcentaje y su meta. El período anterior tiene los mismos días y termina justo antes de `desde`. **OE1 Facturación digital** (meta +20 %): cuánto crece el monto total de los pedidos pagados frente al período anterior; `cumplidos` es el monto del período y `total` el del anterior, en pesos. **OE2 Quiebres de stock** (meta −80 %): cuánto bajan los quiebres (un movimiento que deja en 0 el stock total de un formato que tenía stock) frente al período anterior; `cumplidos` son los del período y `total` los del anterior. **OE3 Alcance territorial** (meta 30 %): de los pedidos pagados del período (`total`), cuántos se despachan fuera de Talcahuano, Concepción, Hualpén, San Pedro de la Paz, Penco y Chiguayante (`cumplidos`); el retiro en tienda cuenta como local. En OE1 y OE2 el porcentaje puede ser negativo. Sin datos (sin ventas o sin quiebres en el período anterior, o sin pedidos), `porcentaje` es `null` y `sinDatos` es `true`.
          */
         get: operations["ReporteIndicadoresController_indicadores"];
         put?: never;
@@ -2477,6 +2477,26 @@ export interface paths {
          * @description El celular vuelve a mostrar la imagen de escritorio.
          */
         delete: operations["PortadaPanelController_quitarCelular"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/registros/errores-cliente": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Registrar un error de la tienda o del panel (SCRUM-168)
+         * @description Guarda qué pasó, cuándo y en qué pantalla en el registro de errores. Si llega el token de acceso, asocia la cuenta.
+         */
+        post: operations["ErroresClienteController_registrar"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -4223,7 +4243,7 @@ export interface components {
         IndicadorDto: {
             /** @enum {string} */
             codigo: "OE1" | "OE2" | "OE3";
-            /** @example Profesionales verificados que compran */
+            /** @example Alcance territorial */
             nombre: string;
             /**
              * @description Meta en porcentaje.
@@ -4231,16 +4251,19 @@ export interface components {
              */
             meta: number;
             /**
-             * @description Con un decimal; `null` sin nada que medir en el período.
+             * @description Con un decimal; `null` sin nada que medir. En OE1 (crecimiento) y OE2 (reducción) puede ser negativo.
              * @example 42.9
              */
             porcentaje: number | null;
             /**
-             * @description Lo que cumple el objetivo, de `total`.
+             * @description OE1: pesos vendidos en el período. OE2: quiebres de stock en el período. OE3: pedidos despachados fuera de la zona local.
              * @example 3
              */
             cumplidos: number;
-            /** @example 7 */
+            /**
+             * @description OE1: pesos vendidos en el período anterior. OE2: quiebres de stock en el período anterior. OE3: pedidos pagados del período.
+             * @example 7
+             */
             total: number;
             sinDatos: boolean;
             /**
@@ -4842,6 +4865,37 @@ export interface components {
              * @example 12
              */
             destino: string;
+        };
+        ReporteErrorClienteDto: {
+            /**
+             * @example navegador
+             * @enum {string}
+             */
+            origen: "navegador" | "servidor_web";
+            /**
+             * @description Pantalla o pieza del frontend donde ocurrió.
+             * @example app/(tienda)/carrito
+             */
+            componente: string;
+            /** @example Cannot read properties of undefined (reading 'precio') */
+            mensaje: string;
+            /** @example TypeError */
+            tipoError?: string | null;
+            /** @example /carrito */
+            ruta?: string | null;
+            traza?: string | null;
+            /**
+             * @description Código de una respuesta 5xx de la API, o el `digest` de Next, para unir los registros.
+             * @example 3f1c2b9e-8a7d-4e0b-9a51-2c4d6e8f0a1b
+             */
+            codigoSeguimiento?: string;
+        };
+        RespuestaReporteErrorDto: {
+            /**
+             * @description Código con el que quedó el error en el registro.
+             * @example 3f1c2b9e-8a7d-4e0b-9a51-2c4d6e8f0a1b
+             */
+            codigoSeguimiento: string;
         };
     };
     responses: never;
@@ -11803,6 +11857,43 @@ export interface operations {
             };
             /** @description El slide no existe. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ErroresClienteController_registrar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReporteErrorClienteDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RespuestaReporteErrorDto"];
+                };
+            };
+            /** @description Reporte incompleto o demasiado largo. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Más de 30 reportes por minuto desde la misma IP. */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

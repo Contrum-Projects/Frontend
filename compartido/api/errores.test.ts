@@ -160,3 +160,47 @@ describe('errores por campo (SCRUM-150)', () => {
     ).toEqual([['categorias', 'Alguna categoría indicada no existe.']]);
   });
 });
+
+describe('código de seguimiento (SCRUM-168)', () => {
+  const CODIGO = '3f1c2b9e-8a7d-4e0b-9a51-2c4d6e8f0a1b';
+
+  it('SCRUM-168 · un 5xx lleva el código del backend, también en el mensaje en forma corta', () => {
+    const error = errorDeApi(
+      {
+        statusCode: 500,
+        message: 'Internal server error',
+        codigoSeguimiento: CODIGO,
+      },
+      respuesta(500),
+    );
+    expect(error.codigoSeguimiento).toBe(CODIGO);
+    expect(error.message).toBe(
+      'No pudimos completar la acción. Intenta de nuevo en unos minutos. Código de seguimiento: 3F1C2B9E.',
+    );
+  });
+
+  it('SCRUM-168 · sin cuerpo, toma el código de la cabecera x-request-id', () => {
+    const error = errorDeApi(
+      undefined,
+      respuesta(502, { 'x-request-id': CODIGO }),
+    );
+    expect(error.codigoSeguimiento).toBe(CODIGO);
+  });
+
+  it('SCRUM-168 · un 4xx no lleva código ni cambia su mensaje', () => {
+    const error = errorDeApi(
+      { statusCode: 409, message: 'Ya existe.' },
+      respuesta(409, { 'x-request-id': CODIGO }),
+    );
+    expect(error.codigoSeguimiento).toBeUndefined();
+    expect(error.message).toBe('Ya existe.');
+  });
+
+  it('SCRUM-168 · ignora un código con caracteres no permitidos', () => {
+    const error = errorDeApi(
+      { statusCode: 500, message: 'x', codigoSeguimiento: '<script>' },
+      respuesta(500),
+    );
+    expect(error.codigoSeguimiento).toBeUndefined();
+  });
+});

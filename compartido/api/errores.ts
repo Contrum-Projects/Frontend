@@ -26,6 +26,11 @@ export class ErrorDeApi extends Error {
      * Lo que no está aquí es un aviso general.
      */
     readonly errores: readonly ErrorDeCampo[] = [],
+    /**
+     * Código con el que el backend registró un 5xx (SCRUM-168), para que la persona lo informe y
+     * el equipo lo busque en `registro_error`.
+     */
+    readonly codigoSeguimiento?: string,
   ) {
     super(mensajes[0] ?? MENSAJE_GENERICO);
     this.name = 'ErrorDeApi';
@@ -58,6 +63,32 @@ const esErrorDeCampo = (valor: unknown): valor is ErrorDeCampo =>
 const erroresDeCampo = (cuerpo: CuerpoError): ErrorDeCampo[] =>
   Array.isArray(cuerpo.errores) ? cuerpo.errores.filter(esErrorDeCampo) : [];
 
+/** Letras, dígitos y guiones, como lo valida el backend (`codigo-seguimiento.ts`). */
+const FORMATO_CODIGO = /^[A-Za-z0-9-]{8,64}$/;
+
+/**
+ * Código de seguimiento de un 5xx (SCRUM-168): el del cuerpo o, si no viene (un 502 del proxy
+ * sin cuerpo), la cabecera `x-request-id`.
+ */
+const codigoDe = (cuerpo: unknown, respuesta?: Response) => {
+  const delCuerpo =
+    typeof cuerpo === 'object' &&
+    cuerpo !== null &&
+    'codigoSeguimiento' in cuerpo
+      ? cuerpo.codigoSeguimiento
+      : undefined;
+  const codigo = delCuerpo ?? respuesta?.headers.get('x-request-id');
+  return typeof codigo === 'string' && FORMATO_CODIGO.test(codigo)
+    ? codigo
+    : undefined;
+};
+
+/**
+ * Forma corta del código para mostrarla (los 8 primeros caracteres, en mayúsculas). En
+ * `registro_error` se busca por el comienzo: `codigo_seguimiento ILIKE '3f1c2b9e%'`.
+ */
+export const codigoCorto = (codigo: string) => codigo.slice(0, 8).toUpperCase();
+
 /** Convierte cualquier respuesta fallida (o un fallo de red) en `ErrorDeApi`. */
 export function errorDeApi(cuerpo: unknown, respuesta?: Response): ErrorDeApi {
   const estado = respuesta?.status ?? 0;
@@ -68,13 +99,20 @@ export function errorDeApi(cuerpo: unknown, respuesta?: Response): ErrorDeApi {
           .flat()
           .filter((mensaje) => mensaje && !esMensajeDeNest(mensaje))
       : [];
+  const codigo = estado >= 500 ? codigoDe(cuerpo, respuesta) : undefined;
+  const generico = MENSAJES_POR_ESTADO[estado] ?? MENSAJE_GENERICO;
   return new ErrorDeApi(
     estado,
     mensajes.length > 0
       ? mensajes
-      : [MENSAJES_POR_ESTADO[estado] ?? MENSAJE_GENERICO],
+      : [
+          codigo
+            ? `${generico} Código de seguimiento: ${codigoCorto(codigo)}.`
+            : generico,
+        ],
     Number.isFinite(espera) && espera > 0 ? espera : undefined,
     esCuerpoError(cuerpo) && estado < 500 ? erroresDeCampo(cuerpo) : [],
+    codigo,
   );
 }
 

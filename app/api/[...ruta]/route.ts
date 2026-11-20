@@ -12,6 +12,7 @@
  */
 import { responderSimulado } from '@/compartido/api/simulado';
 import { entornoServidor } from '@/compartido/config/entorno-servidor';
+import { codigoValido } from '@/compartido/errores/datosDelError';
 
 /** Cabeceras propias de cada conexión: no se reenvían. */
 const CABECERAS_DE_CONEXION = new Set([
@@ -34,14 +35,21 @@ const CABECERAS_DE_RESPUESTA_OMITIDAS = new Set([
   'set-cookie',
 ]);
 
-function errorDeConexion() {
+/**
+ * Código de seguimiento de la petición (SCRUM-168): el backend lo usa en su log y en
+ * `registro_error`, y lo devuelve en los 5xx para que la persona lo informe.
+ */
+const CABECERA_SEGUIMIENTO = 'x-request-id';
+
+function errorDeConexion(codigoSeguimiento: string) {
   return Response.json(
     {
       statusCode: 502,
       message:
         'No pudimos conectarnos con el servidor. Intenta de nuevo en unos minutos.',
+      codigoSeguimiento,
     },
-    { status: 502 },
+    { status: 502, headers: { [CABECERA_SEGUIMIENTO]: codigoSeguimiento } },
   );
 }
 
@@ -76,6 +84,10 @@ async function reenviar(
   });
   cabeceras.set('x-forwarded-host', origen.host);
   cabeceras.set('x-forwarded-proto', origen.protocol.replace(':', ''));
+  const codigoSeguimiento =
+    codigoValido(peticion.headers.get(CABECERA_SEGUIMIENTO)) ??
+    crypto.randomUUID();
+  cabeceras.set(CABECERA_SEGUIMIENTO, codigoSeguimiento);
 
   const tieneCuerpo = !['GET', 'HEAD'].includes(peticion.method);
 
@@ -91,8 +103,23 @@ async function reenviar(
       cache: 'no-store',
       signal: peticion.signal,
     } as RequestInit);
-  } catch {
-    return errorDeConexion();
+  } catch (error) {
+    // La persona cerró la página o canceló: no es un error del sistema
+    if (peticion.signal.aborted) return errorDeConexion(codigoSeguimiento);
+    // Sin backend no hay dónde guardarlo en registro_error: queda en el log del servidor de Next
+    console.error(
+      JSON.stringify({
+        nivel: 'error',
+        registro: 'servidor_web',
+        codigoSeguimiento,
+        componente: 'proxy app/api/[...ruta]',
+        metodo: peticion.method,
+        ruta: origen.pathname,
+        tipoError: error instanceof Error ? error.name : typeof error,
+        mensaje: 'El backend no respondió.',
+      }),
+    );
+    return errorDeConexion(codigoSeguimiento);
   }
 
   const salida = new Headers();

@@ -50,6 +50,8 @@ export interface CuerpoError {
   message: string | string[];
   error?: string;
   errores?: ErrorDeCampo[];
+  /** Solo en los 5xx: el código con que quedó en el registro de errores (SCRUM-168, `filtro-errores.ts`). */
+  codigoSeguimiento?: string;
 }
 
 /** backend: src/modulos/catalogo/tienda.service.ts › ProductoTienda (lo que ve quien no es profesional) */
