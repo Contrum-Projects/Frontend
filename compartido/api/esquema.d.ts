@@ -1,6 +1,6 @@
 /**
  * NO EDITAR: generado con `pnpm api:tipos` desde <API_URL>/api/docs-json.
- * Versión de la API: 0.1.0. Rutas: 121.
+ * Versión de la API: 0.1.0. Rutas: 122.
  */
 
 export interface paths {
@@ -2502,6 +2502,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/registros/errores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar el registro de errores (SCRUM-168)
+         * @description Paginado, más recientes primero. Busca por el comienzo del código de seguimiento o por texto en el componente o el mensaje, y filtra por origen y por días en hora de Chile. `conteos` son los números de cada origen con los demás filtros aplicados.
+         */
+        get: operations["RegistroErroresController_listar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4896,6 +4916,67 @@ export interface components {
              * @example 3f1c2b9e-8a7d-4e0b-9a51-2c4d6e8f0a1b
              */
             codigoSeguimiento: string;
+        };
+        CuentaDelErrorDto: {
+            /** Format: uuid */
+            codigoPublico: string;
+            /** @example Andrea Soto */
+            nombre: string;
+            /** @example andrea@correo.cl */
+            email: string;
+        };
+        RegistroErrorDto: {
+            /** @example 3f1c2b9e-8a7d-4e0b-9a51-2c4d6e8f0a1b */
+            codigoSeguimiento: string;
+            /** Format: date-time */
+            fechaHora: string;
+            /** @enum {string} */
+            origen: "api" | "navegador" | "servidor_web";
+            /**
+             * @description Dónde falló: clase y método del backend, o la pantalla.
+             * @example GenerarOtService.generar
+             */
+            componente: string;
+            /** @example POST */
+            metodo: string | null;
+            /** @example /api/pedidos/BB50C63834F3/estado */
+            ruta: string | null;
+            /** @example 500 */
+            estadoHttp: number | null;
+            /** @example TypeError */
+            tipoError: string;
+            /** @example Cannot read properties of undefined (reading 'id') */
+            mensaje: string;
+            /** @description Solo las líneas de la pila (`at …`). */
+            traza: string | null;
+            /** @description La cuenta con sesión cuando ocurrió, si había. */
+            cuenta: components["schemas"]["CuentaDelErrorDto"] | null;
+        };
+        ConteosRegistroErroresDto: {
+            /** @example 12 */
+            todos: number;
+            /** @example 7 */
+            api: number;
+            /** @example 4 */
+            navegador: number;
+            /** @example 1 */
+            servidorWeb: number;
+        };
+        ListadoRegistroErroresDto: {
+            items: components["schemas"]["RegistroErrorDto"][];
+            /** @example 12 */
+            total: number;
+            /** @example 1 */
+            pagina: number;
+            /** @example 20 */
+            limite: number;
+            /** @description Errores de cada origen con la búsqueda y las fechas aplicadas, sin el filtro de origen. */
+            conteos: components["schemas"]["ConteosRegistroErroresDto"];
+            /**
+             * @description Días que se guarda cada error antes de borrarse.
+             * @example 90
+             */
+            diasRetencion: number;
         };
     };
     responses: never;
@@ -11894,6 +11975,57 @@ export interface operations {
             };
             /** @description Más de 30 reportes por minuto desde la misma IP. */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RegistroErroresController_listar: {
+        parameters: {
+            query?: {
+                pagina?: number;
+                limite?: number;
+                /** @description Solo los errores de este origen. */
+                origen?: "api" | "navegador" | "servidor_web";
+                /** @description El comienzo del código de seguimiento (el que ve la persona, p. ej. `3F1C2B9E`), o un texto contenido en el componente o el mensaje. Sin distinguir mayúsculas. */
+                buscar?: string;
+                /** @description Desde este día, en hora de Chile. */
+                desde?: string;
+                /** @description Hasta este día incluido, en hora de Chile. */
+                hasta?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListadoRegistroErroresDto"];
+                };
+            };
+            /** @description Filtros inválidos. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin sesión válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Solo el administrador. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

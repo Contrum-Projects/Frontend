@@ -1,6 +1,7 @@
 import {
   BadgeCheck,
   Box,
+  Bug,
   Contact,
   ChartNoAxesColumn,
   GalleryHorizontalEnd,
@@ -151,6 +152,15 @@ export const SECCIONES: readonly SeccionPanel[] = [
     icono: UsersRound,
     grupo: 'Administración',
     permiso: PERMISOS.PERSONAL_GESTIONAR,
+    enLaBarra: false,
+  },
+  {
+    // SCRUM-168: errores del sistema con qué pasó, cuándo y en qué componente
+    texto: 'Registro de errores',
+    href: '/panel/registro-errores',
+    icono: Bug,
+    grupo: 'Administración',
+    permiso: PERMISOS.REGISTRO_ERRORES_VER,
     enLaBarra: false,
   },
 ];

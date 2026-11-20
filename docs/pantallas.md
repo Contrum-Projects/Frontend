@@ -66,6 +66,7 @@ autorizar cada llamada).
 | SCRUM-142 a 145           | P6 Reportes                             | 2041:1229                         | 2042:1010                   | `/panel/reportes`                                                                                               |
 | SCRUM-98                  | P8 Personal · P8a Nueva cuenta          | 2049:1896 · 2049:2070             | 2051:1343                   | `/panel/personal`; activar la cuenta desde el correo: `/personal/activar?token=` (ya fijada por el backend)     |
 | SCRUM-155                 | Clientes (sin Figma)                    | —                                 | —                           | `/panel/clientes` y `/panel/clientes/[codigoPublico]`                                                           |
+| SCRUM-168                 | Registro de errores (sin Figma)         | —                                 | —                           | `/panel/registro-errores`, solo el administrador (`registro_errores.ver`)                                       |
 
 ## Correos
 

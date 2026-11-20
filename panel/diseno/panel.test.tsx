@@ -101,6 +101,7 @@ describe('Menú del panel según el rol (SCRUM-99)', () => {
       'Portada',
       'Reportes',
       'Personal',
+      'Registro de errores',
     ]);
     expect(screen.getByText('Rol: administrador')).toBeInTheDocument();
   });
@@ -174,7 +175,11 @@ describe('Menú del panel según el rol (SCRUM-99)', () => {
       'Inventario',
     ]);
     expect(textos('Marketing')).toEqual(['Campañas', 'Cupones', 'Portada']);
-    expect(textos('Administración')).toEqual(['Reportes', 'Personal']);
+    expect(textos('Administración')).toEqual([
+      'Reportes',
+      'Personal',
+      'Registro de errores',
+    ]);
   });
 
   it('E13-H2 FE · opciones por rol: en celular, «Más» abre las secciones que no caben', async () => {
@@ -202,6 +207,7 @@ describe('Menú del panel según el rol (SCRUM-99)', () => {
       'Portada',
       'Reportes',
       'Personal',
+      'Registro de errores',
     ]);
     expect(
       within(hoja).getByRole('button', { name: 'Cerrar sesión' }),
