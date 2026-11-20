@@ -18,6 +18,8 @@ const politica = politicaDeContenido({
 const nextConfig: NextConfig = {
   experimental: {
     agentFeedback: true,
+    // Actualización de seguridad 16.4.3 → 16.4.6 hecha con `next upgrade --agent=security` (SCRUM-169)
+    agentUpgrade: 'security',
   },
   // `next dev` abierto desde un túnel https (`cloudflared tunnel --url`) para probar el regreso
   // automático y el webhook de Mercado Pago: sin esto rechaza sus recursos de desarrollo (HMR)
