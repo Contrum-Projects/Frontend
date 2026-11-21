@@ -103,7 +103,7 @@ describe('SCRUM-106 · Header de la tienda', () => {
     );
   });
 
-  it('E2-H1 FE · header: con sesión muestra el nombre y lleva a la cuenta', () => {
+  it('E2-H1 FE · header: con sesión saluda por el nombre y el menú lleva a la cuenta', async () => {
     act(() =>
       guardarSesion({
         tokenAcceso: 't',
@@ -116,15 +116,57 @@ describe('SCRUM-106 · Header de la tienda', () => {
         },
       }),
     );
+    const persona = userEvent.setup();
     mostrarHeader();
 
-    expect(screen.getByRole('link', { name: 'Camila' })).toHaveAttribute(
+    const cuenta = screen.getByRole('button', { name: 'Tu cuenta: Camila' });
+    expect(cuenta).toHaveTextContent('Hola, Camila');
+    expect(
+      screen.queryByRole('link', { name: 'Ingresar' }),
+    ).not.toBeInTheDocument();
+
+    await persona.click(cuenta);
+    const menu = screen.getByRole('menu');
+    expect(menu).toHaveTextContent('Sesión iniciada comoCamila Rojas');
+    expect(screen.getByRole('menuitem', { name: 'Mis datos' })).toHaveAttribute(
       'href',
       '/cuenta/datos',
     );
     expect(
-      screen.queryByRole('link', { name: 'Ingresar' }),
+      screen.getByRole('menuitem', { name: 'Mis pedidos' }),
+    ).toHaveAttribute('href', '/cuenta/pedidos');
+    expect(
+      screen.getByRole('menuitem', { name: 'Cerrar sesión' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('menuitem', { name: 'Perfil profesional' }),
     ).not.toBeInTheDocument();
+  });
+
+  it('Sesión visible · header: una cuenta profesional lo ve en el menú y entra a su perfil', async () => {
+    act(() =>
+      guardarSesion({
+        tokenAcceso: 't',
+        expiraEn: 900,
+        usuario: {
+          codigoPublico: 'c-2',
+          nombre: 'Ignacia',
+          apellido: 'Muñoz',
+          rol: 'profesional',
+        },
+      }),
+    );
+    const persona = userEvent.setup();
+    mostrarHeader();
+
+    await persona.click(
+      screen.getByRole('button', { name: 'Tu cuenta: Ignacia' }),
+    );
+
+    expect(screen.getByRole('menu')).toHaveTextContent('Cuenta profesional');
+    expect(
+      screen.getByRole('menuitem', { name: 'Perfil profesional' }),
+    ).toHaveAttribute('href', '/cuenta/perfil-profesional');
   });
 
   it('E2-H1 FE · header: mientras se conoce la sesión, muestra un esqueleto y no «Ingresar»', () => {
@@ -158,7 +200,7 @@ describe('SCRUM-106 · Header de la tienda', () => {
         '/panel',
       );
       expect(
-        screen.queryByRole('link', { name: 'Paula' }),
+        screen.queryByRole('button', { name: /Tu cuenta/ }),
       ).not.toBeInTheDocument();
     },
   );

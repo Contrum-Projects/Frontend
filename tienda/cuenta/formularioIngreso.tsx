@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { z } from 'zod';
 import { ErrorDeApi, errorDeApi } from '@/compartido/api/errores';
 import { useSesion } from '@/compartido/sesion/sesion';
@@ -28,7 +29,8 @@ type DatosIngreso = z.infer<typeof esquemaIngreso>;
 /**
  * Campos de «Iniciar sesión» (E1-H2); el título y la tarjeta están en <PantallaIngreso>. Si el backend rechaza el ingreso muestra su mensaje como
  * error general, sin marcar un campo: no dice si falló el correo o la contraseña.
- * La redirección tras ingresar la hace <Ingreso> al ver la sesión activa.
+ * La redirección tras ingresar la hace <Ingreso> al ver la sesión activa; aquí solo se avisa
+ * con un mensaje breve que la sesión quedó iniciada.
  */
 export function FormularioIngreso() {
   const { iniciarSesion } = useSesion();
@@ -45,7 +47,9 @@ export function FormularioIngreso() {
   const enviar = async (datos: DatosIngreso) => {
     setErrorServidor(null);
     try {
-      await iniciarSesion(datos);
+      const usuario = await iniciarSesion(datos);
+      // Aviso breve para que se note con qué cuenta quedó la sesión (SCRUM-170)
+      toast.success(`Hola, ${usuario.nombre}. Iniciaste sesión.`);
     } catch (error) {
       // Sin conexión, fetch lanza TypeError: se muestra el mensaje genérico
       setErrorServidor(
