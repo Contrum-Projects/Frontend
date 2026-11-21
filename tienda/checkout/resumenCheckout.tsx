@@ -84,7 +84,7 @@ export function ResumenCheckout({
         )}
         {conDespacho && (
           <div className="flex justify-between gap-4">
-            <dt className="text-texto-secundario">Despacho</dt>
+            <dt className="text-texto-secundario">Despacho Chilexpress</dt>
             <dd className="text-texto-principal tabular-nums">
               <MontoDespacho despacho={despacho} monto="costo" />
             </dd>

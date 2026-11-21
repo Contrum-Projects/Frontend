@@ -47,7 +47,8 @@ export const SeccionEntrega = ({
             elegida={conDespacho}
             Icono={Truck}
             titulo="Despacho a domicilio"
-            descripcion="Chilexpress, cotizado para tu comuna."
+            etiqueta="Chilexpress"
+            descripcion="Lo enviamos con Chilexpress. El costo se cotiza para tu comuna."
             costo={conDespacho && <CostoDespacho entrega={entrega} />}
           />
           {conDespacho && <DireccionDespacho entrega={entrega} />}
@@ -117,6 +118,7 @@ const OpcionEntrega = ({
   elegida,
   Icono,
   titulo,
+  etiqueta,
   descripcion,
   costo,
 }: {
@@ -125,6 +127,8 @@ const OpcionEntrega = ({
   elegida: boolean;
   Icono: LucideIcon;
   titulo: string;
+  /** El courier que hace la entrega, destacado junto al título. */
+  etiqueta?: string;
   descripcion: string;
   costo?: ReactNode;
 }) => {
@@ -146,8 +150,15 @@ const OpcionEntrega = ({
         aria-hidden
       />
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="texto-cuerpo-fuerte text-texto-principal">
-          {titulo}
+        <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="texto-cuerpo-fuerte text-texto-principal">
+            {titulo}
+          </span>
+          {etiqueta && (
+            <span className="rounded-full bg-marca-acento-suave px-2 py-0.5 texto-leyenda text-marca-profundo">
+              {etiqueta}
+            </span>
+          )}
         </span>
         <span className="texto-pequeno text-texto-secundario">
           {descripcion}

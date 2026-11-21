@@ -210,7 +210,8 @@ function ConArticulos({
           </dd>
         </dl>
         <p className="texto-leyenda text-texto-secundario">
-          IVA incluido. El despacho se calcula en el siguiente paso.
+          IVA incluido. El despacho con Chilexpress se calcula en el siguiente
+          paso.
         </p>
         {carrito.puedeCrearPedido ? (
           <Button asChild size="grande" className="w-full">
