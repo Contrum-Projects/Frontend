@@ -239,14 +239,18 @@ describe('Elegir despacho o retiro en el checkout (SCRUM-122)', () => {
       name: /retiro en tienda/i,
     });
     expect(retiro).toBeChecked();
-    expect(within(resumen()).queryByText('Despacho')).not.toBeInTheDocument();
+    expect(
+      within(resumen()).queryByText('Despacho Chilexpress'),
+    ).not.toBeInTheDocument();
     expect(filaTotal()).toHaveTextContent('Total$25.980');
 
     // Al pasar de despacho a retiro, el envío deja de sumarse
     await elegirDespacho();
     expect(await within(resumen()).findByText('$29.970')).toBeInTheDocument();
     await userEvent.click(retiro);
-    expect(within(resumen()).queryByText('Despacho')).not.toBeInTheDocument();
+    expect(
+      within(resumen()).queryByText('Despacho Chilexpress'),
+    ).not.toBeInTheDocument();
     expect(filaTotal()).toHaveTextContent('Total$25.980');
     expect(cotizadas).toEqual(['7']);
 
@@ -275,8 +279,8 @@ describe('Elegir despacho o retiro en el checkout (SCRUM-122)', () => {
       }),
     ).toBeChecked();
     expect(
-      within(resumen()).getByText('Despacho').parentElement,
-    ).toHaveTextContent('Despacho$3.990');
+      within(resumen()).getByText('Despacho Chilexpress').parentElement,
+    ).toHaveTextContent('Despacho Chilexpress$3.990');
     expect(within(resumen()).getByText('$29.970')).toBeInTheDocument();
     expect(await botonPagar()).toBeEnabled();
 
@@ -342,7 +346,9 @@ describe('Elegir despacho o retiro en el checkout (SCRUM-122)', () => {
     mostrar();
 
     await elegirDespacho();
-    await waitFor(() => expect(resumen()).toHaveTextContent('Despacho'));
+    await waitFor(() =>
+      expect(resumen()).toHaveTextContent('Despacho Chilexpress'),
+    );
     expect(await botonPagar()).toBeDisabled();
 
     act(() =>
@@ -425,8 +431,8 @@ describe('Cotización del despacho y dirección (SCRUM-123)', () => {
     await elegirDespacho();
     expect(await within(resumen()).findByText('$29.970')).toBeInTheDocument();
     expect(
-      within(resumen()).getByText('Despacho').parentElement,
-    ).toHaveTextContent('Despacho$3.990');
+      within(resumen()).getByText('Despacho Chilexpress').parentElement,
+    ).toHaveTextContent('Despacho Chilexpress$3.990');
     expect(filaTotal()).toHaveTextContent('Total$29.970');
     expect(cotizadas).toEqual(['7']);
   });

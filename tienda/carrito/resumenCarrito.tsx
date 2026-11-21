@@ -53,7 +53,7 @@ export function ResumenCarrito({
           </dd>
         </div>
         <div className="flex justify-between gap-4">
-          <dt className="text-texto-secundario">Despacho</dt>
+          <dt className="text-texto-secundario">Despacho Chilexpress</dt>
           <dd className="text-right text-texto-principal">
             <span className="hidden md:inline">
               Se calcula en el siguiente paso

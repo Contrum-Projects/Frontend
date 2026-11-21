@@ -37,6 +37,9 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => navegacion.parametros,
 }));
 
+const aviso = vi.hoisted(() => ({ exito: vi.fn() }));
+vi.mock('sonner', () => ({ toast: { success: aviso.exito } }));
+
 const sesion = (rol: Rol): SesionIniciada => ({
   tokenAcceso: 'token',
   expiraEn: 900,
@@ -86,6 +89,7 @@ beforeEach(() => {
 afterEach(() => {
   reiniciarParaPruebas();
   navegacion.replace.mockReset();
+  aviso.exito.mockReset();
   vi.unstubAllGlobals();
 });
 
@@ -123,6 +127,19 @@ describe('SCRUM-94 · Pantalla de inicio de sesión', () => {
     );
   });
 
+  it('SCRUM-170 · aviso al ingresar: saluda por el nombre y dice que la sesión quedó iniciada', async () => {
+    simularIngreso(() => responder(sesion('cliente')));
+    mostrarIngreso();
+
+    await ingresar('camila@correo.cl', 'secreta123');
+
+    await waitFor(() =>
+      expect(aviso.exito).toHaveBeenCalledWith(
+        'Hola, Camila. Iniciaste sesión.',
+      ),
+    );
+  });
+
   it('E1-H2 FE · credenciales incorrectas: muestra el error del servidor sin marcar un campo', async () => {
     simularIngreso(() =>
       responder(
@@ -154,6 +171,7 @@ describe('SCRUM-94 · Pantalla de inicio de sesión', () => {
       'camila@correo.cl',
     );
     expect(navegacion.replace).not.toHaveBeenCalled();
+    expect(aviso.exito).not.toHaveBeenCalled();
     expect(leerEstado().tipo).toBe('anonima');
   });
 
